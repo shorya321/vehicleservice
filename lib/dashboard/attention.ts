@@ -15,6 +15,11 @@ export interface AttentionCounts {
   businessApprovals: number
   reviews: number
   contactMessages: number
+  /** 1 when the newest exchange rate is too old, else 0. */
+  staleRates: number
+  lowWallets: number
+  vendorDocuments: number
+  driverLicences: number
 }
 
 export type AttentionKey = Exclude<keyof AttentionCounts, 'refundsDueAmount'>
@@ -36,6 +41,10 @@ export const ATTENTION_ORDER: AttentionKey[] = [
   'rejected',
   'awaitingVendor',
   'refundsDue',
+  'staleRates',
+  'lowWallets',
+  'vendorDocuments',
+  'driverLicences',
   'vendorApplications',
   'businessApprovals',
   'reviews',
@@ -68,6 +77,31 @@ const DEFINITIONS: Record<AttentionKey, Omit<AttentionItem, 'key' | 'count'>> = 
     label: 'Refunds due',
     description: 'Customer and business bookings',
     href: '/admin/bookings?status=cancelled',
+    tone: 'waiting',
+  },
+  staleRates: {
+    label: 'Exchange rates out of date',
+    description: 'Last refresh over 36 hours ago',
+    href: '/admin/settings/currencies',
+    tone: 'urgent',
+  },
+  lowWallets: {
+    label: 'Low business wallets',
+    description: 'Below their alert threshold or frozen',
+    href: '/admin/businesses?status=active',
+    tone: 'waiting',
+  },
+  vendorDocuments: {
+    label: 'Vendor documents expiring',
+    description: 'Trade licence or insurance, within 30 days',
+    href: '/admin/vendor-applications?status=approved',
+    tone: 'waiting',
+  },
+  // No admin drivers page exists; drivers belong to approved vendors.
+  driverLicences: {
+    label: 'Driver licences expiring',
+    description: 'Expired or due within 30 days',
+    href: '/admin/vendor-applications?status=approved',
     tone: 'waiting',
   },
   vendorApplications: {
@@ -107,6 +141,10 @@ export function emptyAttentionCounts(): AttentionCounts {
     businessApprovals: 0,
     reviews: 0,
     contactMessages: 0,
+    staleRates: 0,
+    lowWallets: 0,
+    vendorDocuments: 0,
+    driverLicences: 0,
   }
 }
 
@@ -156,4 +194,78 @@ export function classifyUpcomingBookings(rows: UpcomingBookingRow[]): Assignment
     },
     { unassigned: 0, rejected: 0, awaitingVendor: 0 }
   )
+}
+
+export const EXPIRY_WINDOW_DAYS = 30
+export const STALE_RATES_HOURS = 36
+/** Same fallback the business low-balance alert uses (app/api/business/bookings/route.ts). */
+const DEFAULT_LOW_BALANCE_THRESHOLD = 100
+
+const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}/
+
+/**
+ * True when a document has expired or expires within the window. Compares
+ * calendar days, so `today` must be the operating-timezone day (`bookingToday()`).
+ */
+export function isExpiringSoon(
+  expiry: string | null | undefined,
+  today: string,
+  windowDays: number = EXPIRY_WINDOW_DAYS
+): boolean {
+  if (!expiry || !DAY_PATTERN.test(expiry)) return false
+  const day = expiry.slice(0, 10)
+  const limit = new Date(`${today}T00:00:00Z`)
+  limit.setUTCDate(limit.getUTCDate() + windowDays)
+  return day <= limit.toISOString().slice(0, 10)
+}
+
+interface VendorDocumentsRow {
+  documents: unknown
+}
+
+function documentField(documents: unknown, key: string): string | null {
+  if (!documents || typeof documents !== 'object') return null
+  const value = (documents as Record<string, unknown>)[key]
+  return typeof value === 'string' ? value : null
+}
+
+/** Vendors with a trade licence or insurance due, each counted once. */
+export function countExpiringVendorDocuments(rows: VendorDocumentsRow[], today: string): number {
+  return rows.filter(
+    ({ documents }) =>
+      isExpiringSoon(documentField(documents, 'trade_license_expiry'), today) ||
+      isExpiringSoon(documentField(documents, 'insurance_expiry'), today)
+  ).length
+}
+
+interface WalletRow {
+  wallet_balance: number | null
+  wallet_frozen_at: string | null
+  notification_preferences: unknown
+}
+
+function lowBalanceThreshold(preferences: unknown): number {
+  if (!preferences || typeof preferences !== 'object') return DEFAULT_LOW_BALANCE_THRESHOLD
+  const alert = (preferences as Record<string, unknown>).low_balance_alert
+  if (!alert || typeof alert !== 'object') return DEFAULT_LOW_BALANCE_THRESHOLD
+  const threshold = Number((alert as Record<string, unknown>).threshold)
+  return Number.isFinite(threshold) ? threshold : DEFAULT_LOW_BALANCE_THRESHOLD
+}
+
+/** A frozen wallet, or a balance below the account's own alert threshold. */
+export function isLowWallet(account: WalletRow): boolean {
+  if (account.wallet_frozen_at) return true
+  return Number(account.wallet_balance ?? 0) < lowBalanceThreshold(account.notification_preferences)
+}
+
+/** The daily refresh logs nothing, so the newest `fetched_at` is the only health signal. */
+export function ratesAreStale(
+  latestFetchedAt: string | null,
+  now: Date = new Date(),
+  maxAgeHours: number = STALE_RATES_HOURS
+): boolean {
+  if (!latestFetchedAt) return true
+  const fetched = new Date(latestFetchedAt).getTime()
+  if (Number.isNaN(fetched)) return true
+  return now.getTime() - fetched > maxAgeHours * 60 * 60 * 1000
 }

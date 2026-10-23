@@ -1,9 +1,14 @@
 import 'server-only'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { bookingToday } from '@/lib/utils/timezone'
 import {
   classifyUpcomingBookings,
+  countExpiringVendorDocuments,
   emptyAttentionCounts,
+  isExpiringSoon,
+  isLowWallet,
+  ratesAreStale,
   type AttentionCounts,
 } from '@/lib/dashboard/attention'
 
@@ -59,6 +64,44 @@ async function refundsDue(client: AdminClient): Promise<{ count: number; amount:
   }
 }
 
+async function rows<T>(
+  query: PromiseLike<{ data: T[] | null; error: { message: string } | null }>
+): Promise<T[]> {
+  const { data, error } = await query
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
+
+/** Expiring documents and wallet and rate health, the slow-moving queues. */
+async function healthCounts(client: AdminClient) {
+  const today = bookingToday()
+  const [vendors, drivers, wallets, latestRate] = await Promise.all([
+    rows(client.from('vendor_applications').select('documents').eq('status', 'approved')),
+    rows(client.from('vendor_drivers').select('license_expiry').eq('is_active', true)),
+    rows(
+      client
+        .from('business_accounts')
+        .select('wallet_balance, wallet_frozen_at, notification_preferences')
+        .eq('status', 'active')
+    ),
+    rows(
+      client
+        .from('exchange_rates')
+        .select('fetched_at')
+        .not('fetched_at', 'is', null)
+        .order('fetched_at', { ascending: false })
+        .limit(1)
+    ),
+  ])
+
+  return {
+    vendorDocuments: countExpiringVendorDocuments(vendors, today),
+    driverLicences: drivers.filter((driver) => isExpiringSoon(driver.license_expiry, today)).length,
+    lowWallets: wallets.filter(isLowWallet).length,
+    staleRates: ratesAreStale(latestRate[0]?.fetched_at ?? null) ? 1 : 0,
+  }
+}
+
 export interface AttentionResult {
   counts: AttentionCounts
   error: string | null
@@ -74,7 +117,7 @@ export async function getAttentionCounts(): Promise<AttentionResult> {
   const nowIso = new Date().toISOString()
 
   try {
-    const [customerUpcoming, businessUpcoming, refunds, vendorApplications, businessApprovals, reviews, contactMessages] =
+    const [customerUpcoming, businessUpcoming, refunds, vendorApplications, businessApprovals, reviews, contactMessages, health] =
       await Promise.all([
         fetchUpcoming((from, to) =>
           client
@@ -101,6 +144,7 @@ export async function getAttentionCounts(): Promise<AttentionResult> {
         exactCount(client.from('business_accounts').select('id', { count: 'exact', head: true }).eq('status', 'pending')),
         exactCount(client.from('reviews').select('id', { count: 'exact', head: true }).eq('status', 'pending')),
         exactCount(client.from('contact_submissions').select('id', { count: 'exact', head: true }).eq('status', 'new')),
+        healthCounts(client),
       ])
 
     const queues = classifyUpcomingBookings([...customerUpcoming, ...businessUpcoming])
@@ -114,6 +158,7 @@ export async function getAttentionCounts(): Promise<AttentionResult> {
         businessApprovals,
         reviews,
         contactMessages,
+        ...health,
       },
       error: null,
     }

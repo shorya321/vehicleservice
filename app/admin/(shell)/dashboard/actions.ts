@@ -74,6 +74,9 @@ export interface DashboardMetrics {
   }>
 }
 
+const KPI_TABLES = ['bookings', 'business_bookings'] as const
+const TEST_BOOKING_PATTERN = 'TEST-%'
+
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const adminClient = createAdminClient()
   // Dubai days, not the server's. getRevenueTrend() further down this same file
@@ -82,22 +85,30 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const today = startOfBookingDayUtc()
   const yesterday = bookingDaysAgoUtc(1)
 
-  // Fetch today's revenue and compare with yesterday
-  const { data: todayBookings } = await adminClient
-    .from('bookings')
-    .select('total_price')
-    .gte('created_at', today.toISOString())
-    .eq('payment_status', 'completed')
+  // The KPI cards count customer and business bookings together, the same
+  // tables the revenue chart sums, and skip the TEST- rows the bookings page
+  // also leaves out.
+  const sumPaidRevenue = async (fromIso: string, toIso?: string): Promise<number> => {
+    const totals = await Promise.all(
+      KPI_TABLES.map(async (table) => {
+        let query = adminClient
+          .from(table)
+          .select('total_price')
+          .eq('payment_status', 'completed')
+          .not('booking_number', 'like', TEST_BOOKING_PATTERN)
+          .gte('created_at', fromIso)
+        if (toIso) query = query.lt('created_at', toIso)
+        const { data } = await query
+        return (data ?? []).reduce((sum, b) => sum + Number(b.total_price), 0)
+      })
+    )
+    return totals.reduce((sum, total) => sum + total, 0)
+  }
 
-  const { data: yesterdayBookings } = await adminClient
-    .from('bookings')
-    .select('total_price')
-    .gte('created_at', yesterday.toISOString())
-    .lt('created_at', today.toISOString())
-    .eq('payment_status', 'completed')
-
-  const todayRevenue = todayBookings?.reduce((sum, b) => sum + Number(b.total_price), 0) || 0
-  const yesterdayRevenue = yesterdayBookings?.reduce((sum, b) => sum + Number(b.total_price), 0) || 0
+  const [todayRevenue, yesterdayRevenue] = await Promise.all([
+    sumPaidRevenue(today.toISOString()),
+    sumPaidRevenue(yesterday.toISOString(), today.toISOString()),
+  ])
   const revenueChange = yesterdayRevenue > 0
     ? ((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100
     : 0
@@ -106,14 +117,19 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
 
-  const { data: activeBookingsData } = await adminClient
-    .from('bookings')
-    .select('id')
-    .eq('booking_status', 'confirmed')
-    .gte('pickup_datetime', new Date().toISOString())
-    .lte('pickup_datetime', tomorrow.toISOString())
-
-  const activeBookings = activeBookingsData?.length || 0
+  const activeCounts = await Promise.all(
+    KPI_TABLES.map(async (table) => {
+      const { count } = await adminClient
+        .from(table)
+        .select('id', { count: 'exact', head: true })
+        .eq('booking_status', 'confirmed')
+        .not('booking_number', 'like', TEST_BOOKING_PATTERN)
+        .gte('pickup_datetime', new Date().toISOString())
+        .lte('pickup_datetime', tomorrow.toISOString())
+      return count ?? 0
+    })
+  )
+  const activeBookings = activeCounts.reduce((sum, count) => sum + count, 0)
 
   // Get pending actions (unassigned bookings + pending payments + rejected bookings)
   const { data: pendingAssignments } = await adminClient
@@ -143,14 +159,19 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const rejectedBookings = rejectedAssignments?.length || 0
 
   // Get completed bookings today (booking completed and payment completed)
-  const { data: completedTodayData } = await adminClient
-    .from('bookings')
-    .select('id')
-    .gte('created_at', today.toISOString())
-    .eq('booking_status', 'completed')
-    .eq('payment_status', 'completed')
-
-  const completedBookingsToday = completedTodayData?.length || 0
+  const completedCounts = await Promise.all(
+    KPI_TABLES.map(async (table) => {
+      const { count } = await adminClient
+        .from(table)
+        .select('id', { count: 'exact', head: true })
+        .gte('created_at', today.toISOString())
+        .eq('booking_status', 'completed')
+        .eq('payment_status', 'completed')
+        .not('booking_number', 'like', TEST_BOOKING_PATTERN)
+      return count ?? 0
+    })
+  )
+  const completedBookingsToday = completedCounts.reduce((sum, count) => sum + count, 0)
 
   // Get default daily revenue trend
   const revenueTrend = await getRevenueTrend('daily')
@@ -253,18 +274,24 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     .eq('is_available', true)
 
   // Get top route today
-  const { data: todayRoutes } = await adminClient
-    .from('bookings')
-    .select(`
-      from_location:locations!from_location_id(name),
-      to_location:locations!to_location_id(name)
-    `)
-    .gte('created_at', today.toISOString())
-    // Hourly hire has no destination, so it is not a route.
-    .neq('trip_type', 'hourly')
+  const routeResults = await Promise.all(
+    KPI_TABLES.map((table) =>
+      adminClient
+        .from(table)
+        .select(`
+          from_location:locations!from_location_id(name),
+          to_location:locations!to_location_id(name)
+        `)
+        .gte('created_at', today.toISOString())
+        .not('booking_number', 'like', TEST_BOOKING_PATTERN)
+        // Hourly hire has no destination, so it is not a route.
+        .neq('trip_type', 'hourly')
+    )
+  )
+  const todayRoutes = routeResults.flatMap(({ data }) => data ?? [])
 
   const routeCounts = new Map<string, number>()
-  todayRoutes?.forEach(r => {
+  todayRoutes.forEach(r => {
     if (r.from_location && r.to_location) {
       const route = `${r.from_location.name} → ${r.to_location.name}`
       routeCounts.set(route, (routeCounts.get(route) || 0) + 1)

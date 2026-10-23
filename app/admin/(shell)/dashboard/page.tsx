@@ -27,6 +27,8 @@ import { NeedsAttentionCard } from '@/components/dashboard/needs-attention-card'
 import { QuickActionsCard } from '@/components/dashboard/quick-actions-card'
 import { RefreshButton } from '@/components/dashboard/refresh-button'
 import { getAttentionCounts } from '@/lib/dashboard/attention-queries'
+import { getUpcomingPickups } from '@/lib/dashboard/upcoming-pickups-queries'
+import { UpcomingPickupsCard } from '@/components/dashboard/upcoming-pickups-card'
 import { buildAttentionItems } from '@/lib/dashboard/attention'
 import { EmptyState } from '@/components/ui/empty-state'
 import { AnimatedPage } from '@/components/layout/animated-page'
@@ -67,10 +69,11 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
   // Fetch dashboard metrics, plus the revenue trend for the requested range.
   // No query string keeps the previous default view.
   const rangeParams = (await searchParams) ?? {}
-  const [metrics, revenueTrend, attention] = await Promise.all([
+  const [metrics, revenueTrend, attention, pickups] = await Promise.all([
     getDashboardMetrics(),
     getRevenueTrendWithMeta(rangeParams),
     getAttentionCounts(),
+    getUpcomingPickups(),
   ])
   const attentionItems = buildAttentionItems(attention.counts)
 
@@ -212,6 +215,10 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
             {/* Revenue Chart */}
             <AnimatedCard delay={0.6}>
               <RevenueChart points={revenueTrend.points} meta={revenueTrend.meta} />
+            </AnimatedCard>
+
+            <AnimatedCard delay={0.65}>
+              <UpcomingPickupsCard {...pickups} />
             </AnimatedCard>
 
             {/* Recent Bookings - Timeline Style */}
