@@ -2,7 +2,6 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
   TrendingUp,
   TrendingDown,
@@ -13,7 +12,7 @@ import {
   Users,
   Truck,
   ArrowRight,
-  RefreshCw,
+  MapPin,
   AlertCircle,
   FileText,
   Building2,
@@ -24,6 +23,11 @@ import Link from "next/link"
 import { cn, formatCurrency } from "@/lib/utils"
 import { getDashboardMetrics, getRevenueTrendWithMeta } from './actions'
 import { RevenueChart } from '@/components/dashboard/revenue-chart'
+import { NeedsAttentionCard } from '@/components/dashboard/needs-attention-card'
+import { QuickActionsCard } from '@/components/dashboard/quick-actions-card'
+import { RefreshButton } from '@/components/dashboard/refresh-button'
+import { getAttentionCounts } from '@/lib/dashboard/attention-queries'
+import { buildAttentionItems } from '@/lib/dashboard/attention'
 import { EmptyState } from '@/components/ui/empty-state'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { AnimatedCard } from '@/components/ui/animated-card'
@@ -63,10 +67,12 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
   // Fetch dashboard metrics, plus the revenue trend for the requested range.
   // No query string keeps the previous default view.
   const rangeParams = (await searchParams) ?? {}
-  const [metrics, revenueTrend] = await Promise.all([
+  const [metrics, revenueTrend, attention] = await Promise.all([
     getDashboardMetrics(),
     getRevenueTrendWithMeta(rangeParams),
+    getAttentionCounts(),
   ])
+  const attentionItems = buildAttentionItems(attention.counts)
 
   return (
       <AnimatedPage>
@@ -78,10 +84,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
               Welcome back! Here&apos;s what&apos;s happening today.
             </p>
           </div>
-          <Button variant="outline" size="sm">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
+          <RefreshButton />
         </div>
 
         {/* Primary KPI Cards */}
@@ -213,7 +216,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
 
             {/* Recent Bookings - Timeline Style */}
             <AnimatedCard delay={0.7}>
-              <Card className="admin-card-hover">
+              <Card className="admin-card-hover admin-card-untinted">
                 <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-border">
                   <div>
                     <CardTitle className="text-base font-semibold">Recent Bookings</CardTitle>
@@ -252,7 +255,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                                <span className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
                                   {booking.tripNumber || booking.bookingNumber}
                                 </span>
                                 <Badge
@@ -267,16 +270,16 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                                   {booking.status}
                                 </Badge>
                               </div>
-                              <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
                                 {booking.customerName}
                                 <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
                                 {booking.route}
                               </p>
-                              <p className="text-xs text-muted-foreground/70 mt-1">{booking.time}</p>
+                              <p className="text-xs text-muted-foreground mt-1">{booking.time}</p>
                             </div>
 
                             <div className="flex items-center gap-3 mt-0.5">
-                              <span className="text-sm font-bold text-primary">
+                              <span className="text-sm font-semibold text-primary">
                                 {formatCurrency(booking.amount)}
                               </span>
                               <ArrowRight className="h-4 w-4 text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
@@ -300,16 +303,21 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
             </AnimatedCard>
           </div>
 
-          {/* Right Column - Stats & Alerts */}
+          {/* Right Column - Work queues, shortcuts, status */}
           <div className="lg:col-span-4 space-y-5">
-            {/* Operations Card */}
             <AnimatedCard delay={0.6}>
+              <NeedsAttentionCard items={attentionItems} error={attention.error} />
+            </AnimatedCard>
+
+            <AnimatedCard delay={0.7}>
+              <QuickActionsCard />
+            </AnimatedCard>
+
+            {/* Operations Card */}
+            <AnimatedCard delay={0.8}>
               <Card className="admin-card-hover">
                 <CardHeader className="pb-3 border-b border-border">
-                  <div className="flex items-center gap-2">
-                    <Activity className="h-4 w-4 text-primary" />
-                    <CardTitle className="text-base font-semibold">Operations</CardTitle>
-                  </div>
+                  <CardTitle className="text-base font-semibold">Operations</CardTitle>
                   <CardDescription className="mt-0.5">Current status</CardDescription>
                 </CardHeader>
                 <CardContent className="p-5 space-y-4">
@@ -342,18 +350,25 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                     </div>
                     <span className="text-sm font-semibold text-foreground">{metrics.availableVehicles}</span>
                   </div>
+
+                  <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
+                        <MapPin className="h-4 w-4 text-amber-500" />
+                      </div>
+                      <span className="text-sm text-muted-foreground">Top route today</span>
+                    </div>
+                    <span className="text-right text-sm font-semibold text-foreground">{metrics.topRoute}</span>
+                  </div>
                 </CardContent>
               </Card>
             </AnimatedCard>
 
             {/* Recent Activities */}
-            <AnimatedCard delay={0.7}>
+            <AnimatedCard delay={0.9}>
               <Card className="admin-card-hover">
                 <CardHeader className="pb-3 border-b border-border">
-                  <div className="flex items-center gap-2">
-                    <Activity className="h-4 w-4 text-primary" />
-                    <CardTitle className="text-base font-semibold">Recent Activities</CardTitle>
-                  </div>
+                  <CardTitle className="text-base font-semibold">Recent Activities</CardTitle>
                   <CardDescription className="mt-0.5">Latest system activity</CardDescription>
                 </CardHeader>
                 <CardContent className="p-5">
@@ -391,7 +406,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                                 {activity.userInfo}
                               </p>
                             )}
-                            <p className="text-xs text-muted-foreground/70 mt-1">
+                            <p className="text-xs text-muted-foreground mt-1">
                               {activity.timeAgo}
                             </p>
                           </div>
@@ -406,33 +421,6 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                       />
                     )}
                   </div>
-                </CardContent>
-              </Card>
-            </AnimatedCard>
-
-            {/* Quick Actions */}
-            <AnimatedCard delay={0.8}>
-              <Card className="admin-card-hover">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-semibold">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="p-5 pt-0 space-y-2">
-                  <Link href="/admin/bookings" className="admin-quick-action">
-                    <span className="text-sm font-medium text-foreground">View All Bookings</span>
-                    <ArrowRight className="h-4 w-4 text-primary admin-quick-action-arrow" />
-                  </Link>
-                  <Link href="/admin/vendor-applications" className="admin-quick-action">
-                    <span className="text-sm font-medium text-foreground">Manage Vendors</span>
-                    <ArrowRight className="h-4 w-4 text-primary admin-quick-action-arrow" />
-                  </Link>
-                  <Link href="/admin/vehicles" className="admin-quick-action">
-                    <span className="text-sm font-medium text-foreground">Fleet Status</span>
-                    <ArrowRight className="h-4 w-4 text-primary admin-quick-action-arrow" />
-                  </Link>
-                  <Link href="/admin/settings" className="admin-quick-action">
-                    <span className="text-sm font-medium text-foreground">System Settings</span>
-                    <ArrowRight className="h-4 w-4 text-primary admin-quick-action-arrow" />
-                  </Link>
                 </CardContent>
               </Card>
             </AnimatedCard>

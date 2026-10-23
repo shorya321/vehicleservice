@@ -912,6 +912,101 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateX(4px);
 }
 
+/* Admin dashboard Quick Action tiles (vendor dashboard keeps the rows above) */
+.admin-quick-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 104px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background) / 0.6);
+  text-decoration: none;
+  transition: border-color var(--admin-duration-base) var(--admin-ease-out),
+    background-color var(--admin-duration-base) var(--admin-ease-out);
+}
+
+.admin-quick-tile:hover,
+.admin-quick-tile:focus-visible {
+  border-color: hsl(var(--primary) / 0.6);
+  background-color: hsl(var(--primary) / 0.06);
+}
+
+.admin-quick-tile:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.admin-quick-tile-icon {
+  display: flex;
+  height: 34px;
+  width: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: hsl(var(--primary));
+  background-color: hsl(var(--primary) / 0.15);
+}
+
+.admin-quick-tile-arrow {
+  opacity: 0.45;
+  transition: opacity var(--admin-duration-base) var(--admin-ease-out),
+    transform var(--admin-duration-base) var(--admin-ease-out);
+}
+
+.admin-quick-tile:hover .admin-quick-tile-arrow {
+  opacity: 1;
+  transform: translateX(3px);
+}
+
+/* Needs Attention rows */
+.admin-attention-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color var(--admin-duration-base) var(--admin-ease-out);
+}
+
+.admin-attention-row:hover,
+.admin-attention-row:focus-visible {
+  background-color: hsl(var(--primary) / 0.05);
+}
+
+.admin-attention-dot {
+  height: 8px;
+  width: 8px;
+  flex: none;
+  border-radius: 9999px;
+  background-color: var(--attention-tone);
+}
+
+.admin-attention-urgent { --attention-tone: #F87171; }
+.admin-attention-waiting { --attention-tone: #FBBF24; }
+.admin-attention-review { --attention-tone: hsl(var(--primary)); }
+
+/* Light theme: the dark-mode tints fail contrast on white */
+.light .admin-attention-urgent { --attention-tone: #DC2626; }
+.light .admin-attention-waiting { --attention-tone: #B45309; }
+
+/* Revenue area chart: recharts draws SVG attributes, which can't read var() */
+.admin-revenue-chart .recharts-cartesian-grid line {
+  stroke: hsl(var(--border));
+}
+
+.admin-revenue-chart .recharts-cartesian-axis-tick-value {
+  fill: hsl(var(--muted-foreground));
+}
+
+.admin-revenue-chart .recharts-surface:focus,
+.admin-revenue-chart .recharts-wrapper:focus {
+  outline: none;
+}
+
 /* ============================================
    Dialogs in the light theme
    ============================================
@@ -1003,6 +1098,10 @@ html.light[style*="--admin-surface-0"] .bg-cyan-500\/15.text-cyan-500 { color: r
 .portal-shell .admin-card-hover:has(.rounded-full[class*="bg-violet-500/"]) { --stat-tone: rgba(139, 92, 246, 0.12); }
 .portal-shell .admin-card-hover:has(.rounded-full[class*="bg-purple-500/"]) { --stat-tone: rgba(168, 85, 247, 0.12); }
 .portal-shell .admin-card-hover:has(.rounded-full[class*="bg-primary/"]) { --stat-tone: rgba(186, 149, 94, 0.13); }
+/* List cards hold badges and status chips, not one stat, so the tint above
+   would follow whichever badge happens to render first. Doubled class to
+   outrank the :has() rules. */
+.portal-shell .admin-card-hover.admin-card-untinted.admin-card-untinted { --stat-tone: transparent; }
 
 /* Page title: 26px, same face, 10px down to the subtitle. The :not([hidden])
    matches the weight of Tailwind's space-y rule so this one wins. */
