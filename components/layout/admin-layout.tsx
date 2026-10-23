@@ -9,6 +9,7 @@ import { NavigationProgressProvider } from "./navigation-progress/navigation-pro
 import { TopProgressBar } from "./navigation-progress/top-progress-bar"
 import { ContentLoader } from "./navigation-progress/content-loader"
 import { flattenNavLabels } from "./navigation-progress/classify-navigation"
+import { useScrollbarReveal } from "@/lib/hooks/use-scrollbar-reveal"
 
 const ADMIN_NAV_LABELS = flattenNavLabels(navGroups)
 
@@ -19,6 +20,7 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  useScrollbarReveal()
   // Close the mobile drawer whenever the route changes. Adjusting state during
   // render (rather than in an effect) is React's documented pattern for this.
   const [lastPathname, setLastPathname] = useState(pathname)
@@ -50,7 +52,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             if (sidebarOpen && e.target instanceof Element && e.target.closest("a[href]")) closeSidebar()
           }}
           className={cn(
-            "fixed left-0 z-50 h-full transition-[transform,visibility] md:visible md:relative md:translate-x-0",
+            "fixed left-0 z-[60] h-full transition-[transform,visibility] md:visible md:relative md:z-50 md:translate-x-0",
             // invisible (not just off-screen) keeps the closed drawer's links out of
             // the tab order and the accessibility tree on mobile
             sidebarOpen ? "visible translate-x-0" : "invisible -translate-x-full"

@@ -1378,6 +1378,124 @@ html[style*="--admin-surface-0"] [role="menu"].hdr-menu [role="menuitem"].hdr-me
 .light .hdr-menu__role { color: #85663A; }
 html.light[style*="--admin-surface-0"] [role="menu"].hdr-menu [role="menuitem"].hdr-menu__item:not(.text-destructive):is([data-highlighted], :focus) > svg { color: #85663A; }
 
+/* Portal sidebar (components/layout/portal-sidebar), shared by admin and
+   vendor. The background comes from .portal-shell .portal-sidebar above.
+   Dark values first, .light overrides after. */
+.psb {
+  --psb-label: #8B8B93;
+  --psb-hover: rgba(255, 255, 255, 0.045);
+  --psb-tint: rgba(186, 149, 94, 0.13);
+  --psb-gold-text: #D4B07A;
+  --psb-guide: #2E2E33;
+  display: flex;
+  flex-direction: column;
+  width: 248px;
+  height: 100%;
+  border-right: 1px solid hsl(var(--border));
+  transition: width 200ms ease;
+}
+.light .psb {
+  --psb-label: #71717A;
+  --psb-hover: #F4F4F5;
+  --psb-gold-text: #85663A;
+  --psb-guide: #E4E4E7;
+}
+.psb--rail { width: 72px; }
+.psb-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 56px;
+  flex: 0 0 56px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+.psb--rail .psb-brand { justify-content: center; padding: 0; }
+.psb-brand__link { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; border-radius: 8px; }
+.psb--rail .psb-brand__link { flex: 0 0 auto; }
+.psb-brand__link:focus-visible { outline: 2px solid #BA955E; outline-offset: 2px; }
+.psb-brand__mark { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex: 0 0 32px; border-radius: 9px; background: var(--psb-tint); color: var(--psb-gold-text); }
+.psb-brand__text { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+.psb-brand__name { font-family: var(--admin-font-display); font-size: 14px; font-weight: 700; color: hsl(var(--foreground)); }
+.psb-brand__sub { font-size: 11.5px; color: var(--psb-label); }
+.psb-brand__close { align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; color: hsl(var(--muted-foreground)); }
+.psb-brand__close:hover { background: var(--psb-hover); color: hsl(var(--foreground)); }
+
+.psb-nav { flex: 1; overflow-y: auto; padding: 12px 10px; display: flex; flex-direction: column; gap: 14px; }
+/* Thin, trackless scrollbar in the submenu guide-line colour, as in the
+   approved design, shown only while scrolling (data-scrolling is set by
+   useScrollbarReveal). Scoped under .portal-shell .psb to outrank the
+   portal-wide scrollbar rule (.portal-shell .portal-sidebar nav) below. */
+.portal-shell .psb .psb-nav { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+.portal-shell .psb .psb-nav[data-scrolling] { scrollbar-color: var(--psb-guide) transparent; }
+.portal-shell .psb .psb-nav::-webkit-scrollbar { width: 6px; }
+.portal-shell .psb .psb-nav::-webkit-scrollbar-track { background: transparent; }
+.portal-shell .psb .psb-nav::-webkit-scrollbar-thumb { background-color: transparent; border-radius: 9999px; }
+.portal-shell .psb .psb-nav[data-scrolling]::-webkit-scrollbar-thumb { background-color: var(--psb-guide); }
+.psb-group { display: flex; flex-direction: column; gap: 2px; }
+.psb-group__label { margin: 0; padding: 6px 10px 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--psb-gold-text); }
+.psb--rail .psb-group + .psb-group { border-top: 1px solid hsl(var(--border)); padding-top: 12px; }
+
+.psb-row,
+.psb-foot__row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: hsl(var(--muted-foreground));
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: left;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.psb-foot__row { height: 34px; font-size: 13px; }
+.psb--rail .psb-row,
+.psb--rail .psb-foot__row { justify-content: center; padding: 0; }
+.psb-row:hover,
+.psb-foot__row:hover { background: var(--psb-hover); color: hsl(var(--foreground)); }
+.psb-row:focus-visible,
+.psb-sub:focus-visible,
+.psb-foot__row:focus-visible { outline: 2px solid #BA955E; outline-offset: -2px; }
+.psb-row__icon { width: 16px; height: 16px; flex: 0 0 16px; }
+.psb-row__label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.psb-row--on { background: var(--psb-tint); color: hsl(var(--foreground)); font-weight: 600; }
+.psb-row--on:hover { background: var(--psb-tint); }
+.psb-row--parent-on { color: hsl(var(--foreground)); font-weight: 600; }
+.psb-row--on .psb-row__icon,
+.psb-row--parent-on .psb-row__icon { color: var(--psb-gold-text); }
+.psb-row__chev { width: 15px; height: 15px; flex: 0 0 15px; color: var(--psb-label); transition: transform 150ms ease; }
+.psb-row__chev--up { transform: rotate(180deg); }
+.psb-row__dot { width: 7px; height: 7px; border-radius: 9999px; background: #BA955E; }
+.psb-row__rail-dot { position: absolute; top: 7px; right: 16px; width: 7px; height: 7px; border-radius: 9999px; background: #BA955E; box-shadow: 0 0 0 2px var(--admin-surface-1, hsl(var(--card))); }
+.light .psb-row__rail-dot { box-shadow: 0 0 0 2px hsl(var(--card)); }
+.psb-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 9999px; background: #BA955E; color: #1a1408; font-size: 11px; font-weight: 700; line-height: 20px; text-align: center; }
+
+.psb-subs { position: relative; display: flex; flex-direction: column; gap: 2px; padding: 2px 0 4px; }
+.psb-subs::before { content: ""; position: absolute; left: 18px; top: 2px; bottom: 6px; width: 1px; background: var(--psb-guide); }
+.psb-sub {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px 0 37px;
+  border-radius: 8px;
+  color: hsl(var(--muted-foreground));
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.psb-sub:hover { background: var(--psb-hover); color: hsl(var(--foreground)); }
+.psb-sub--on { background: var(--psb-tint); color: var(--psb-gold-text); font-weight: 600; }
+.psb-sub--on:hover { background: var(--psb-tint); color: var(--psb-gold-text); }
+.psb-sub--on::before { content: ""; position: absolute; left: 16px; top: 10px; width: 5px; height: 12px; border-radius: 3px; background: #BA955E; }
+
+.psb-foot { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 10px; border-top: 1px solid hsl(var(--border)); }
+
 /* Sidebar and header: the surface colour with a hairline border, no drop
    shadow and no inner glow on nav items. Light mode sits them on white. */
 .portal-shell .portal-sidebar,
@@ -1417,14 +1535,24 @@ html.light[style*="--admin-surface-0"] [role="menu"].hdr-menu [role="menuitem"].
   background-color: hsl(var(--card));
 }
 
-/* Scrollbars: the sidebar's thin gold thumb on every portal scroller, on a
-   clear track. */
+/* Scrollbars: a thin neutral thumb on every portal scroller, on a clear
+   track, matching the sidebar (the submenu guide-line colour). The thumb is
+   transparent until the element scrolls (data-scrolling, set by
+   useScrollbarReveal in the admin and vendor layouts). */
+.portal-shell { --portal-scroll-thumb: #2E2E33; }
+.light .portal-shell { --portal-scroll-thumb: #E4E4E7; }
 .portal-shell main,
 .portal-shell main .overflow-auto,
 .portal-shell main .overflow-x-auto,
 .portal-shell .portal-sidebar nav {
   scrollbar-width: thin;
-  scrollbar-color: rgba(186, 149, 94, 0.35) transparent;
+  scrollbar-color: transparent transparent;
+}
+.portal-shell main[data-scrolling],
+.portal-shell main .overflow-auto[data-scrolling],
+.portal-shell main .overflow-x-auto[data-scrolling],
+.portal-shell .portal-sidebar nav[data-scrolling] {
+  scrollbar-color: var(--portal-scroll-thumb) transparent;
 }
 .portal-shell main::-webkit-scrollbar,
 .portal-shell main .overflow-auto::-webkit-scrollbar,
@@ -1443,8 +1571,14 @@ html.light[style*="--admin-surface-0"] [role="menu"].hdr-menu [role="menuitem"].
 .portal-shell main .overflow-auto::-webkit-scrollbar-thumb,
 .portal-shell main .overflow-x-auto::-webkit-scrollbar-thumb,
 .portal-shell .portal-sidebar nav::-webkit-scrollbar-thumb {
-  background-color: rgba(186, 149, 94, 0.35);
-  border-radius: 3px;
+  background-color: transparent;
+  border-radius: 9999px;
+}
+.portal-shell main[data-scrolling]::-webkit-scrollbar-thumb,
+.portal-shell main .overflow-auto[data-scrolling]::-webkit-scrollbar-thumb,
+.portal-shell main .overflow-x-auto[data-scrolling]::-webkit-scrollbar-thumb,
+.portal-shell .portal-sidebar nav[data-scrolling]::-webkit-scrollbar-thumb {
+  background-color: var(--portal-scroll-thumb);
 }
 
 /* Type: sentence-case buttons and badges at medium weight, 18px card titles
