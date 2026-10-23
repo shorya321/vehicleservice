@@ -191,6 +191,50 @@ function useIsMobile(breakpoint = 768) {
   return isMobile;
 }
 
+interface SidebarLogoProps {
+  logoUrl: string;
+  displayName: string;
+  variant: 'wordmark' | 'tile';
+  onError: () => void;
+}
+
+/**
+ * Tenant logos are usually wide wordmarks with dark ink on a transparent
+ * background. `object-contain` keeps the whole mark visible, and the light chip
+ * keeps dark ink readable on the dark sidebar.
+ */
+function SidebarLogo({ logoUrl, displayName, variant, onError }: SidebarLogoProps) {
+  if (variant === 'tile') {
+    return (
+      <div className="relative h-9 w-9 flex-shrink-0 rounded-xl overflow-hidden bg-white p-[3px] ring-2 ring-primary/20">
+        <Image
+          src={logoUrl}
+          alt={`${displayName} logo`}
+          height={30}
+          width={30}
+          className="h-full w-full object-contain"
+          unoptimized
+          onError={onError}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="inline-flex max-w-full items-center rounded-lg bg-white px-2 py-1 ring-1 ring-primary/20">
+      <Image
+        src={logoUrl}
+        alt={`${displayName} logo`}
+        height={32}
+        width={160}
+        className="h-8 w-auto max-w-full object-contain"
+        unoptimized
+        onError={onError}
+      />
+    </div>
+  );
+}
+
 function WorkspaceSelector({
   displayName,
   initials,
@@ -208,25 +252,17 @@ function WorkspaceSelector({
   isCollapsed: boolean;
   onToggle: () => void;
 }) {
+  const hasLogo = Boolean(logoUrl) && !logoError;
+  const showWordmark = hasLogo && !isCollapsed;
+
   return (
     <div className="relative z-10 flex items-center justify-between p-3 bg-gradient-to-r from-primary/5 via-transparent to-transparent">
       <div className={cn(
         'flex items-center gap-3 flex-1 min-w-0 p-2 rounded-xl',
         'hover:bg-primary/10 transition-all duration-200 cursor-pointer'
       )}>
-        {logoUrl && !logoError ? (
-          <div className="relative h-9 w-9 flex-shrink-0 rounded-xl overflow-hidden ring-2 ring-primary/20">
-            <Image
-              src={logoUrl}
-              alt={`${displayName} logo`}
-              height={36}
-              width={36}
-              className="h-9 w-9 object-cover"
-              unoptimized
-              onError={onLogoError}
-              priority={false}
-            />
-          </div>
+        {showWordmark ? null : hasLogo && logoUrl ? (
+          <SidebarLogo logoUrl={logoUrl} displayName={displayName} variant="tile" onError={onLogoError} />
         ) : (
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold text-sm ring-2 ring-primary/20">
             {initials}
@@ -242,8 +278,12 @@ function WorkspaceSelector({
               transition={{ duration: 0.2 }}
               className="flex-1 min-w-0 overflow-hidden"
             >
-              <p className="text-sm font-semibold truncate text-foreground">{displayName}</p>
-              <p className="text-xs text-primary">Business Portal</p>
+              {showWordmark && logoUrl ? (
+                <SidebarLogo logoUrl={logoUrl} displayName={displayName} variant="wordmark" onError={onLogoError} />
+              ) : (
+                <p className="text-sm font-semibold truncate text-foreground">{displayName}</p>
+              )}
+              <p className={cn('text-xs text-primary', showWordmark && 'mt-1')}>Business Portal</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -400,29 +440,22 @@ function SidebarContent({
     <LayoutGroup>
       {isMobileView ? (
         <div className="relative z-10 flex items-center justify-between p-3">
-          <div className="flex items-center gap-3">
-            {logoUrl && !logoError ? (
-              <div className="relative h-9 w-9 flex-shrink-0 rounded-xl overflow-hidden ring-2 ring-primary/20">
-                <Image
-                  src={logoUrl}
-                  alt={`${displayName} logo`}
-                  height={36}
-                  width={36}
-                  className="h-9 w-9 object-cover"
-                  unoptimized
-                  onError={onLogoError}
-                />
-              </div>
-            ) : (
+          {logoUrl && !logoError ? (
+            <div className="min-w-0">
+              <SidebarLogo logoUrl={logoUrl} displayName={displayName} variant="wordmark" onError={onLogoError} />
+              <p className="mt-1 text-xs text-primary">Business Portal</p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold text-sm ring-2 ring-primary/20">
                 {initials}
               </div>
-            )}
-            <div className="min-w-0">
-              <p className="text-sm font-semibold truncate text-foreground">{displayName}</p>
-              <p className="text-xs text-primary">Business Portal</p>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold truncate text-foreground">{displayName}</p>
+                <p className="text-xs text-primary">Business Portal</p>
+              </div>
             </div>
-          </div>
+          )}
 
           <Button variant="ghost" size="icon" onClick={closeMobile} aria-label="Close menu" className="text-muted-foreground hover:text-primary hover:bg-primary/10">
             <X className="h-5 w-5" />
