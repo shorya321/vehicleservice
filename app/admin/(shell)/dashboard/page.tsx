@@ -6,14 +6,14 @@ import {
   TrendingUp,
   TrendingDown,
   Car,
-  AlertTriangle,
   CheckCircle,
   DollarSign,
   Users,
   Truck,
   ArrowRight,
   MapPin,
-  AlertCircle,
+  Wallet,
+  CalendarCheck,
   FileText,
   Building2,
   UserPlus,
@@ -29,6 +29,7 @@ import { RefreshButton } from '@/components/dashboard/refresh-button'
 import { getAttentionCounts } from '@/lib/dashboard/attention-queries'
 import { getUpcomingPickups } from '@/lib/dashboard/upcoming-pickups-queries'
 import { UpcomingPickupsCard } from '@/components/dashboard/upcoming-pickups-card'
+import { getBookingsOverview } from '@/lib/dashboard/bookings-overview-queries'
 import { buildAttentionItems } from '@/lib/dashboard/attention'
 import { EmptyState } from '@/components/ui/empty-state'
 import { AnimatedPage } from '@/components/layout/animated-page'
@@ -69,11 +70,12 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
   // Fetch dashboard metrics, plus the revenue trend for the requested range.
   // No query string keeps the previous default view.
   const rangeParams = (await searchParams) ?? {}
-  const [metrics, revenueTrend, attention, pickups] = await Promise.all([
+  const [metrics, revenueTrend, attention, pickups, overview] = await Promise.all([
     getDashboardMetrics(),
     getRevenueTrendWithMeta(rangeParams),
     getAttentionCounts(),
     getUpcomingPickups(),
+    getBookingsOverview(),
   ])
   const attentionItems = buildAttentionItems(attention.counts)
 
@@ -92,8 +94,8 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
 
         {/* Primary KPI Cards */}
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-5">
-          <AnimatedCard delay={0.1}>
-            <Card className="admin-card-hover">
+          <AnimatedCard delay={0.1} className="h-full">
+            <Card className="admin-card-hover h-full">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-sm font-medium text-muted-foreground">Today&apos;s Revenue</span>
@@ -126,8 +128,52 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
             </Card>
           </AnimatedCard>
 
-          <AnimatedCard delay={0.2}>
-            <Card className="admin-card-hover">
+          <AnimatedCard delay={0.2} className="h-full">
+            <Card className="admin-card-hover h-full">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Revenue This Month</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
+                    <Wallet className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-primary">
+                    {overview.error ? '-' : formatCurrency(overview.total.monthRevenue)}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {overview.error ? 'Could not load' : `${formatCurrency(overview.total.allRevenue)} all time`}
+                </p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+
+          <AnimatedCard delay={0.3} className="h-full">
+            <Card className="admin-card-hover h-full">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-sm font-medium text-muted-foreground">Bookings This Month</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-500/20">
+                    <CalendarCheck className="h-4 w-4 text-teal-500" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-teal-700 dark:text-teal-400">
+                    {overview.error ? '-' : overview.total.monthBookings}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {overview.error
+                    ? 'Could not load'
+                    : `Customer ${overview.customer.monthBookings} · Business ${overview.business.monthBookings} · ${overview.total.monthCancelled} cancelled`}
+                </p>
+              </CardContent>
+            </Card>
+          </AnimatedCard>
+
+          <AnimatedCard delay={0.4} className="h-full">
+            <Card className="admin-card-hover h-full">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-sm font-medium text-muted-foreground">Active Bookings</span>
@@ -145,51 +191,8 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
             </Card>
           </AnimatedCard>
 
-          <AnimatedCard delay={0.3}>
-            <Card className="admin-card-hover">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <span className="text-sm font-medium text-muted-foreground">Pending Actions</span>
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
-                    <AlertTriangle className="h-4 w-4 text-amber-500" />
-                  </div>
-                </div>
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-400">
-                    {metrics.pendingActions}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">Need attention</p>
-              </CardContent>
-            </Card>
-          </AnimatedCard>
-
-          <AnimatedCard delay={0.4}>
-            <Card className="admin-card-hover">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <span className="text-sm font-medium text-muted-foreground">Rejected</span>
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-500/20">
-                    <AlertCircle className="h-4 w-4 text-red-500" />
-                  </div>
-                </div>
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold tracking-tight text-red-600 dark:text-red-400">
-                    {metrics.rejectedBookings}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">Need reassignment</p>
-                {metrics.rejectedBookings > 0 && (
-                  <Link href="/admin/bookings?status=rejected" className="text-xs text-primary hover:underline mt-1 inline-block">
-                    View rejected →
-                  </Link>
-                )}
-              </CardContent>
-            </Card>
-          </AnimatedCard>
-
-          <AnimatedCard delay={0.5}>
-            <Card className="admin-card-hover">
+          <AnimatedCard delay={0.5} className="h-full">
+            <Card className="admin-card-hover h-full">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-sm font-medium text-muted-foreground">Completed Today</span>
