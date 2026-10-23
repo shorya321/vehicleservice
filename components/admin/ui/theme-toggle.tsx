@@ -50,16 +50,12 @@ export function AdminThemeToggle({ className, size = "default" }: AdminThemeTogg
     <motion.button
       onClick={handleToggle}
       className={cn(
-        "relative inline-flex items-center justify-center rounded-lg",
-        "bg-transparent hover:bg-primary/10",
-        "border border-transparent hover:border-primary/20",
-        "text-muted-foreground hover:text-primary",
-        "transition-colors duration-200",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        // Bordered 36px header button, shared with the bell and profile
+        // trigger (.hdr-btn in app/admin/globals.css)
+        "hdr-btn",
         config.button,
         className
       )}
-      whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
     >
@@ -93,15 +89,6 @@ export function AdminThemeToggle({ className, size = "default" }: AdminThemeTogg
         )}
       </AnimatePresence>
 
-      {/* Glow effect on hover */}
-      <motion.div
-        className="absolute inset-0 rounded-lg opacity-0 pointer-events-none"
-        style={{
-          background: "radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%)",
-        }}
-        whileHover={{ opacity: 1 }}
-        transition={{ duration: 0.2 }}
-      />
     </motion.button>
   );
 }

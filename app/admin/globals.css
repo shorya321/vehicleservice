@@ -1136,13 +1136,13 @@ html.light[style*="--admin-surface-0"] .bg-cyan-500\/15.text-cyan-500 { color: r
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid hsl(var(--border));
-  background: hsl(var(--secondary));
+  background: hsl(var(--card));
   color: hsl(var(--muted-foreground));
   transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
 }
-.notif-trigger:hover { color: hsl(var(--foreground)); border-color: rgba(186, 149, 94, 0.35); }
+.notif-trigger:hover { color: hsl(var(--foreground)); border-color: rgba(186, 149, 94, 0.45); }
 .notif-trigger[data-state="open"] { border-color: rgba(186, 149, 94, 0.5); background: rgba(186, 149, 94, 0.08); color: #D4B07A; }
 .notif-trigger:focus-visible { outline: 2px solid #BA955E; outline-offset: 2px; }
 .notif-trigger__badge {
@@ -1298,6 +1298,85 @@ html.light[style*="--admin-surface-0"] .bg-cyan-500\/15.text-cyan-500 { color: r
 .light .notif-tone--amber { background: #FEF3C7; color: #B45309; }
 .light .notif-tone--emerald { background: #D1FAE5; color: #047857; }
 .light .notif-tone--zinc { background: #F4F4F5; color: #52525B; }
+
+/* Header controls (components/admin/header): status chip, the bordered
+   36px icon buttons (theme, profile; the bell uses .notif-trigger) and the
+   profile menu. Dark values first, .light overrides after. */
+.hdr-chip {
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 9999px;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+.hdr-chip--ok:hover { border-color: #BA955E; color: hsl(var(--foreground)); }
+.hdr-chip:focus-visible { outline: 2px solid #BA955E; outline-offset: 2px; }
+.hdr-chip__dot { width: 7px; height: 7px; border-radius: 9999px; background: #22C55E; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18); }
+.hdr-chip--warn { border-color: rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.14); color: #FBBF24; }
+.hdr-chip--warn .hdr-chip__dot { background: #F59E0B; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2); }
+.hdr-chip--danger { border-color: rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.12); color: #F87171; }
+.hdr-chip--danger .hdr-chip__dot { background: #EF4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2); }
+
+.hdr-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  color: hsl(var(--muted-foreground));
+  transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
+}
+.hdr-btn:hover { color: hsl(var(--foreground)); border-color: rgba(186, 149, 94, 0.45); }
+.hdr-btn[data-state="open"] { border-color: #BA955E; background: rgba(186, 149, 94, 0.12); color: #D4B07A; }
+.hdr-btn:focus-visible { outline: 2px solid #BA955E; outline-offset: 2px; }
+.hdr-face { background: linear-gradient(135deg, #2a2218, #3a3024); color: #E7D3B3; font-family: var(--admin-font-display); font-size: 11px; font-weight: 700; }
+
+html[style*="--admin-surface-0"] [role="menu"].hdr-menu {
+  border-radius: 12px;
+  background: hsl(var(--popover));
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+html.light[style*="--admin-surface-0"] [role="menu"].hdr-menu {
+  box-shadow: 0 24px 48px -16px rgba(9, 9, 11, 0.18), 0 2px 6px rgba(9, 9, 11, 0.05);
+}
+.hdr-menu__who { display: flex; align-items: center; gap: 12px; padding: 16px; }
+.hdr-menu__initials { background: rgba(186, 149, 94, 0.12); color: #D4B07A; font-family: var(--admin-font-display); font-size: 14px; font-weight: 700; }
+.hdr-menu__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--admin-font-display); font-size: 14px; font-weight: 700; color: hsl(var(--foreground)); }
+.hdr-menu__mail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: hsl(var(--muted-foreground)); }
+.hdr-menu__role { align-self: flex-start; margin-top: 4px; padding: 1px 8px; border-radius: 9999px; background: rgba(186, 149, 94, 0.12); color: #D4B07A; font-size: 11px; font-weight: 600; }
+.hdr-menu .hdr-menu__sep { margin: 0; background: hsl(var(--border)); }
+.hdr-menu__items { display: flex; flex-direction: column; gap: 2px; padding: 6px; }
+html[style*="--admin-surface-0"] [role="menu"].hdr-menu [role="menuitem"].hdr-menu__item {
+  gap: 10px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+html[style*="--admin-surface-0"] [role="menu"].hdr-menu [role="menuitem"].hdr-menu__item:not(.text-destructive) > svg { color: hsl(var(--muted-foreground)); }
+html[style*="--admin-surface-0"] [role="menu"].hdr-menu [role="menuitem"].hdr-menu__item:not(.text-destructive):is([data-highlighted], :focus) {
+  background-color: rgba(186, 149, 94, 0.12);
+  color: hsl(var(--foreground));
+}
+html[style*="--admin-surface-0"] [role="menu"].hdr-menu [role="menuitem"].hdr-menu__item:not(.text-destructive):is([data-highlighted], :focus) > svg { color: #D4B07A; }
+
+.light .hdr-chip--warn { background: #FEF3C7; color: #B45309; }
+.light .hdr-chip--danger { background: rgba(220, 38, 38, 0.08); color: #B91C1C; }
+.light .hdr-chip--ok .hdr-chip__dot { background: #16A34A; }
+.light .hdr-btn[data-state="open"],
+.light .hdr-menu__initials,
+.light .hdr-menu__role { color: #85663A; }
+html.light[style*="--admin-surface-0"] [role="menu"].hdr-menu [role="menuitem"].hdr-menu__item:not(.text-destructive):is([data-highlighted], :focus) > svg { color: #85663A; }
 
 /* Sidebar and header: the surface colour with a hairline border, no drop
    shadow and no inner glow on nav items. Light mode sits them on white. */

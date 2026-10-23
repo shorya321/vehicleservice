@@ -5,14 +5,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { userLogout } from "@/lib/auth/user-actions"
 import { VendorNotificationBell } from "@/components/vendor/notifications/notification-bell"
@@ -24,7 +16,6 @@ import {
   ClipboardPlus,
   DollarSign,
   User,
-  LogOut,
   Menu,
   X,
   BarChart3,
@@ -41,6 +32,9 @@ import {
 import { useVendorData } from "@/lib/vendor/vendor-data-context"
 import { VendorCommandPalette } from "@/components/vendor/vendor-command-palette"
 import { useCommandPalette } from "@/lib/hooks/use-command-palette"
+import { vendorProfileStatus } from "@/lib/portal-header/controls"
+import { StatusChip } from "@/components/admin/header/status-chip"
+import { ProfileMenu, type ProfileMenuLink } from "@/components/admin/header/profile-menu"
 import { NavigationProgressProvider } from "./navigation-progress/navigation-progress-provider"
 import { TopProgressBar } from "./navigation-progress/top-progress-bar"
 import { ContentLoader } from "./navigation-progress/content-loader"
@@ -109,6 +103,11 @@ const navGroups: NavGroup[] = [
 ]
 
 const VENDOR_NAV_LABELS = flattenNavLabels(navGroups)
+
+const VENDOR_PROFILE_LINKS: ProfileMenuLink[] = [
+  { href: "/vendor/account", label: "My account", icon: UserCircle },
+  { href: "/vendor/profile", label: "Business profile", icon: User },
+]
 
 export function VendorLayout({ children }: VendorLayoutProps) {
   const { user, vendorApplication } = useVendorData()
@@ -340,55 +339,19 @@ export function VendorLayout({ children }: VendorLayoutProps) {
               </Button>
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Theme Toggle */}
+            <div className="flex items-center gap-2.5">
+              <StatusChip status={vendorProfileStatus(vendorApplication?.status)} />
               <AdminThemeToggle size="default" />
-
-              {/* Notification Bell */}
               <VendorNotificationBell />
-
-              {/* User menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 h-9 px-2 rounded-lg hover:bg-primary/10">
-                    <Avatar className="h-8 w-8 ring-2 ring-primary/20">
-                      <AvatarImage src={user?.profile?.avatar_url || undefined} />
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
-                        {user?.profile?.full_name ? getInitials(user.profile.full_name) : 'VN'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <ChevronDown className="h-4 w-4 text-primary hidden sm:block" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 rounded-xl !bg-popover !border-border shadow-lg" align="end" sideOffset={8}>
-                  <DropdownMenuLabel className="font-normal !text-primary">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none text-foreground">{user?.profile?.full_name || 'Vendor'}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user?.email || ''}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="!bg-border" />
-                  <DropdownMenuItem asChild className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-                    <Link href="/vendor/account">
-                      <UserCircle className="mr-2 h-4 w-4 text-primary" />
-                      My Account
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-                    <Link href="/vendor/profile">
-                      <User className="mr-2 h-4 w-4 text-primary" />
-                      Business Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="!bg-border" />
-                  <DropdownMenuItem onClick={handleLogout} className="!text-destructive hover:!text-destructive focus:!text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <ProfileMenu
+                name={user?.profile?.full_name}
+                email={user?.email}
+                avatarUrl={user?.profile?.avatar_url}
+                roleLabel="Vendor"
+                fallbackName="Vendor"
+                links={VENDOR_PROFILE_LINKS}
+                onSignOut={handleLogout}
+              />
             </div>
 
             <VendorCommandPalette open={commandOpen} onOpenChange={setCommandOpen} />

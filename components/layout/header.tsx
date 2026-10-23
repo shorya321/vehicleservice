@@ -1,17 +1,7 @@
 "use client"
 
-import { Search, Menu, LogOut, User, ChevronDown, Settings } from "lucide-react"
+import { Search, Menu, User, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useRouter } from "next/navigation"
 import { logout } from "@/lib/auth/actions"
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
@@ -19,18 +9,28 @@ import { NotificationBell } from "@/components/admin/notifications/notification-
 import { AdminThemeToggle } from "@/components/admin/ui/theme-toggle"
 import { AdminCommandPalette } from "@/components/admin/admin-command-palette"
 import { useCommandPalette } from "@/lib/hooks/use-command-palette"
+import { readSiteFlags } from "@/lib/site-settings/flags"
+import { adminSiteStatus } from "@/lib/portal-header/controls"
+import { StatusChip } from "@/components/admin/header/status-chip"
+import { ProfileMenu, type ProfileMenuLink } from "@/components/admin/header/profile-menu"
+
+const ADMIN_PROFILE_LINKS: ProfileMenuLink[] = [
+  { href: "/admin/profile", label: "Profile settings", icon: User },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
+]
 
 interface HeaderProps {
   onMenuClick?: () => void
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
-  const router = useRouter()
   const [userProfile, setUserProfile] = useState<{
     full_name: string | null
     email: string
     avatar_url: string | null
   } | null>(null)
+  // null until the flag loads, so the chip never flashes the wrong state
+  const [maintenanceMode, setMaintenanceMode] = useState<boolean | null>(null)
   const supabase = createClient()
   const { isOpen: commandOpen, setIsOpen: setCommandOpen } = useCommandPalette()
 
@@ -51,19 +51,8 @@ export function Header({ onMenuClick }: HeaderProps) {
     }
 
     fetchUserProfile()
+    readSiteFlags(supabase).then((flags) => setMaintenanceMode(flags.maintenanceMode))
   }, [supabase])
-
-  const getInitials = (name: string | null, email: string) => {
-    if (name) {
-      return name
-        .split(' ')
-        .map(n => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-    }
-    return email.slice(0, 2).toUpperCase()
-  }
 
   const handleSignOut = async () => {
     await logout()
@@ -95,55 +84,19 @@ export function Header({ onMenuClick }: HeaderProps) {
         </Button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
+        <StatusChip status={maintenanceMode === null ? null : adminSiteStatus(maintenanceMode)} />
         <AdminThemeToggle size="default" />
         <NotificationBell />
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" aria-label="Account menu" className="flex items-center gap-2 h-9 px-2 rounded-lg hover:bg-primary/10">
-              <Avatar className="h-8 w-8 ring-2 ring-primary/20">
-                <AvatarImage
-                  src={userProfile?.avatar_url || undefined}
-                  alt={userProfile?.full_name || userProfile?.email || "User"}
-                />
-                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
-                  {userProfile ? getInitials(userProfile.full_name, userProfile.email) : 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <ChevronDown className="h-4 w-4 text-primary hidden sm:block" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 rounded-xl !bg-popover !border-border shadow-lg" sideOffset={8}>
-            <DropdownMenuLabel className="font-normal !text-primary">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none text-foreground">
-                  {userProfile?.full_name || 'Admin User'}
-                </p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  {userProfile?.email || 'admin@example.com'}
-                </p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator className="!bg-border" />
-            <DropdownMenuItem onClick={() => router.push('/admin/profile')} className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-              <User className="mr-2 h-4 w-4 text-primary" />
-              Profile Settings
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push('/admin/settings')} className="!text-foreground hover:!text-foreground focus:!text-foreground hover:!bg-primary/10 focus:!bg-primary/10 cursor-pointer">
-              <Settings className="mr-2 h-4 w-4 text-primary" />
-              Support
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="!bg-border" />
-            <DropdownMenuItem
-              className="!text-destructive hover:!text-destructive focus:!text-destructive hover:!bg-destructive/10 focus:!bg-destructive/10 cursor-pointer"
-              onClick={handleSignOut}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ProfileMenu
+          name={userProfile?.full_name}
+          email={userProfile?.email}
+          avatarUrl={userProfile?.avatar_url}
+          roleLabel="Administrator"
+          fallbackName="Admin User"
+          links={ADMIN_PROFILE_LINKS}
+          onSignOut={handleSignOut}
+        />
       </div>
 
       <AdminCommandPalette open={commandOpen} onOpenChange={setCommandOpen} />

@@ -12,6 +12,7 @@ export interface VendorData {
   }
   vendorApplication?: {
     business_name?: string
+    status?: string
   }
 }
 
