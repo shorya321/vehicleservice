@@ -105,9 +105,14 @@ export async function uploadSiteLogo(
       return { url: null, error: 'No file provided' }
     }
 
+    const isFavicon = logoType === 'favicon'
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']
-    if (!allowedTypes.includes(file.type)) {
-      return { url: null, error: 'Invalid file type. Allowed: JPEG, PNG, WebP, SVG' }
+    const faviconTypes = ['image/png', 'image/svg+xml', 'image/x-icon', 'image/vnd.microsoft.icon']
+    if (!(isFavicon ? faviconTypes : allowedTypes).includes(file.type)) {
+      return {
+        url: null,
+        error: isFavicon ? 'Invalid file type. Allowed: PNG, SVG, ICO' : 'Invalid file type. Allowed: JPEG, PNG, WebP, SVG',
+      }
     }
 
     const maxSize = 2 * 1024 * 1024
@@ -120,9 +125,19 @@ export async function uploadSiteLogo(
       'image/png': 'png',
       'image/webp': 'webp',
       'image/svg+xml': 'svg',
+      'image/x-icon': 'ico',
+      'image/vnd.microsoft.icon': 'ico',
     }
     const ext = MIME_TO_EXT[file.type] ?? 'png'
-    const prefix = logoType === 'footer' ? 'footer_logo' : 'header_logo'
+    // Whitelisted, since the type arrives from the client and becomes a path.
+    const PREFIX_BY_TYPE: Record<string, string> = {
+      header: 'header_logo',
+      header_dark: 'header_logo_dark',
+      footer: 'footer_logo',
+      footer_dark: 'footer_logo_dark',
+      favicon: 'favicon',
+    }
+    const prefix = PREFIX_BY_TYPE[logoType ?? ''] ?? 'header_logo'
     const fileName = `site-logos/${prefix}_${Date.now()}.${ext}`
 
     const adminClient = createAdminClient()

@@ -6,6 +6,7 @@ import { ThemeProvider as NextThemesProvider } from '@/components/theme-provider
 import { Toaster } from 'sonner'
 import { hexToHsl } from '@/lib/business/branding-utils'
 import { getSiteSettings } from '@/lib/site-settings/server'
+import { faviconIcons } from '@/lib/site-settings/logo'
 import { getSeoSettings } from '@/lib/seo/server'
 import { titleSuffix } from '@/lib/seo/build-metadata'
 import { getSiteUrl } from '@/lib/seo/site-url'
@@ -38,7 +39,7 @@ const playfairDisplay = Playfair_Display({
 
 export async function generateMetadata(): Promise<Metadata> {
   // Site-wide noindex while pre-launch demo content is blocked from crawlers.
-  const [{ block_search_indexing, brand_name }, seo] = await Promise.all([getSiteSettings(), getSeoSettings()])
+  const [{ block_search_indexing, brand_name, favicon_url }, seo] = await Promise.all([getSiteSettings(), getSeoSettings()])
   const verification = {
     ...(seo.google_verification ? { google: seo.google_verification } : {}),
     ...(seo.bing_verification ? { other: { 'msvalidate.01': seo.bing_verification } } : {}),
@@ -54,6 +55,7 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s${titleSuffix(seo, brand_name)}`,
     },
     description: seo.default_description,
+    icons: faviconIcons({ favicon_url }),
     openGraph: {
       type: 'website',
       siteName: brand_name,

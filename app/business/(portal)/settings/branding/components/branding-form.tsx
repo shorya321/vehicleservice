@@ -23,6 +23,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Loader2, Palette, Save, Sparkles, Moon, Sun, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
 import { LogoUpload } from './logo-upload'
+import { FaviconUpload } from './favicon-upload'
 import { LivePreview } from './live-preview'
 import {
   FULL_COLOR_PRESETS,
@@ -65,7 +66,10 @@ type BrandingFormValues = z.infer<typeof brandingFormSchema>
 
 interface CurrentBranding {
   brand_name: string | null
+  /** Legal name; the favicon initials use it, as the sidebar tile does. */
+  business_name: string
   logo_url: string | null
+  favicon_url: string | null
   theme_config: ThemeConfig
 }
 
@@ -278,6 +282,12 @@ export function BrandingForm({ businessAccountId, currentBranding }: BrandingFor
         businessAccountId={businessAccountId}
         currentLogoUrl={logoUrl}
         onLogoUpdate={handleLogoUpdate}
+      />
+
+      <FaviconUpload
+        currentFaviconUrl={currentBranding.favicon_url}
+        businessName={currentBranding.business_name}
+        primaryColor={form.watch('accent_primary')}
       />
 
       {/* Brand Colors & Theme */}

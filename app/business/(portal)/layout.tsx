@@ -9,6 +9,7 @@
  * - Theme: Dark/Light mode support via theme_config JSONB
  */
 
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { BusinessSidebar } from './components/business-sidebar';
@@ -18,11 +19,50 @@ import { BusinessPortalContent } from './components/business-portal-content';
 import { normalizeBusinessRole } from '@/lib/business/api-utils';
 import { parseThemeConfig } from '@/lib/business/branding-utils';
 import { buildThemeStyleSheet, THEME_MODE_BOOTSTRAP } from '@/lib/business/theme-vars';
+import { businessFaviconIcons } from '@/lib/business/favicon';
 
 // Import business-specific design system
 import '@/app/business/globals.css';
 
 export const dynamic = 'force-dynamic'
+
+/**
+ * The tenant's own tab icon: their upload, or their initials in their colour.
+ * Best effort: any failure leaves the page with no icon, never an error, and
+ * the layout below still does the auth redirect.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return {};
+
+    const { data } = await supabase
+      .from('business_users')
+      .select('business_accounts (business_name, favicon_url, theme_config)')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    const account = data?.business_accounts as
+      | { business_name: string; favicon_url: string | null; theme_config: unknown }
+      | null
+      | undefined;
+    if (!account) return {};
+
+    return {
+      icons: businessFaviconIcons({
+        faviconUrl: account.favicon_url,
+        businessName: account.business_name,
+        primaryColor: parseThemeConfig(account.theme_config).accent.primary,
+      }),
+    };
+  } catch (error) {
+    console.error('[BusinessPortalLayout] Favicon metadata failed:', error);
+    return {};
+  }
+}
 
 export default async function BusinessPortalLayout({
   children,

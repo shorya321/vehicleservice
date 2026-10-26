@@ -117,6 +117,8 @@ export const BUSINESS_ACTIVITY_ACTIONS = {
   'settings.theme_colors_changed': { category: 'settings', severity: 'info', entityType: 'setting', icon: 'Palette' },
   'settings.logo_uploaded': { category: 'settings', severity: 'info', entityType: 'setting', icon: 'ImagePlus' },
   'settings.logo_removed': { category: 'settings', severity: 'info', entityType: 'setting', icon: 'ImageOff' },
+  'settings.favicon_uploaded': { category: 'settings', severity: 'info', entityType: 'setting', icon: 'ImagePlus' },
+  'settings.favicon_removed': { category: 'settings', severity: 'info', entityType: 'setting', icon: 'ImageOff' },
   'settings.quotation_prefix_changed': { category: 'settings', severity: 'important', entityType: 'setting', icon: 'Hash' },
   'settings.payment_settings_updated': { category: 'settings', severity: 'important', entityType: 'setting', icon: 'Wallet' },
   'settings.wallet_alerts_updated': { category: 'settings', severity: 'info', entityType: 'setting', icon: 'Bell' },

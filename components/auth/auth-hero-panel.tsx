@@ -18,7 +18,7 @@ export function AuthHeroPanel({ animated = true }: AuthHeroPanelProps) {
       <aside aria-label="Membership benefits" className="auth-hero-panel relative">
         <div className="relative z-10 flex flex-1 flex-col items-center p-8 lg:p-12">
           <div className="w-full max-w-md">
-            <AuthLogo className="text-2xl" />
+            <AuthLogo className="text-2xl" variant="horizontal" />
           </div>
           <div className="flex flex-1 flex-col items-center justify-center gap-8">
             <div className="max-w-md">
@@ -53,7 +53,7 @@ export function AuthHeroPanel({ animated = true }: AuthHeroPanelProps) {
     <aside aria-label="Membership benefits" className="auth-hero-panel relative">
       <div className="relative z-10 flex flex-1 flex-col items-center p-8 lg:p-12">
         <motion.div className="w-full max-w-md" {...fadeUp(0, reduceMotion)}>
-          <AuthLogo className="text-2xl" />
+          <AuthLogo className="text-2xl" variant="horizontal" />
         </motion.div>
 
         <div className="flex flex-1 flex-col items-center justify-center gap-8">

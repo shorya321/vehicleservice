@@ -1,6 +1,7 @@
 import * as React from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import { BrandLogo } from '@/components/layout/brand-logo'
+import { resolveSiteLogo } from '@/lib/site-settings/logo'
 import type { SiteSettingsConfig } from '@/lib/site-settings/types'
 import {
   FOOTER_BLURB,
@@ -22,16 +23,6 @@ const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-rich)]'
 
 const LINK_CLASS = `footer-link rounded-[2px] ${FOCUS_RING}`
-
-function Wordmark({ name }: { name: string }): React.JSX.Element {
-  if (!name.includes(' ')) return <>{name}</>
-  const words = name.split(' ')
-  return (
-    <>
-      {words.slice(0, -1).join(' ')} <span>{words[words.length - 1]}</span>
-    </>
-  )
-}
 
 function FooterAnchor({ href, children }: { href: string; children: React.ReactNode }): React.JSX.Element {
   // Hash links stay plain anchors so the browser scrolls to the section.
@@ -81,6 +72,7 @@ function Socials({ links }: { links: SiteSettingsConfig['social_links'] }): Reac
  * See `.site-footer` in app/globals.css.
  */
 export function FooterPanel({ settings }: FooterPanelProps): React.JSX.Element {
+  const logo = resolveSiteLogo(settings, 'footer')
   return (
     <>
       {/* Outline anchor, so the column heads and guarantee labels below sit
@@ -93,17 +85,7 @@ export function FooterPanel({ settings }: FooterPanelProps): React.JSX.Element {
             aria-label={`${settings.brand_name}, go to homepage`}
             className={`footer-logo footer-wordmark inline-block rounded-[4px] ${FOCUS_RING}`}
           >
-            {settings.footer_logo_url ? (
-              <Image
-                src={settings.footer_logo_url}
-                alt={settings.brand_name}
-                width={180}
-                height={48}
-                className="h-10 w-auto object-contain"
-              />
-            ) : (
-              <Wordmark name={settings.brand_name} />
-            )}
+            <BrandLogo alt={settings.brand_name} logo={logo} className={logo.custom ? 'h-10 max-w-[220px]' : 'h-20'} />
           </Link>
           <p className="site-footer__blurb">{FOOTER_BLURB}</p>
         </div>

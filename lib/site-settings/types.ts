@@ -29,8 +29,14 @@ export interface SocialLinks {
 
 export interface SiteSettingsConfig {
   brand_name: string
+  /** Light theme upload. Also shown on dark when no dark upload exists. */
   header_logo_url: string | null
+  /** Dark theme upload. Also shown on light when no light upload exists. */
+  header_logo_dark_url: string | null
   footer_logo_url: string | null
+  footer_logo_dark_url: string | null
+  /** Browser tab and home-screen icon. Null shows the bundled Infinia icon. */
+  favicon_url: string | null
   copyright_text: string
   support_email: string
   info_email: string
@@ -77,7 +83,10 @@ export const DEFAULT_SOCIAL_LINKS: SocialLinks = {
 export const DEFAULT_SITE_SETTINGS: SiteSettingsConfig = {
   brand_name: 'Infinia Transfers',
   header_logo_url: null,
+  header_logo_dark_url: null,
   footer_logo_url: null,
+  footer_logo_dark_url: null,
+  favicon_url: null,
   copyright_text: 'Infinia Transfers',
   support_email: 'support@infiniatransfers.com',
   info_email: 'info@infiniatransfers.com',
@@ -126,7 +135,10 @@ export function parseSiteSettings(raw: unknown): SiteSettingsConfig {
   return {
     brand_name: typeof obj.brand_name === 'string' ? obj.brand_name : DEFAULT_SITE_SETTINGS.brand_name,
     header_logo_url: typeof obj.header_logo_url === 'string' ? obj.header_logo_url : null,
+    header_logo_dark_url: typeof obj.header_logo_dark_url === 'string' ? obj.header_logo_dark_url : null,
     footer_logo_url: typeof obj.footer_logo_url === 'string' ? obj.footer_logo_url : null,
+    footer_logo_dark_url: typeof obj.footer_logo_dark_url === 'string' ? obj.footer_logo_dark_url : null,
+    favicon_url: typeof obj.favicon_url === 'string' ? obj.favicon_url : null,
     copyright_text: typeof obj.copyright_text === 'string' ? obj.copyright_text : DEFAULT_SITE_SETTINGS.copyright_text,
     support_email: typeof obj.support_email === 'string' ? obj.support_email : DEFAULT_SITE_SETTINGS.support_email,
     info_email: typeof obj.info_email === 'string' ? obj.info_email : DEFAULT_SITE_SETTINGS.info_email,

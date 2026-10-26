@@ -6,7 +6,10 @@ import { MAX_BUSINESS_MIN_LEAD_HOURS } from './types'
 export const siteSettingsSchema = z.object({
   brand_name: z.string().min(1, 'Brand name is required').max(100),
   header_logo_url: z.string().nullable(),
+  header_logo_dark_url: z.string().nullable(),
   footer_logo_url: z.string().nullable(),
+  footer_logo_dark_url: z.string().nullable(),
+  favicon_url: z.string().nullable(),
   copyright_text: z.string().min(1, 'Copyright text is required').max(200),
   support_email: z.string().email('Invalid email address'),
   info_email: z.string().email('Invalid email address').or(z.literal('')),

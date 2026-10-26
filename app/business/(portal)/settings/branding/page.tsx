@@ -49,6 +49,7 @@ export default async function BrandingSettingsPage() {
         business_name,
         brand_name,
         logo_url,
+        favicon_url,
         theme_config,
         custom_domain,
         custom_domain_verified,
@@ -73,6 +74,7 @@ export default async function BrandingSettingsPage() {
     business_name: string;
     brand_name: string | null;
     logo_url: string | null;
+    favicon_url: string | null;
     theme_config: unknown;
     custom_domain: string | null;
     custom_domain_verified: boolean | null;
@@ -136,7 +138,9 @@ export default async function BrandingSettingsPage() {
         businessAccountId={businessAccount.id}
         currentBranding={{
           brand_name: businessAccount.brand_name || businessAccount.business_name,
+          business_name: businessAccount.business_name,
           logo_url: businessAccount.logo_url,
+          favicon_url: businessAccount.favicon_url,
           theme_config: themeConfig,
         }}
       />

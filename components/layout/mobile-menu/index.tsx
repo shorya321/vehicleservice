@@ -2,6 +2,8 @@
 
 import { motion, type Variants } from 'motion/react'
 import Link from 'next/link'
+import { BrandLogo } from '@/components/layout/brand-logo'
+import { resolveSiteLogo } from '@/lib/site-settings/logo'
 import { usePathname } from 'next/navigation'
 import {
   Sheet,
@@ -71,6 +73,7 @@ export function MobileMenu({
   siteSettings,
 }: MobileMenuProps) {
   const settings = siteSettings ?? DEFAULT_SITE_SETTINGS
+  const logo = resolveSiteLogo(settings, 'header')
   const pathname = usePathname()
   const reducedMotion = useReducedMotion() ?? false
 
@@ -114,9 +117,7 @@ export function MobileMenu({
         {/* Header row */}
         <div className="relative flex items-center justify-between px-4 py-3 border-b border-[rgba(var(--gold-rgb),0.1)]">
           <Link href="/" onClick={close} className="footer-logo text-xl hover:opacity-80 transition-opacity duration-300">
-            {settings.brand_name.includes(' ') ? (
-              <>{settings.brand_name.split(' ').slice(0, -1).join(' ')} <span>{settings.brand_name.split(' ').pop()}</span></>
-            ) : settings.brand_name}
+            <BrandLogo alt={settings.brand_name} logo={logo} className={logo.custom ? 'h-8 max-w-[180px]' : 'h-8'} />
           </Link>
           <button
             onClick={close}

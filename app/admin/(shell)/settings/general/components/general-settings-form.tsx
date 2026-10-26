@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { ImageUpload } from '@/components/ui/image-upload'
 import { Switch } from '@/components/ui/switch'
 import {
   Loader2,
@@ -17,7 +16,6 @@ import {
   Mail,
   Phone,
   Share2,
-  Image as ImageIcon,
   Type,
   Wrench,
   EyeOff,
@@ -37,6 +35,8 @@ import { updateSiteSettings, uploadSiteLogo, removeSiteLogo } from '../actions'
 import { MAX_BUSINESS_MIN_LEAD_HOURS, type SiteSettingsConfig } from '@/lib/site-settings/types'
 import { siteSettingsSchema, type SiteSettingsFormValues } from '@/lib/site-settings/schema'
 import { TripTypesSettingsCard } from './trip-types-settings-card'
+import { LogosSettingsCard, type LogoUploadType } from './logos-settings-card'
+import { FaviconSettingsCard } from './favicon-settings-card'
 
 interface GeneralSettingsFormProps {
   currentSettings: SiteSettingsConfig
@@ -91,7 +91,10 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
     defaultValues: {
       brand_name: currentSettings.brand_name,
       header_logo_url: currentSettings.header_logo_url,
+      header_logo_dark_url: currentSettings.header_logo_dark_url,
       footer_logo_url: currentSettings.footer_logo_url,
+      footer_logo_dark_url: currentSettings.footer_logo_dark_url,
+      favicon_url: currentSettings.favicon_url,
       copyright_text: currentSettings.copyright_text,
       support_email: currentSettings.support_email,
       info_email: currentSettings.info_email,
@@ -129,7 +132,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
     }
   }
 
-  async function handleLogoUpload(file: File, type: 'header' | 'footer'): Promise<string> {
+  async function handleLogoUpload(file: File, type: LogoUploadType): Promise<string> {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('type', type)
@@ -392,48 +395,13 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
           </CardContent>
         </Card>
 
-        {/* Logos Section */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <ImageIcon className="h-5 w-5" />
-              </div>
-              <div className="space-y-1.5">
-                <CardTitle>Logos</CardTitle>
-                <CardDescription>Upload logos for the header and footer. If not set, the brand name text is used.</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-8 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Header Logo</Label>
-                <ImageUpload
-                  value={form.watch('header_logo_url')}
-                  onChange={(url) => form.setValue('header_logo_url', url, { shouldDirty: true })}
-                  onUpload={(file) => handleLogoUpload(file, 'header')}
-                  onRemove={handleLogoRemove}
-                  maxSize={2}
-                  accept="image/jpeg,image/png,image/webp,image/svg+xml"
-                />
-                <p className="text-xs text-muted-foreground">Recommended: SVG or PNG with transparent background, max 2MB</p>
-              </div>
-              <div className="space-y-2">
-                <Label>Footer Logo</Label>
-                <ImageUpload
-                  value={form.watch('footer_logo_url')}
-                  onChange={(url) => form.setValue('footer_logo_url', url, { shouldDirty: true })}
-                  onUpload={(file) => handleLogoUpload(file, 'footer')}
-                  onRemove={handleLogoRemove}
-                  maxSize={2}
-                  accept="image/jpeg,image/png,image/webp,image/svg+xml"
-                />
-                <p className="text-xs text-muted-foreground">Recommended: SVG or PNG with transparent background, max 2MB</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <LogosSettingsCard form={form} onUpload={handleLogoUpload} onRemove={handleLogoRemove} />
+
+        <FaviconSettingsCard
+          form={form}
+          onUpload={(file) => handleLogoUpload(file, 'favicon')}
+          onRemove={handleLogoRemove}
+        />
 
         {/* Contact Section */}
         <Card>

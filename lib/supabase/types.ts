@@ -926,6 +926,7 @@ export type Database = {
           id: string
           last_low_balance_alert_at: string | null
           last_monthly_statement_at: string | null
+          favicon_url: string | null
           logo_url: string | null
           max_daily_spend: number | null
           max_monthly_spend: number | null
@@ -965,6 +966,7 @@ export type Database = {
           id?: string
           last_low_balance_alert_at?: string | null
           last_monthly_statement_at?: string | null
+          favicon_url?: string | null
           logo_url?: string | null
           max_daily_spend?: number | null
           max_monthly_spend?: number | null
@@ -1004,6 +1006,7 @@ export type Database = {
           id?: string
           last_low_balance_alert_at?: string | null
           last_monthly_statement_at?: string | null
+          favicon_url?: string | null
           logo_url?: string | null
           max_daily_spend?: number | null
           max_monthly_spend?: number | null

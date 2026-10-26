@@ -15,7 +15,8 @@ import { useCurrency } from '@/lib/currency/context'
 import { HamburgerButton } from '@/components/layout/mobile-menu/hamburger-button'
 import type { SiteSettingsConfig } from '@/lib/site-settings/types'
 import { DEFAULT_SITE_SETTINGS } from '@/lib/site-settings/types'
-import Image from 'next/image'
+import { BrandLogo } from '@/components/layout/brand-logo'
+import { resolveSiteLogo } from '@/lib/site-settings/logo'
 import dynamic from 'next/dynamic'
 
 // The drawer (motion + Radix Sheet) is client-only behind the mounted gate
@@ -44,6 +45,7 @@ export function PublicHeader({
   siteSettings,
 }: PublicHeaderProps) {
   const settings = siteSettings ?? DEFAULT_SITE_SETTINGS
+  const logo = resolveSiteLogo(settings, 'header')
   const { allCurrencies } = useCurrency()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -177,27 +179,19 @@ export function PublicHeader({
             container rather than against whatever space the wordmark leaves.
             brand_name is white-label configurable, so justify-between alone
             moved the nav for every tenant. */}
-        <div className="flex items-center justify-between xl:grid xl:grid-cols-[1fr_auto_1fr]">
+        <div className="flex items-center justify-between gap-3 xl:grid xl:grid-cols-[1fr_auto_1fr] xl:gap-0">
           {/* Logo */}
           <Link
             href="/"
             aria-label={`${settings.brand_name}, go to homepage`}
             className="footer-logo header-logo hover:opacity-80 transition-opacity duration-200"
           >
-            {settings.header_logo_url ? (
-              <Image
-                src={settings.header_logo_url}
-                alt={settings.brand_name}
-                width={160}
-                height={40}
-                className="h-8 w-auto object-contain"
-                priority
-              />
-            ) : (
-              <>{settings.brand_name.includes(' ') ? (
-                <>{settings.brand_name.split(' ').slice(0, -1).join(' ')} <span>{settings.brand_name.split(' ').pop()}</span></>
-              ) : settings.brand_name}</>
-            )}
+            <BrandLogo
+              alt={settings.brand_name}
+              logo={logo}
+              className={logo.custom ? 'h-8 max-w-[180px]' : 'h-7 sm:h-9'}
+              priority
+            />
           </Link>
 
           {/* Navigation Links */}

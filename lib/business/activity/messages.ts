@@ -87,6 +87,8 @@ const TEMPLATES: Record<string, string> = {
   'settings.theme_colors_changed': '{actor} updated the portal colours',
   'settings.logo_uploaded': '{actor} uploaded a new logo',
   'settings.logo_removed': '{actor} removed the logo',
+  'settings.favicon_uploaded': '{actor} uploaded a new favicon',
+  'settings.favicon_removed': '{actor} removed the favicon',
   'settings.quotation_prefix_changed': '{actor} changed the quotation number prefix',
   'settings.payment_settings_updated': '{actor} updated payment settings',
   'settings.wallet_alerts_updated': '{actor} updated wallet alert preferences',
