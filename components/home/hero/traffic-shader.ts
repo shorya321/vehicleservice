@@ -26,16 +26,31 @@ export interface TrafficStyle {
   strength: number
 }
 
-const [, VIEW_Y, VIEW_W, VIEW_H] = VIEW_BOX.split(' ').map(Number)
-export const MAP_VIEW_Y = VIEW_Y
+/** A window onto the map, in map units: an SVG viewBox. */
+export interface MapView {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+const [HERO_X, HERO_Y, HERO_W, HERO_H] = VIEW_BOX.split(' ').map(Number)
+export const HERO_MAP_VIEW: MapView = { x: HERO_X, y: HERO_Y, width: HERO_W, height: HERO_H }
+
+/** Reads "x y w h". A malformed box falls back to the hero's own window. */
+export function parseViewBox(viewBox: string): MapView {
+  const [x, y, width, height] = viewBox.trim().split(/\s+/).map(Number)
+  const valid = [x, y, width, height].every((n) => Number.isFinite(n)) && width > 0 && height > 0
+  return valid ? { x, y, width, height } : HERO_MAP_VIEW
+}
 
 /** Pixel box to map units, the way the SVG's `xMidYMid slice` places it. */
-export function mapViewTransform(width: number, height: number): MapViewTransform {
-  const scale = Math.max(width / VIEW_W, height / VIEW_H, 1e-6)
+export function mapViewTransform(width: number, height: number, view: MapView = HERO_MAP_VIEW): MapViewTransform {
+  const scale = Math.max(width / view.width, height / view.height, 1e-6)
   return {
     scale,
-    offsetX: (width - VIEW_W * scale) / 2,
-    offsetY: (height - VIEW_H * scale) / 2,
+    offsetX: (width - view.width * scale) / 2,
+    offsetY: (height - view.height * scale) / 2,
   }
 }
 
@@ -58,7 +73,7 @@ precision highp float;
 uniform vec2 uRes;
 uniform vec2 uOff;
 uniform float uScale;
-uniform float uViewY;
+uniform vec2 uView;
 uniform float uTime;
 uniform float uStrength;
 uniform vec3 uCol;
@@ -87,7 +102,7 @@ vec2 fabric(vec2 m) {
 
 void main() {
   vec2 px = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y);
-  vec2 m = (px - uOff) / uScale + vec2(0., uViewY);
+  vec2 m = (px - uOff) / uScale + uView;
   float land = smoothstep(-6., 10., m.y - coastY(m.x));
   float px1 = 1. / uScale;
 

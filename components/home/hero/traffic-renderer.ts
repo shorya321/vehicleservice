@@ -1,5 +1,6 @@
 import {
-  MAP_VIEW_Y,
+  HERO_MAP_VIEW,
+  type MapView,
   TRAFFIC_FRAGMENT,
   TRAFFIC_MAX_DPR,
   TRAFFIC_SPEED,
@@ -9,7 +10,7 @@ import {
   parseTrafficStyle,
 } from './traffic-shader'
 
-type Uniforms = Record<'uRes' | 'uOff' | 'uScale' | 'uViewY' | 'uTime' | 'uStrength' | 'uCol', WebGLUniformLocation | null>
+type Uniforms = Record<'uRes' | 'uOff' | 'uScale' | 'uView' | 'uTime' | 'uStrength' | 'uCol', WebGLUniformLocation | null>
 
 function compile(gl: WebGLRenderingContext, type: number, source: string): WebGLShader | null {
   const shader = gl.createShader(type)
@@ -43,7 +44,7 @@ function createProgram(gl: WebGLRenderingContext): { program: WebGLProgram; unif
   gl.enableVertexAttribArray(position)
   gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0)
 
-  const names = ['uRes', 'uOff', 'uScale', 'uViewY', 'uTime', 'uStrength', 'uCol'] as const
+  const names = ['uRes', 'uOff', 'uScale', 'uView', 'uTime', 'uStrength', 'uCol'] as const
   const uniforms = Object.fromEntries(names.map((n) => [n, gl.getUniformLocation(program, n)])) as Uniforms
   return { program, uniforms }
 }
@@ -52,9 +53,10 @@ function createProgram(gl: WebGLRenderingContext): { program: WebGLProgram; unif
  * Starts the traffic loop on a canvas and returns its cleanup. Without WebGL,
  * or if the shader fails, the canvas stays transparent and the map shows as it
  * always has. Reduced motion draws one still frame. The loop sleeps while the
- * hero is off screen or the tab is hidden.
+ * hero is off screen or the tab is hidden. `view` is the viewBox of the SVG
+ * map under the canvas; a cropped map must pass its own or trails miss roads.
  */
-export function startTraffic(canvas: HTMLCanvasElement): () => void {
+export function startTraffic(canvas: HTMLCanvasElement, view: MapView = HERO_MAP_VIEW): () => void {
   /* A canvas whose context is gone paints white in Chrome, so it is hidden
      whenever the shader cannot draw. The map underneath shows as before. */
   const hide = (): void => {
@@ -100,12 +102,12 @@ export function startTraffic(canvas: HTMLCanvasElement): () => void {
       canvas.width = width
       canvas.height = height
     }
-    const view = mapViewTransform(width, height)
+    const transform = mapViewTransform(width, height, view)
     gl.viewport(0, 0, width, height)
     gl.uniform2f(u.uRes, width, height)
-    gl.uniform2f(u.uOff, view.offsetX, view.offsetY)
-    gl.uniform1f(u.uScale, view.scale)
-    gl.uniform1f(u.uViewY, MAP_VIEW_Y)
+    gl.uniform2f(u.uOff, transform.offsetX, transform.offsetY)
+    gl.uniform1f(u.uScale, transform.scale)
+    gl.uniform2f(u.uView, view.x, view.y)
   }
 
   const draw = (): void => {

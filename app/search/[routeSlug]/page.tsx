@@ -155,7 +155,7 @@ export default async function SearchRoutePage({ params, searchParams }: SearchRo
       {/* SearchResults emits its own full-bleed bands, each with its own
           container, so this page supplies only the page ground. */}
       <div className="flex min-h-[calc(100vh-5rem)] flex-col bg-[var(--black-void)]">
-        <SearchResults results={results} routeMap={<RouteBandMap />} searchParams={enrichedSearchParams} />
+        <SearchResults results={results} routeMap={<RouteBandMap traffic />} searchParams={enrichedSearchParams} />
       </div>
     </PublicLayout>
   )

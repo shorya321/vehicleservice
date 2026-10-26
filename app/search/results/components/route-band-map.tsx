@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { HERO_MAP } from '@/components/home/hero/map-geometry'
+import { HeroTraffic } from '@/components/home/hero/hero-traffic'
 
 const LAND_CLIP_ID = 'route-band-map-land'
 
@@ -30,7 +31,16 @@ const VIEW_BOX = '120 157 1180 560'
  * keep its pins on real features and a phone-width crop then loses both of
  * them. Saying it once, where it survives every width, beats saying it twice.
  */
-export function RouteBandMap(): React.JSX.Element {
+interface RouteBandMapProps {
+  /**
+   * The home hero's night traffic over this crop. Off by default: the band is
+   * shared with confirmation, account, hourly and multi-city pages, and only
+   * the route search page asks for it.
+   */
+  traffic?: boolean
+}
+
+export function RouteBandMap({ traffic = false }: RouteBandMapProps): React.JSX.Element {
   const m = HERO_MAP
 
   return (
@@ -70,6 +80,8 @@ export function RouteBandMap(): React.JSX.Element {
         <path d={m.coast} className="hero-map-coast" />
 
       </svg>
+
+      {traffic && <HeroTraffic viewBox={VIEW_BOX} />}
 
       <div className="route-band__fade" />
     </div>
