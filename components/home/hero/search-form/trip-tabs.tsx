@@ -1,7 +1,17 @@
 "use client"
+import * as React from 'react'
 import type { KeyboardEvent } from 'react'
+import { ArrowLeftRight, Clock, MoveRight, Route, type LucideIcon } from 'lucide-react'
 import { TRIP_TYPE_LABELS } from '@/lib/trips/constants'
 import type { TripType } from '@/lib/trips/types'
+
+/** Each icon draws the shape of the trip. Decorative: the label names the tab. */
+export const TRIP_TAB_ICONS: Record<TripType, LucideIcon> = {
+  one_way: MoveRight,
+  round_trip: ArrowLeftRight,
+  multi_city: Route,
+  hourly: Clock,
+}
 
 interface TripTabsProps {
   tabs: TripType[]
@@ -30,20 +40,24 @@ export function TripTabs({ tabs, value, onChange }: TripTabsProps) {
 
   return (
     <div role="tablist" aria-label="Trip type" className="search-tabs" onKeyDown={handleKeyDown}>
-      {tabs.map((tab) => (
-        <button
-          key={tab}
-          type="button"
-          role="tab"
-          data-trip={tab}
-          aria-selected={tab === value}
-          tabIndex={tab === value ? 0 : -1}
-          onClick={() => onChange(tab)}
-          className="search-tab"
-        >
-          {TRIP_TYPE_LABELS[tab]}
-        </button>
-      ))}
+      {tabs.map((tab) => {
+        const Icon = TRIP_TAB_ICONS[tab]
+        return (
+          <button
+            key={tab}
+            type="button"
+            role="tab"
+            data-trip={tab}
+            aria-selected={tab === value}
+            tabIndex={tab === value ? 0 : -1}
+            onClick={() => onChange(tab)}
+            className="search-tab"
+          >
+            <Icon className="search-tab-icon" strokeWidth={1.8} aria-hidden="true" />
+            {TRIP_TYPE_LABELS[tab]}
+          </button>
+        )
+      })}
     </div>
   )
 }
