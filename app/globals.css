@@ -1533,6 +1533,12 @@
     background: linear-gradient(180deg, var(--black-void) 0%, color-mix(in srgb, var(--black-void) 40%, transparent) 22%, transparent 40%, transparent 78%, var(--hero-map-fade-end) 100%);
   }
 
+  .hero-traffic-host {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
   .hero-traffic {
     position: absolute;
     inset: 0;

@@ -55,10 +55,21 @@ function createProgram(gl: WebGLRenderingContext): { program: WebGLProgram; unif
  * hero is off screen or the tab is hidden.
  */
 export function startTraffic(canvas: HTMLCanvasElement): () => void {
+  /* A canvas whose context is gone paints white in Chrome, so it is hidden
+     whenever the shader cannot draw. The map underneath shows as before. */
+  const hide = (): void => {
+    canvas.style.visibility = 'hidden'
+  }
   const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false })
-  if (!gl) return () => {}
+  if (!gl || gl.isContextLost()) {
+    hide()
+    return () => {}
+  }
   const setup = createProgram(gl)
-  if (!setup) return () => {}
+  if (!setup) {
+    hide()
+    return () => {}
+  }
   const { uniforms: u } = setup
 
   const reducedQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -143,6 +154,7 @@ export function startTraffic(canvas: HTMLCanvasElement): () => void {
   const onLost = (event: Event): void => {
     event.preventDefault()
     lost = true
+    hide()
     schedule()
   }
 
