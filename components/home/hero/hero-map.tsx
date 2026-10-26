@@ -1,12 +1,20 @@
+import * as React from 'react'
 import { HERO_MAP, VIEW_BOX } from './map-geometry'
 
 const LAND_CLIP_ID = 'hero-map-land'
+
+interface HeroMapProps {
+  /** False keeps only the top and bottom edge fades. Home turns the centre off. */
+  centreFade?: boolean
+  /** Layers drawn over the map and under the fade, such as the traffic shader. */
+  children?: React.ReactNode
+}
 
 /**
  * Decorative street map behind the hero. Server-rendered inline SVG so its
  * colours come from the theme tokens (--hero-map-*) and flip with dark mode.
  */
-export function HeroMap(): React.JSX.Element {
+export function HeroMap({ centreFade = true, children }: HeroMapProps = {}): React.JSX.Element {
   const m = HERO_MAP
 
   return (
@@ -49,7 +57,10 @@ export function HeroMap(): React.JSX.Element {
 
         <path d={m.coast} className="hero-map-coast" />
       </svg>
-      <div className="hero-map-fade absolute inset-0" />
+      {children}
+      <div
+        className={centreFade ? 'hero-map-fade absolute inset-0' : 'hero-map-fade hero-map-fade--edges absolute inset-0'}
+      />
     </div>
   )
 }

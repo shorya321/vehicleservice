@@ -159,6 +159,9 @@
   --hero-map-casing: rgba(40, 36, 30, 0.17);
   --hero-map-runway: #dcd6cc;
   --hero-map-fade-end: var(--black-void);
+  /* Night-traffic shader over the hero map (components/home/hero/hero-traffic.tsx). */
+  --hero-traffic-rgb: 150, 118, 72;
+  --hero-traffic-strength: 0.6;
   --hero-stats-edge: rgba(26, 25, 23, 0.08);
   /* Route stub ground (components/home/departure-points-client.tsx).
      Light follows the theme, dark is a fixed ink plate. Both step UP from the
@@ -281,6 +284,8 @@
   --hero-map-casing: rgba(255, 255, 255, 0.07);
   --hero-map-runway: #1f1d1a;
   --hero-map-fade-end: var(--black-rich);
+  --hero-traffic-rgb: 198, 170, 136;
+  --hero-traffic-strength: 0.2;
   --hero-stats-edge: rgba(255, 255, 255, 0.07);
   /* Route stub ground: ink. Fixed values, deliberately not theme-derived. */
   --stub-top: #262422;
@@ -355,6 +360,8 @@
     --hero-map-casing: rgba(255, 255, 255, 0.07);
     --hero-map-runway: #1f1d1a;
     --hero-map-fade-end: var(--black-rich);
+    --hero-traffic-rgb: 198, 170, 136;
+    --hero-traffic-strength: 0.2;
     --hero-stats-edge: rgba(255, 255, 255, 0.07);
     /* Route stub ground: ink. Fixed values, deliberately not theme-derived. */
     --stub-top: #262422;
@@ -1509,6 +1516,21 @@
     background:
       radial-gradient(ellipse 40% 48% at 50% 44%, var(--black-void) 0%, color-mix(in srgb, var(--black-void) 86%, transparent) 42%, transparent 100%),
       linear-gradient(180deg, var(--black-void) 0%, color-mix(in srgb, var(--black-void) 40%, transparent) 22%, transparent 40%, transparent 78%, var(--hero-map-fade-end) 100%);
+  }
+
+  /* Home keeps only the edge fades so the traffic reads across the whole map.
+     The headline and search bar still sit on their own grounds. */
+  .hero-map-fade--edges {
+    background: linear-gradient(180deg, var(--black-void) 0%, color-mix(in srgb, var(--black-void) 40%, transparent) 22%, transparent 40%, transparent 78%, var(--hero-map-fade-end) 100%);
+  }
+
+  .hero-traffic {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
   }
 
   /* The same map behind the top of /become-vendor. It reaches up under the fixed

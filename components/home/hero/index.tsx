@@ -1,4 +1,5 @@
 import { HeroMap } from './hero-map'
+import { HeroTraffic } from './hero-traffic'
 import { SearchForm } from './search-form'
 import type { TripSettings } from '@/lib/trips/settings'
 import type { TripType } from '@/lib/trips/types'
@@ -28,7 +29,9 @@ export function Hero({ todayDate, tripSettings, initialTrip, content, hasReviews
       className="home-hero-color home-hero-motion relative bg-[var(--black-void)] pt-[clamp(5rem,12vw,6.5rem)]"
     >
       <div className="absolute inset-0 overflow-hidden" aria-hidden>
-        <HeroMap />
+        <HeroMap centreFade={false}>
+          <HeroTraffic />
+        </HeroMap>
       </div>
 
       <div className="luxury-container relative z-10 pb-[clamp(4.5rem,9vw,7rem)] pt-[clamp(3rem,7vw,5.5rem)]">
