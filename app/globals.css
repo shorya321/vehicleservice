@@ -163,6 +163,9 @@
   --hero-traffic-rgb: 150, 118, 72;
   --hero-traffic-strength: 0.6;
   --hero-stats-edge: rgba(26, 25, 23, 0.08);
+  --hero-chip-glass: rgba(255, 255, 255, 0.62);
+  --hero-chip-glass-hi: rgba(255, 255, 255, 0.9);
+  --hero-chip-glass-drop: rgba(31, 27, 20, 0.35);
   /* Route stub ground (components/home/departure-points-client.tsx).
      Light follows the theme, dark is a fixed ink plate. Both step UP from the
      section, which --charcoal could not do: it is lighter than --black-rich in
@@ -287,6 +290,9 @@
   --hero-traffic-rgb: 198, 170, 136;
   --hero-traffic-strength: 0.2;
   --hero-stats-edge: rgba(255, 255, 255, 0.07);
+  --hero-chip-glass: rgba(16, 15, 14, 0.58);
+  --hero-chip-glass-hi: rgba(255, 255, 255, 0.07);
+  --hero-chip-glass-drop: rgba(0, 0, 0, 0.9);
   /* Route stub ground: ink. Fixed values, deliberately not theme-derived. */
   --stub-top: #262422;
   --stub-mid: #1a1918;
@@ -363,6 +369,9 @@
     --hero-traffic-rgb: 198, 170, 136;
     --hero-traffic-strength: 0.2;
     --hero-stats-edge: rgba(255, 255, 255, 0.07);
+    --hero-chip-glass: rgba(16, 15, 14, 0.58);
+    --hero-chip-glass-hi: rgba(255, 255, 255, 0.07);
+    --hero-chip-glass-drop: rgba(0, 0, 0, 0.9);
     /* Route stub ground: ink. Fixed values, deliberately not theme-derived. */
     --stub-top: #262422;
     --stub-mid: #1a1918;
@@ -1645,58 +1654,75 @@
     background: var(--gold);
   }
 
-  /* Figure over caption. The old row set number and label at one size with
-     literal pipe separators, so nothing read as a figure. */
-  /* Caption over figure, on a pill so the figures hold over the map. */
+  /* One glass chip per stat: icon, figure, label. The frosted ground blurs the
+     map and traffic behind it so the chips read as part of the hero. dt comes
+     first in the markup (term names the value); order puts the figure first. */
+  /* Equal-width chips: one row on desktop, one column on a phone, so edges and
+     icons line up either way. */
   .hero-stats {
-    display: flex;
-    justify-content: center;
-    gap: clamp(1.5rem, 5vw, 3.5rem);
-    padding: 0.875rem 1.625rem;
-    border-radius: 9999px;
-    background: color-mix(in srgb, var(--black-void) 72%, transparent);
-    box-shadow: 0 0 0 1px var(--hero-stats-edge);
+    display: inline-grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 10px;
   }
 
-  /* dt is the caption ("Cities"), dd the figure: the term names the value. */
-  .hero-stats > div {
+  .hero-stats-chip {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px 6px 6px;
+    border-radius: 9999px;
+    background: var(--hero-chip-glass);
+    -webkit-backdrop-filter: blur(12px) saturate(1.15);
+    backdrop-filter: blur(12px) saturate(1.15);
+    box-shadow: 0 0 0 1px var(--hero-stats-edge), inset 0 1px 0 var(--hero-chip-glass-hi), 0 14px 30px -24px var(--hero-chip-glass-drop);
   }
 
   .hero-stats dd {
+    order: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     margin: 0;
-    font-size: 1.625rem;
-    font-weight: 500;
+  }
+
+  .hero-stats-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(var(--gold-rgb), 0.12);
+    box-shadow: inset 0 0 0 1px rgba(var(--gold-rgb), 0.34);
+    color: var(--gold-text);
+  }
+
+  .hero-stats-icon svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .hero-stats-figure {
+    font-size: 0.9375rem;
+    font-weight: 700;
     line-height: 1.2;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
     color: var(--text-primary);
     font-variant-numeric: tabular-nums lining-nums;
+    white-space: nowrap;
   }
 
-  .hero-stats dt {
-    font-size: 0.6875rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-
-  .hero-stats .hero-stats-star {
-    color: var(--gold);
-    font-size: 0.7em;
-    vertical-align: 0.2em;
-    margin-left: 3px;
+  .hero-stats-label {
+    order: 2;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
   }
 
   @media (max-width: 480px) {
     .hero-stats {
-      gap: 1.5rem;
-      padding: 0.75rem 1.125rem;
-    }
-
-    .hero-stats dd {
-      font-size: 1.3125rem;
+      grid-auto-flow: row;
     }
   }
 

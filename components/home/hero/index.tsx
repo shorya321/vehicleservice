@@ -1,5 +1,6 @@
 import { HeroMap } from './hero-map'
 import { HeroTraffic } from './hero-traffic'
+import { HeroStats } from './hero-stats'
 import { SearchForm } from './search-form'
 import type { TripSettings } from '@/lib/trips/settings'
 import type { TripType } from '@/lib/trips/types'
@@ -71,24 +72,7 @@ export function Hero({ todayDate, tripSettings, initialTrip, content, hasReviews
             ))}
           </p>
 
-          {stats.length > 0 && (
-            <dl className="hero-reveal hero-reveal--stats hero-stats mt-12">
-              {stats.map((stat, index) => (
-                <div key={index}>
-                  <dt>{stat.label}</dt>
-                  <dd>
-                    {stat.value}
-                    {stat.is_rating && (
-                      <>
-                        <span className="hero-stats-star" aria-hidden="true">&#9733;</span>
-                        <span className="sr-only"> star</span>
-                      </>
-                    )}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          )}
+          <HeroStats stats={stats} />
         </div>
       </div>
     </section>
