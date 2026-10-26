@@ -26,7 +26,7 @@ const timezoneBans = [
 const config = [
   ...nextCoreWebVitals,
   {
-    ignores: [".next/**", "out/**", "build/**", "next-env.d.ts"],
+    ignores: [".next/**", "out/**", "build/**", "coverage/**", "next-env.d.ts"],
   },
   {
     // The timezone module itself and its business-side door are where the
