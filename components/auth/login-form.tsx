@@ -3,11 +3,10 @@
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "motion/react"
-import { ArrowRight, Loader2 } from "lucide-react"
+import { ArrowRight, Loader2, Lock, Mail } from "lucide-react"
 import Link from "next/link"
 import { userLogin } from "@/app/(auth)/login/actions"
-import { inputClass, fieldLabelClass } from "./auth-classes"
-import { PasswordField } from "./password-field"
+import { CustomerField, CustomerPasswordField } from "./customer-field"
 import { fadeSlide } from "@/lib/auth/motion"
 
 interface LoginFormProps {
@@ -63,47 +62,42 @@ export function LoginForm({ loading, onSubmitStart, onError, onSuccess }: LoginF
       role="tabpanel"
       aria-labelledby="auth-tab-login"
       onSubmit={handleLogin}
-      className="mt-6 flex flex-col gap-6"
+      className="cauth-form"
       {...fadeSlide}
     >
-      <div>
-        <label htmlFor="login-email" className={fieldLabelClass}>Email</label>
-        <input
-          id="login-email"
-          type="email"
-          autoComplete="email"
-          value={loginEmail}
-          onChange={(e) => setLoginEmail(e.target.value)}
-          required
-          maxLength={254}
-          disabled={loading}
-          placeholder="you@email.com"
-          className={inputClass}
-        />
-      </div>
-      <div>
-        <div className="flex items-baseline justify-between mb-2">
-          <label htmlFor="login-password" className={fieldLabelClass + " mb-0"}>Password</label>
-          <Link
-            href="/forgot-password"
-            className="auth-body-sm auth-text-link"
-          >
+      <CustomerField
+        id="login-email"
+        label="Email"
+        icon={Mail}
+        type="email"
+        autoComplete="email"
+        value={loginEmail}
+        onChange={(e) => setLoginEmail(e.target.value)}
+        required
+        maxLength={254}
+        disabled={loading}
+        placeholder="you@email.com"
+      />
+      <CustomerPasswordField
+        id="login-password"
+        label="Password"
+        icon={Lock}
+        labelAside={
+          <Link href="/forgot-password" className="cauth-link cauth-link--small">
             Forgot password?
           </Link>
-        </div>
-        <PasswordField
-          id="login-password"
-          value={loginPassword}
-          onChange={setLoginPassword}
-          autoComplete="current-password"
-          disabled={loading}
-        />
-      </div>
+        }
+        value={loginPassword}
+        onChange={setLoginPassword}
+        autoComplete="current-password"
+        disabled={loading}
+        placeholder="Your password"
+      />
 
       <button
         type="submit"
         disabled={loading}
-        className="btn btn-primary mt-5 h-[52px] w-full rounded-[4px]"
+        className="cauth-submit"
       >
         {loading ? (
           <>
@@ -118,9 +112,9 @@ export function LoginForm({ loading, onSubmitStart, onError, onSuccess }: LoginF
         )}
       </button>
 
-      <p className="mt-2 text-center auth-body-sm text-[var(--text-muted)]">
+      <p className="cauth-form-note">
         Need help signing in?{" "}
-        <Link href="/contact" className="auth-text-link">
+        <Link href="/contact" className="cauth-link">
           Contact support
         </Link>
       </p>

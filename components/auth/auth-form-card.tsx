@@ -6,7 +6,9 @@ import { motion, AnimatePresence, useReducedMotion } from "motion/react"
 import { AuthMessages } from "./auth-messages"
 import { LoginForm } from "./login-form"
 import { RegisterForm } from "./register-form"
+import { LogIn, UserPlus, type LucideIcon } from "lucide-react"
 import { fadeEntrance } from "@/lib/auth/motion"
+import { CustomerAuthIntro, CustomerAuthTrust } from "./customer-auth-intro"
 
 interface AuthFormCardProps {
   initialTab: "login" | "register"
@@ -14,9 +16,9 @@ interface AuthFormCardProps {
 
 type TabKey = "login" | "register"
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: "login", label: "Sign in" },
-  { key: "register", label: "Sign up" },
+const TABS: { key: TabKey; label: string; icon: LucideIcon }[] = [
+  { key: "login", label: "Sign in", icon: LogIn },
+  { key: "register", label: "Create account", icon: UserPlus },
 ]
 
 export function AuthFormCard({ initialTab }: AuthFormCardProps) {
@@ -86,70 +88,75 @@ export function AuthFormCard({ initialTab }: AuthFormCardProps) {
 
   return (
     <motion.div {...fadeEntrance(reduceMotion)}>
-      <div className="editorial-eyebrow editorial-eyebrow--pill">
-        <i aria-hidden="true" />
-        {activeTab === "login" ? "Welcome back" : "New here"}
-      </div>
-      <h1 className="editorial-headline mt-6">
-        {activeTab === "login" ? (
-          <>Sign in to your account.</>
-        ) : (
-          <>Create an <em>account.</em></>
-        )}
-      </h1>
-      <p className="editorial-body mt-6 max-w-md">
-        {activeTab === "login"
-          ? "Enter the email you booked with. We never send marketing to this address."
-          : "Used only for booking confirmations, receipts, and chauffeur contact details."}
-      </p>
+      <CustomerAuthIntro screen={activeTab} />
 
-      <div className="mt-10 auth-card">
-        <div
-          role="tablist"
-          aria-label="Authentication"
-          className="auth-tabs"
-          data-active-tab={TABS.findIndex(t => t.key === activeTab)}
-        >
-          {TABS.map((tab, i) => {
-            const selected = activeTab === tab.key
-            return (
-              <button
-                key={tab.key}
-                ref={(el) => { tabRefs.current[i] = el }}
-                role="tab"
-                aria-selected={selected}
-                aria-controls={`auth-panel-${tab.key}`}
-                id={`auth-tab-${tab.key}`}
-                tabIndex={selected ? 0 : -1}
-                onClick={() => handleTabChange(tab.key)}
-                onKeyDown={(e) => handleTabKeyDown(e, i)}
-                className={`auth-tab focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold-text)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--black-void)] ${selected ? "active" : ""}`}
-              >
-                {tab.label}
-              </button>
-            )
-          })}
+      <div
+        role="tablist"
+        aria-label="Authentication"
+        className="cauth-pills"
+      >
+        {TABS.map((tab, i) => {
+          const selected = activeTab === tab.key
+          const Icon = tab.icon
+          return (
+            <button
+              key={tab.key}
+              ref={(el) => { tabRefs.current[i] = el }}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              aria-controls={`auth-panel-${tab.key}`}
+              id={`auth-tab-${tab.key}`}
+              tabIndex={selected ? 0 : -1}
+              onClick={() => handleTabChange(tab.key)}
+              onKeyDown={(e) => handleTabKeyDown(e, i)}
+              className="cauth-pill"
+            >
+              <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+              {tab.label}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="cauth-card">
+        <div className="cauth-card-body">
+          <div className="cauth-messages">
+            <AuthMessages successMessage={successMessage} error={error} />
+          </div>
+
+          <AnimatePresence mode="wait">
+            {activeTab === "login" ? (
+              <LoginForm
+                loading={loading}
+                onSubmitStart={handleSubmitStart}
+                onError={handleError}
+                onSuccess={handleLoginSuccess}
+              />
+            ) : (
+              <RegisterForm
+                loading={loading}
+                onSubmitStart={handleSubmitStart}
+                onError={handleError}
+              />
+            )}
+          </AnimatePresence>
         </div>
 
-        <AuthMessages successMessage={successMessage} error={error} />
-
-        <AnimatePresence mode="wait">
-          {activeTab === "login" ? (
-            <LoginForm
-              loading={loading}
-              onSubmitStart={handleSubmitStart}
-              onError={handleError}
-              onSuccess={handleLoginSuccess}
-            />
-          ) : (
-            <RegisterForm
-              loading={loading}
-              onSubmitStart={handleSubmitStart}
-              onError={handleError}
-            />
-          )}
-        </AnimatePresence>
+        <div className="cauth-tear" aria-hidden="true" />
+        <p className="cauth-card-foot">
+          {activeTab === "login" ? "New to Infinia?" : "Already have an account?"}{" "}
+          <button
+            type="button"
+            className="cauth-link"
+            onClick={() => handleTabChange(activeTab === "login" ? "register" : "login")}
+          >
+            {activeTab === "login" ? "Create an account" : "Sign in"}
+          </button>
+        </p>
       </div>
+
+      <CustomerAuthTrust screen={activeTab} />
     </motion.div>
   )
 }

@@ -3,9 +3,10 @@
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion, AnimatePresence, useReducedMotion } from "motion/react"
-import { Loader2, AlertCircle, ArrowLeft } from "lucide-react"
+import { Loader2, AlertCircle, ArrowLeft, Lock } from "lucide-react"
 import Link from "next/link"
-import { PasswordField } from "./password-field"
+import { CustomerPasswordField } from "./customer-field"
+import { CustomerAuthIntro, CustomerAuthTrust } from "./customer-auth-intro"
 import { fadeEntrance, fadeAlert } from "@/lib/auth/motion"
 
 export function ResetPasswordCard() {
@@ -63,75 +64,82 @@ export function ResetPasswordCard() {
 
   return (
     <motion.div {...fadeEntrance(reduceMotion)}>
-      <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Set new password</div>
-      <h1 className="editorial-headline mt-6">
-        Pick a fresh <em>password.</em>
-      </h1>
-      <p id="reset-password-hint" className="editorial-body mt-6 max-w-md">
-        Minimum 8 characters. Use whatever your password manager generates.
-      </p>
+      <CustomerAuthIntro screen="reset" bodyId="reset-password-hint" />
 
-      <AnimatePresence>
-        {error && (
-          <motion.div
-            key="error"
-            role="alert"
-            aria-live="assertive"
-            {...fadeAlert}
-            className="mt-8 auth-alert-error auth-alert-text text-destructive"
-          >
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <p className="break-words">{error}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="cauth-card cauth-card--spaced">
+        <div className="cauth-card-body">
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                key="error"
+                role="alert"
+                aria-live="assertive"
+                {...fadeAlert}
+                className="cauth-alert auth-alert-error auth-alert-text text-destructive"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                <p className="break-words">{error}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-      <form onSubmit={handleUpdatePassword} className="mt-8 flex flex-col gap-6">
-        <PasswordField
-          id="rp-password"
-          label="New password"
-          value={password}
-          onChange={setPassword}
-          autoComplete="new-password"
-          disabled={loading}
-          placeholder="At least 8 characters"
-          ariaDescribedBy="reset-password-hint"
-          minLength={8}
-        />
-        <PasswordField
-          id="rp-confirm"
-          label="Confirm password"
-          value={confirmPassword}
-          onChange={setConfirmPassword}
-          autoComplete="new-password"
-          disabled={loading}
-          placeholder="Repeat your password"
-          minLength={8}
-        />
+          <form onSubmit={handleUpdatePassword} className="cauth-form">
+            <CustomerPasswordField
+              id="rp-password"
+              label="New password"
+              icon={Lock}
+              value={password}
+              onChange={setPassword}
+              autoComplete="new-password"
+              disabled={loading}
+              placeholder="At least 8 characters"
+              ariaDescribedBy="reset-password-hint"
+              minLength={8}
+              labelAside={
+                <span className={`cauth-count${password.length >= 8 ? " cauth-count--ok" : ""}`} aria-hidden="true">
+                  {password.length}/8
+                </span>
+              }
+            />
+            <CustomerPasswordField
+              id="rp-confirm"
+              label="Confirm password"
+              icon={Lock}
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              autoComplete="new-password"
+              disabled={loading}
+              placeholder="Repeat your password"
+              minLength={8}
+            />
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn btn-primary mt-5 h-[52px] w-full rounded-[4px]"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Updating
-            </>
-          ) : (
-            "Update password"
-          )}
-        </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="cauth-submit"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Updating
+                </>
+              ) : (
+                "Update password"
+              )}
+            </button>
+          </form>
+        </div>
 
-        <Link
-          href="/login"
-          className="mt-4 inline-flex items-center justify-center gap-2 auth-label-link auth-text-link"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-          Back to sign in
-        </Link>
-      </form>
+        <div className="cauth-tear" aria-hidden="true" />
+        <div className="cauth-card-foot">
+          <Link href="/login" className="cauth-back">
+            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+            Back to sign in
+          </Link>
+        </div>
+      </div>
+
+      <CustomerAuthTrust screen="reset" />
     </motion.div>
   )
 }

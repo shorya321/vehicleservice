@@ -3,9 +3,10 @@
 import { useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { motion, AnimatePresence, useReducedMotion } from "motion/react"
-import { Loader2, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react"
+import { Loader2, CheckCircle2, AlertCircle, ArrowLeft, Mail } from "lucide-react"
 import Link from "next/link"
-import { inputClass, fieldLabelClass } from "./auth-classes"
+import { CustomerField } from "./customer-field"
+import { CustomerAuthIntro, CustomerAuthTrust } from "./customer-auth-intro"
 import { fadeEntrance, fadeAlert } from "@/lib/auth/motion"
 
 export function ForgotPasswordCard() {
@@ -48,93 +49,91 @@ export function ForgotPasswordCard() {
 
   return (
     <motion.div {...fadeEntrance(reduceMotion)}>
-      <div className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />Password recovery</div>
-      <h1 className="editorial-headline mt-6">
-        Send me a <em>reset link.</em>
-      </h1>
-      <p className="editorial-body mt-6 max-w-md">
-        Enter the email you booked with. We&rsquo;ll send a one-time link valid for one hour.
-      </p>
+      <CustomerAuthIntro screen="forgot" />
 
-      <AnimatePresence mode="wait">
-        {alertState === "expired" && (
-          <motion.div
-            key="expired"
-            role="alert"
-            aria-live="assertive"
-            {...fadeAlert}
-            className="mt-8 auth-alert-error auth-alert-text text-destructive"
-          >
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <p className="break-words">Your reset link has expired. Enter your email to get a new one.</p>
-          </motion.div>
-        )}
-        {alertState === "success" && (
-          <motion.div
-            key="success"
-            role="status"
-            aria-live="polite"
-            {...fadeAlert}
-            className="mt-8 auth-alert-success auth-alert-text text-[var(--text-primary)]"
-          >
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--gold)]" aria-hidden="true" />
-            <p className="break-words">{message}</p>
-          </motion.div>
-        )}
-        {alertState === "error" && (
-          <motion.div
-            key="error"
-            role="alert"
-            aria-live="assertive"
-            {...fadeAlert}
-            className="mt-8 auth-alert-error auth-alert-text text-destructive"
-          >
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <p className="break-words">{error}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="cauth-card cauth-card--spaced">
+        <div className="cauth-card-body">
+          <AnimatePresence mode="wait">
+            {alertState === "expired" && (
+              <motion.div
+                key="expired"
+                role="alert"
+                aria-live="assertive"
+                {...fadeAlert}
+                className="cauth-alert auth-alert-error auth-alert-text text-destructive"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                <p className="break-words">Your reset link has expired. Enter your email to get a new one.</p>
+              </motion.div>
+            )}
+            {alertState === "success" && (
+              <motion.div
+                key="success"
+                role="status"
+                aria-live="polite"
+                {...fadeAlert}
+                className="cauth-alert auth-alert-success auth-alert-text text-[var(--text-primary)]"
+              >
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--gold)]" aria-hidden="true" />
+                <p className="break-words">{message}</p>
+              </motion.div>
+            )}
+            {alertState === "error" && (
+              <motion.div
+                key="error"
+                role="alert"
+                aria-live="assertive"
+                {...fadeAlert}
+                className="cauth-alert auth-alert-error auth-alert-text text-destructive"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                <p className="break-words">{error}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-      <form onSubmit={handleResetPassword} className="mt-8 flex flex-col gap-6">
-        <div>
-          <label htmlFor="fp-email" className={fieldLabelClass}>Email</label>
-          <input
-            id="fp-email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            maxLength={254}
-            disabled={loading || !!message}
-            placeholder="you@email.com"
-            className={inputClass}
-          />
+          <form onSubmit={handleResetPassword} className="cauth-form">
+            <CustomerField
+              id="fp-email"
+              label="Email"
+              icon={Mail}
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              maxLength={254}
+              disabled={loading || !!message}
+              placeholder="you@email.com"
+            />
+
+            <button
+              type="submit"
+              disabled={loading || !!message}
+              className="cauth-submit"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Sending
+                </>
+              ) : (
+                "Send reset link"
+              )}
+            </button>
+          </form>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading || !!message}
-          className="btn btn-primary mt-5 h-[52px] w-full rounded-[4px]"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Sending
-            </>
-          ) : (
-            "Send reset link"
-          )}
-        </button>
+        <div className="cauth-tear" aria-hidden="true" />
+        <div className="cauth-card-foot">
+          <Link href="/login" className="cauth-back">
+            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+            Back to sign in
+          </Link>
+        </div>
+      </div>
 
-        <Link
-          href="/login"
-          className="mt-2 inline-flex items-center justify-center gap-2 auth-label-link auth-text-link"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-          Back to sign in
-        </Link>
-      </form>
+      <CustomerAuthTrust screen="forgot" />
     </motion.div>
   )
 }

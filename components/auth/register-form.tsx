@@ -3,12 +3,12 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "motion/react"
-import { ArrowRight, Loader2 } from "lucide-react"
+import { ArrowRight, Loader2, Lock, Mail, Phone, User } from "lucide-react"
 import Link from "next/link"
 import { registerUser } from "@/app/(auth)/register/actions"
 import { isValidPhone, sanitizePhoneInput } from "@/lib/validation/phone"
-import { inputClass, fieldLabelClass, checkboxClass } from "./auth-classes"
-import { PasswordField } from "./password-field"
+import { checkboxClass } from "./auth-classes"
+import { CustomerField, CustomerPasswordField } from "./customer-field"
 import { fadeSlide } from "@/lib/auth/motion"
 
 interface RegisterFormProps {
@@ -75,78 +75,74 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
       role="tabpanel"
       aria-labelledby="auth-tab-register"
       onSubmit={handleRegister}
-      className="mt-6 flex flex-col gap-6"
+      className="cauth-form"
       {...fadeSlide}
     >
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="reg-first-name" className={fieldLabelClass}>First name</label>
-          <input
-            id="reg-first-name"
-            type="text"
-            autoComplete="given-name"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            required
-            maxLength={50}
-            disabled={loading}
-            placeholder="First name"
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label htmlFor="reg-last-name" className={fieldLabelClass}>Last name</label>
-          <input
-            id="reg-last-name"
-            type="text"
-            autoComplete="family-name"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            required
-            maxLength={50}
-            disabled={loading}
-            placeholder="Last name"
-            className={inputClass}
-          />
-        </div>
-      </div>
-      <div>
-        <label htmlFor="reg-email" className={fieldLabelClass}>Email</label>
-        <input
-          id="reg-email"
-          type="email"
-          autoComplete="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+      <div className="cauth-row-2">
+        <CustomerField
+          id="reg-first-name"
+          label="First name"
+          icon={User}
+          type="text"
+          autoComplete="given-name"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
           required
-          maxLength={254}
+          maxLength={50}
           disabled={loading}
-          placeholder="you@email.com"
-          className={inputClass}
+          placeholder="First name"
+        />
+        <CustomerField
+          id="reg-last-name"
+          label="Last name"
+          icon={User}
+          type="text"
+          autoComplete="family-name"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          required
+          maxLength={50}
+          disabled={loading}
+          placeholder="Last name"
         />
       </div>
-      <div>
-        <label htmlFor="reg-phone" className={fieldLabelClass}>Phone</label>
-        <input
-          id="reg-phone"
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          value={phone}
-          onChange={(e) => setPhone(sanitizePhoneInput(e.target.value))}
-          maxLength={20}
-          disabled={loading}
-          placeholder="+971 50 123 4567"
-          aria-describedby="reg-phone-hint"
-          className={inputClass}
-        />
-        <p id="reg-phone-hint" className="mt-1 auth-hint">
-          Optional. Can be added during checkout.
-        </p>
-      </div>
-      <PasswordField
+      <CustomerField
+        id="reg-email"
+        label="Email"
+        icon={Mail}
+        type="email"
+        autoComplete="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+        maxLength={254}
+        disabled={loading}
+        placeholder="you@email.com"
+      />
+      <CustomerField
+        id="reg-phone"
+        label="Phone"
+        optional
+        icon={Phone}
+        type="tel"
+        inputMode="tel"
+        autoComplete="tel"
+        value={phone}
+        onChange={(e) => setPhone(sanitizePhoneInput(e.target.value))}
+        maxLength={20}
+        disabled={loading}
+        placeholder="+971 50 123 4567"
+        aria-describedby="reg-phone-hint"
+        hint={
+          <p id="reg-phone-hint" className="cauth-hint">
+            The chauffeur calls this number on arrival. You can also add it at checkout.
+          </p>
+        }
+      />
+      <CustomerPasswordField
         id="reg-password"
         label="Password"
+        icon={Lock}
         value={password}
         onChange={setPassword}
         autoComplete="new-password"
@@ -154,18 +150,16 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
         placeholder="At least 8 characters"
         ariaDescribedBy="reg-password-hint"
         minLength={8}
-        hint={
-          <p id="reg-password-hint" className="mt-1 auth-hint">
-            <span className={`numeric ${password.length >= 8 ? "text-[var(--gold-text)]" : ""}`}>
-              {password.length}
-            </span>
-            <span className="numeric">/8</span> characters
-          </p>
+        labelAside={
+          <span id="reg-password-hint" className={`cauth-count${password.length >= 8 ? " cauth-count--ok" : ""}`}>
+            {password.length}/8<span className="sr-only"> characters</span>
+          </span>
         }
       />
-      <PasswordField
+      <CustomerPasswordField
         id="reg-confirm"
         label="Confirm password"
+        icon={Lock}
         value={confirmPassword}
         onChange={setConfirmPassword}
         autoComplete="new-password"
@@ -175,7 +169,7 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
         minLength={8}
         hint={
           confirmPassword.length > 0 ? (
-            <p id="reg-confirm-hint" className="mt-1 auth-hint">
+            <p id="reg-confirm-hint" className="cauth-hint">
               {password === confirmPassword
                 ? <span className="text-[var(--gold-text)]">Passwords match</span>
                 : <span className="text-destructive">Passwords don&apos;t match</span>
@@ -185,7 +179,7 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
         }
       />
 
-      <label htmlFor="reg-terms" className="mt-1 flex items-start gap-3 cursor-pointer">
+      <label htmlFor="reg-terms" className="cauth-check">
         <input
           id="reg-terms"
           type="checkbox"
@@ -193,13 +187,13 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
           onChange={(e) => setTermsAccepted(e.target.checked)}
           className={checkboxClass}
         />
-        <span className="auth-body-sm leading-relaxed text-[var(--text-secondary)]">
+        <span>
           I agree to the{" "}
-          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="auth-text-link">
+          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="cauth-link">
             Terms
           </Link>
           {" "}and{" "}
-          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="auth-text-link">
+          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="cauth-link">
             Privacy Policy
           </Link>
           .
@@ -209,7 +203,7 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
       <button
         type="submit"
         disabled={loading}
-        className="btn btn-primary mt-5 h-[52px] w-full rounded-[4px]"
+        className="cauth-submit"
       >
         {loading ? (
           <>
@@ -223,13 +217,6 @@ export function RegisterForm({ loading, onSubmitStart, onError }: RegisterFormPr
           </>
         )}
       </button>
-
-      <p className="mt-2 text-center auth-body-sm text-[var(--text-muted)]">
-        You can also book without an account.{" "}
-        <Link href="/" className="auth-text-link">
-          Start a booking
-        </Link>
-      </p>
     </motion.form>
   )
 }
