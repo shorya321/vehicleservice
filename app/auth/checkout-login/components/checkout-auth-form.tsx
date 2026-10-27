@@ -2,42 +2,39 @@
 
 import { useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
-import { ArrowLeft, LogIn, UserPlus, type LucideIcon } from 'lucide-react'
+import { Check } from 'lucide-react'
 import Link from 'next/link'
 import { AuthMessages } from '@/components/auth/auth-messages'
 import { CheckoutLoginForm } from './checkout-login-form'
 import { CheckoutRegisterForm } from './checkout-register-form'
 import { fadeEntrance } from '@/lib/auth/motion'
+import { CHECKOUT_TRUST } from './checkout-trust'
 
 interface CheckoutAuthFormProps {
   returnUrl: string
-  /** Compact booking ticket, shown under the heading below the desktop breakpoint. */
-  summary?: React.ReactNode
+  /** Show the three promises under the card. Off when the booking ticket already lists them. */
+  showTrust?: boolean
 }
 
 type TabKey = 'login' | 'register'
 
-const TABS: { key: TabKey; label: string; icon: LucideIcon }[] = [
-  { key: 'login', label: 'Sign in', icon: LogIn },
-  { key: 'register', label: 'Create account', icon: UserPlus },
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'login', label: 'Sign in' },
+  { key: 'register', label: 'Sign up' },
 ]
 
-const INTRO: Record<TabKey, { accent: string; title: string; body: string }> = {
+const INTRO: Record<TabKey, { title: string; body: string }> = {
   login: {
-    accent: 'Step before payment',
-    title: 'Continue your booking.',
-    body: 'Sign in and you come straight back to this transfer, with your name and phone filled in.',
+    title: 'Sign in to finish your booking.',
+    body: 'You come straight back to this transfer with your name and phone filled in.',
   },
   register: {
-    accent: 'Free account',
     title: 'Create an account to book.',
-    body: 'It takes a minute. You come straight back to this transfer to add passenger details and pay.',
+    body: 'One minute, then straight back to this transfer to add passenger details and pay.',
   },
 }
 
-const TRUST = ['Fixed fare at booking', 'Free cancellation 24h+', 'Flights tracked']
-
-export function CheckoutAuthForm({ returnUrl, summary }: CheckoutAuthFormProps) {
+export function CheckoutAuthForm({ returnUrl, showTrust = false }: CheckoutAuthFormProps) {
   const reduceMotion = useReducedMotion()
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
 
@@ -90,40 +87,32 @@ export function CheckoutAuthForm({ returnUrl, summary }: CheckoutAuthFormProps) 
 
   return (
     <motion.div {...fadeEntrance(reduceMotion)}>
-      <p className="cauth-eyebrow">
-        Secure checkout<span> · {intro.accent}</span>
-      </p>
-      <h1 className="cauth-title">{intro.title}</h1>
-      <p className="cauth-summary">{intro.body}</p>
+      <h1 className="editorial-section-title ckl-title">{intro.title}</h1>
+      <p className="ckl-lede">{intro.body}</p>
 
-      {summary}
+      <div className="cauth-card ckl-card">
+        <div role="tablist" aria-label="Authentication" className="ckl-seg">
+          {TABS.map((tab, i) => {
+            const selected = activeTab === tab.key
+            return (
+              <button
+                key={tab.key}
+                ref={(el) => { tabRefs.current[i] = el }}
+                type="button"
+                role="tab"
+                aria-selected={selected}
+                aria-controls={`checkout-panel-${tab.key}`}
+                id={`checkout-tab-${tab.key}`}
+                tabIndex={selected ? 0 : -1}
+                onClick={() => handleTabChange(tab.key)}
+                onKeyDown={(e) => handleTabKeyDown(e, i)}
+              >
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
 
-      <div role="tablist" aria-label="Authentication" className="cauth-pills">
-        {TABS.map((tab, i) => {
-          const selected = activeTab === tab.key
-          const Icon = tab.icon
-          return (
-            <button
-              key={tab.key}
-              ref={(el) => { tabRefs.current[i] = el }}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              aria-controls={`checkout-panel-${tab.key}`}
-              id={`checkout-tab-${tab.key}`}
-              tabIndex={selected ? 0 : -1}
-              onClick={() => handleTabChange(tab.key)}
-              onKeyDown={(e) => handleTabKeyDown(e, i)}
-              className="cauth-pill"
-            >
-              <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-              {tab.label}
-            </button>
-          )
-        })}
-      </div>
-
-      <div className="cauth-card">
         <div className="cauth-card-body">
           <div className="cauth-messages">
             <AuthMessages successMessage={null} error={error} />
@@ -149,33 +138,22 @@ export function CheckoutAuthForm({ returnUrl, summary }: CheckoutAuthFormProps) 
             )}
           </AnimatePresence>
         </div>
-
-        <div className="cauth-tear" aria-hidden="true" />
-        <p className="cauth-card-foot">
-          {activeTab === 'login' ? 'New to Infinia?' : 'Already have an account?'}{' '}
-          <button
-            type="button"
-            className="cauth-link"
-            onClick={() => handleTabChange(activeTab === 'login' ? 'register' : 'login')}
-          >
-            {activeTab === 'login' ? 'Create an account' : 'Sign in'}
-          </button>
-        </p>
       </div>
 
-      <ul className="cauth-trust">
-        {TRUST.map((item) => <li key={item}>{item}</li>)}
-      </ul>
+      {showTrust && (
+        <ul className="ckl-trust">
+          {CHECKOUT_TRUST.map((item) => (
+            <li key={item}>
+              <Check className="h-3.5 w-3.5" aria-hidden="true" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      )}
 
-      <div className="ckl-links">
-        <Link href="/" className="cauth-back">
-          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-          Back to search
-        </Link>
-        <p className="cauth-help">
-          Need help? <Link href="/contact" className="cauth-link">Contact support</Link>
-        </p>
-      </div>
+      <p className="ckl-help">
+        Need help? <Link href="/contact" className="cauth-link">Contact support</Link>
+      </p>
     </motion.div>
   )
 }

@@ -1,8 +1,8 @@
-import { HeroMap } from '@/components/home/hero/hero-map'
-import { CustomerAuthChips } from '@/components/auth/customer-auth-panel'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 import type { CheckoutBookingSummary } from '../booking-summary'
 import { CheckoutAuthForm } from './checkout-auth-form'
-import { CheckoutTicket, hasTicketContent } from './checkout-ticket'
+import { CheckoutTicket, CheckoutTripLine, hasTicketContent } from './checkout-ticket'
 
 interface CheckoutLoginContentProps {
   returnUrl: string
@@ -11,67 +11,62 @@ interface CheckoutLoginContentProps {
 
 const STEPS = ['Sign in', 'Passenger details', 'Pay and confirm'] as const
 
+/** The three booking steps, shown once, in a thin rail under the site header. */
+function CheckoutProgress(): React.JSX.Element {
+  return (
+    <div className="ckl-rail">
+      <div className="ckl-rail-in">
+        <Link href="/" className="ckl-rail-back">
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+          Back to search
+        </Link>
+        <ol className="ckl-steps" aria-label="Booking steps">
+          {STEPS.map((step, i) => (
+            <li key={step} aria-current={i === 0 ? 'step' : undefined}>
+              <span>{i + 1}</span>
+              {step}
+            </li>
+          ))}
+        </ol>
+        <p className="ckl-steps-short" aria-hidden="true">
+          Step <strong>1</strong> of {STEPS.length} · {STEPS[0]}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 /**
- * Checkout sign-in: the customer auth split screen under the site header.
- * Left, the booking being finished on the home map; right, the same sign-in
- * card as /login. The form itself still returns to `returnUrl` as before.
+ * Checkout sign-in under the site header: the form on the left and the
+ * booking being finished on the right, the way the checkout page that comes
+ * next is laid out. Below the desktop breakpoint the booking folds into one
+ * line above the form. The form itself still returns to `returnUrl` as before.
  */
 export function CheckoutLoginContent({ returnUrl, summary }: CheckoutLoginContentProps): React.JSX.Element {
   const showTicket = hasTicketContent(summary)
 
   return (
-    <div className="cauth-page cauth-page--header">
-      <aside aria-label="Your booking" className="cauth-panel">
-        <div className="cauth-panel-map" aria-hidden="true">
-          <HeroMap centreFade={false} />
-          <div className="cauth-panel-wash" />
+    <div className="ckl-page">
+      <CheckoutProgress />
+
+      <div className="ckl-body">
+        <div className={showTicket ? 'ckl-grid' : 'ckl-grid ckl-grid--solo'}>
+          <section className="ckl-form-col">
+            {showTicket && (
+              <div className="ckl-mobile-ticket">
+                <CheckoutTripLine summary={summary} />
+              </div>
+            )}
+            <CheckoutAuthForm returnUrl={returnUrl} showTrust={!showTicket} />
+          </section>
+
+          {showTicket && (
+            <aside aria-label="Your booking" className="ckl-summary-col">
+              <CheckoutTicket summary={summary} />
+            </aside>
+          )}
         </div>
-
-        <div className="cauth-panel-inner">
-          <div className="cauth-panel-top" aria-hidden="true" />
-
-          <div className="cauth-panel-mid">
-            <div className="editorial-eyebrow editorial-eyebrow--pill cauth-panel-eyebrow">
-              <i aria-hidden="true" />
-              Secure checkout
-            </div>
-            <h2 className="cauth-panel-title">
-              One step from your <em>chauffeur.</em>
-            </h2>
-            <p className="cauth-panel-body">
-              {showTicket
-                ? 'Your route, car and time are kept while you sign in.'
-                : 'Sign in or create an account and you go straight back to your booking.'}
-            </p>
-
-            {showTicket && <CheckoutTicket summary={summary} />}
-
-            <ol className="ckl-steps" aria-label="Booking steps">
-              {STEPS.map((step, i) => (
-                <li key={step} aria-current={i === 0 ? 'step' : undefined}>
-                  <span>{String(i + 1).padStart(2, '0')}</span>
-                  {step}
-                </li>
-              ))}
-            </ol>
-          </div>
-
-          <div className="cauth-panel-bottom">
-            <CustomerAuthChips />
-          </div>
-        </div>
-      </aside>
-
-      <section className="cauth-main">
-        <div className="cauth-form-wrap">
-          <div className="cauth-col">
-            <CheckoutAuthForm
-              returnUrl={returnUrl}
-              summary={showTicket ? <div className="ckl-mobile-ticket"><CheckoutTicket summary={summary} compact /></div> : null}
-            />
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
   )
 }

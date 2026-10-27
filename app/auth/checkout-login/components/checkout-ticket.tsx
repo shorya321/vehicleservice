@@ -1,7 +1,10 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { ArrowRight, Check, ChevronDown } from 'lucide-react'
+import { HeroMap } from '@/components/home/hero/hero-map'
 import type { TripType } from '@/lib/trips/types'
 import type { CheckoutBookingSummary, SummaryStop } from '../booking-summary'
+import { CHECKOUT_TRUST } from './checkout-trust'
 
 const TRIP_LABEL: Record<TripType, string> = {
   one_way: 'One way',
@@ -10,10 +13,9 @@ const TRIP_LABEL: Record<TripType, string> = {
   hourly: 'Hourly',
 }
 
+
 interface CheckoutTicketProps {
   summary: CheckoutBookingSummary
-  /** Short form for the mobile column: route, date, time, car. */
-  compact?: boolean
 }
 
 function hasRoute(summary: CheckoutBookingSummary): boolean {
@@ -23,6 +25,10 @@ function hasRoute(summary: CheckoutBookingSummary): boolean {
 /** True when there is anything at all worth putting on the ticket. */
 export function hasTicketContent(summary: CheckoutBookingSummary): boolean {
   return hasRoute(summary) || Boolean(summary.dateLabel || summary.time || summary.vehicle || summary.passengers)
+}
+
+function plural(count: number, word: string): string {
+  return `${count} ${word}${count === 1 ? '' : 's'}`
 }
 
 function Stop({ stop, to }: { stop: SummaryStop; to?: boolean }): React.JSX.Element {
@@ -37,108 +43,152 @@ function Stop({ stop, to }: { stop: SummaryStop; to?: boolean }): React.JSX.Elem
   )
 }
 
-function Route({ summary }: { summary: CheckoutBookingSummary }): React.JSX.Element | null {
-  if (!hasRoute(summary)) return null
+/** A dotted route over the home map, drawn between two pins. Decorative. */
+function TicketMap(): React.JSX.Element {
   return (
-    <div className="ckt-route">
-      {summary.from && <Stop stop={summary.from} />}
-      {summary.from && summary.to && <span className="ckt-line" aria-hidden="true" />}
-      {summary.to && <Stop stop={summary.to} to />}
+    <div className="ckt-map" aria-hidden="true">
+      <HeroMap centreFade={false} />
+      <svg className="ckt-map-route" viewBox="0 0 368 128" preserveAspectRatio="xMidYMid slice">
+        <path d="M58 92 C 120 70, 170 96, 220 66 S 290 40, 312 38" />
+        <circle className="ckt-map-halo" cx="58" cy="92" r="10" />
+        <circle cx="58" cy="92" r="4" />
+        <circle className="ckt-map-halo" cx="312" cy="38" r="10" />
+        <circle cx="312" cy="38" r="4" />
+      </svg>
     </div>
   )
 }
 
-/**
- * The booking the traveller is signing in to finish, drawn as a route stub
- * like the home page route cards. Server component: no state, so both the
- * full and compact forms can render and CSS picks one per breakpoint.
- */
-export function CheckoutTicket({ summary, compact = false }: CheckoutTicketProps): React.JSX.Element | null {
-  if (!hasTicketContent(summary)) return null
-  const { vehicle } = summary
-
-  if (compact) {
-    const when = [summary.dateLabel, summary.time].filter(Boolean).join(' · ')
-    const what = [vehicle?.name, summary.passengers ? `${summary.passengers} passenger${summary.passengers === 1 ? '' : 's'}` : null]
-      .filter(Boolean)
-      .join(' · ')
-    return (
-      <div className="ckt ckt--compact" aria-label="Your transfer">
-        {hasRoute(summary) && <div className="ckt-body"><Route summary={summary} /></div>}
-        {(when || what) && (
-          <>
-            {hasRoute(summary) && <div className="ckt-tear" aria-hidden="true" />}
-            <p className="ckt-meta">
-              {when && <span>{when}</span>}
-              {what && <span>{what}</span>}
-            </p>
-          </>
-        )}
-      </div>
-    )
-  }
-
+function Facts({ summary }: CheckoutTicketProps): React.JSX.Element | null {
   const facts = [
-    summary.dateLabel ? { label: 'Date', value: summary.dateLabel, numeric: false } : null,
-    summary.time ? { label: 'Pickup', value: summary.time, numeric: true } : null,
-    summary.passengers ? { label: 'Passengers', value: String(summary.passengers), numeric: true } : null,
-  ].filter((fact): fact is { label: string; value: string; numeric: boolean } => fact !== null)
+    summary.dateLabel ? { label: 'Date', value: summary.dateLabel } : null,
+    summary.time ? { label: 'Pickup', value: summary.time } : null,
+    summary.passengers ? { label: 'Guests', value: String(summary.passengers) } : null,
+  ].filter((fact): fact is { label: string; value: string } => fact !== null)
+
+  if (facts.length === 0) return null
+  return (
+    <dl className="ckt-facts">
+      {facts.map((fact) => (
+        <div key={fact.label}>
+          <dt>{fact.label}</dt>
+          <dd>{fact.value}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+function Vehicle({ summary }: CheckoutTicketProps): React.JSX.Element | null {
+  const { vehicle } = summary
+  if (!vehicle) return null
+  const spec = [
+    vehicle.category,
+    vehicle.seats ? plural(vehicle.seats, 'seat') : null,
+    vehicle.bags ? plural(vehicle.bags, 'bag') : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+
+  return (
+    <div className="ckt-car">
+      {vehicle.imageUrl && (
+        <Image src={vehicle.imageUrl} alt="" width={96} height={54} className="ckt-car-img" />
+      )}
+      <div className="min-w-0">
+        <p className="ckt-car-name">{vehicle.name}</p>
+        {spec && <p className="ckt-car-spec">{spec}</p>}
+      </div>
+    </div>
+  )
+}
+
+function Trust(): React.JSX.Element {
+  return (
+    <ul className="ckt-trust">
+      {CHECKOUT_TRUST.map((item) => (
+        <li key={item}>
+          <Check className="h-3.5 w-3.5" aria-hidden="true" />
+          {item}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/**
+ * The booking the traveller is signing in to finish, as a sidebar card like
+ * the checkout page's own summary. Server component, no state.
+ */
+export function CheckoutTicket({ summary }: CheckoutTicketProps): React.JSX.Element | null {
+  if (!hasTicketContent(summary)) return null
+  const head = [
+    TRIP_LABEL[summary.trip],
+    summary.distanceKm != null ? `${summary.distanceKm} km` : null,
+    summary.durationMinutes != null ? `${summary.durationMinutes} min` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <section className="ckt" aria-label="Your transfer">
+      {hasRoute(summary) && <TicketMap />}
       <div className="ckt-head">
-        <span>Your transfer</span>
+        <span>{head}</span>
         <Link href="/" className="cauth-link">Edit search</Link>
       </div>
-
       {hasRoute(summary) && (
-        <div className="ckt-body">
-          <Route summary={summary} />
-          {(summary.distanceKm != null || summary.durationMinutes != null) && (
-            <p className="ckt-nums">
-              {summary.distanceKm != null && <span><strong>{summary.distanceKm}</strong><small>km</small></span>}
-              {summary.distanceKm != null && summary.durationMinutes != null && <i aria-hidden="true" />}
-              {summary.durationMinutes != null && <span><strong>{summary.durationMinutes}</strong><small>min</small></span>}
-              <i aria-hidden="true" />
-              <span className="ckt-trip">{TRIP_LABEL[summary.trip]}</span>
-            </p>
-          )}
+        <div className="ckt-route">
+          {summary.from && <Stop stop={summary.from} />}
+          {summary.from && summary.to && <span className="ckt-line" aria-hidden="true" />}
+          {summary.to && <Stop stop={summary.to} to />}
         </div>
       )}
-
-      {facts.length > 0 && (
-        <>
-          {hasRoute(summary) && <div className="ckt-tear" aria-hidden="true" />}
-          <dl className="ckt-facts">
-            {facts.map((fact) => (
-              <div key={fact.label}>
-                <dt>{fact.label}</dt>
-                <dd className={fact.numeric ? 'ckt-num' : undefined}>{fact.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </>
-      )}
-
-      {vehicle && (
-        <div className="ckt-car">
-          {vehicle.imageUrl && (
-            <Image src={vehicle.imageUrl} alt="" width={96} height={54} className="ckt-car-img" />
-          )}
-          <div className="min-w-0">
-            <p className="ckt-car-name">{vehicle.name}</p>
-            <p className="ckt-car-spec">
-              {[
-                vehicle.category,
-                vehicle.seats ? `${vehicle.seats} seat${vehicle.seats === 1 ? '' : 's'}` : null,
-                vehicle.bags ? `${vehicle.bags} bag${vehicle.bags === 1 ? '' : 's'}` : null,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </p>
-          </div>
-        </div>
-      )}
+      <Facts summary={summary} />
+      <Vehicle summary={summary} />
+      <Trust />
     </section>
+  )
+}
+
+/**
+ * The same booking folded into one line for narrow screens, opening for the
+ * date, car and promises. A native disclosure, so it needs no client JS.
+ */
+export function CheckoutTripLine({ summary }: CheckoutTicketProps): React.JSX.Element | null {
+  if (!hasTicketContent(summary)) return null
+  const meta = [
+    summary.dateLabel,
+    summary.time,
+    summary.vehicle?.name,
+    summary.passengers ? plural(summary.passengers, 'guest') : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+
+  return (
+    <details className="cktl">
+      <summary>
+        <div className="min-w-0">
+          {hasRoute(summary) && (
+            <p className="cktl-route">
+              {summary.from && <span>{summary.from.name}</span>}
+              {summary.from && summary.to && <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />}
+              {summary.to && <span>{summary.to.name}</span>}
+            </p>
+          )}
+          {meta && <p className="cktl-meta">{meta}</p>}
+        </div>
+        <span className="cktl-more">
+          Details
+          <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+        </span>
+      </summary>
+      <div className="cktl-body">
+        <Facts summary={summary} />
+        <Vehicle summary={summary} />
+        <Trust />
+      </div>
+    </details>
   )
 }
