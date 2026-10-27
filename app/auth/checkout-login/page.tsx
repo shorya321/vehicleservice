@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { CheckoutLoginContent } from './components/checkout-login-content'
+import { getCheckoutBookingSummary } from './booking-summary'
 
 export const metadata: Metadata = {
   title: 'Login to Continue | Secure Checkout',
@@ -26,9 +27,11 @@ export default async function CheckoutLoginPage({ searchParams }: CheckoutLoginP
     redirect(decodeURIComponent(returnUrl))
   }
 
+  const summary = await getCheckoutBookingSummary(returnUrl)
+
   return (
     <PublicLayout>
-      <CheckoutLoginContent returnUrl={returnUrl} />
+      <CheckoutLoginContent returnUrl={returnUrl} summary={summary} />
     </PublicLayout>
   )
 }

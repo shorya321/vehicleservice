@@ -3,12 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight, Loader2, Lock, Mail } from 'lucide-react'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { inputClass, fieldLabelClass } from '@/components/auth/auth-classes'
-import { PasswordField } from '@/components/auth/password-field'
+import { CustomerField, CustomerPasswordField } from '@/components/auth/customer-field'
 import { fadeSlide } from '@/lib/auth/motion'
 
 interface CheckoutLoginFormProps {
@@ -64,48 +63,42 @@ export function CheckoutLoginForm({
       role="tabpanel"
       aria-labelledby="checkout-tab-login"
       onSubmit={handleLogin}
-      className="mt-6 flex flex-col gap-6"
+      className="cauth-form"
       {...fadeSlide}
     >
-      <div>
-        <label htmlFor="co-login-email" className={fieldLabelClass}>Email</label>
-        <input
-          id="co-login-email"
-          type="email"
-          autoComplete="email"
-          value={loginEmail}
-          onChange={(e) => setLoginEmail(e.target.value)}
-          required
-          maxLength={254}
-          disabled={loading}
-          placeholder="you@email.com"
-          className={inputClass}
-        />
-      </div>
-
-      <div>
-        <div className="flex items-baseline justify-between mb-2">
-          <label htmlFor="co-login-password" className={fieldLabelClass + ' mb-0'}>Password</label>
-          <Link
-            href="/forgot-password"
-            className="auth-body-sm auth-text-link"
-          >
+      <CustomerField
+        id="co-login-email"
+        label="Email"
+        icon={Mail}
+        type="email"
+        autoComplete="email"
+        value={loginEmail}
+        onChange={(e) => setLoginEmail(e.target.value)}
+        required
+        maxLength={254}
+        disabled={loading}
+        placeholder="you@email.com"
+      />
+      <CustomerPasswordField
+        id="co-login-password"
+        label="Password"
+        icon={Lock}
+        labelAside={
+          <Link href="/forgot-password" className="cauth-link cauth-link--small">
             Forgot password?
           </Link>
-        </div>
-        <PasswordField
-          id="co-login-password"
-          value={loginPassword}
-          onChange={setLoginPassword}
-          autoComplete="current-password"
-          disabled={loading}
-        />
-      </div>
+        }
+        value={loginPassword}
+        onChange={setLoginPassword}
+        autoComplete="current-password"
+        disabled={loading}
+        placeholder="Your password"
+      />
 
       <button
         type="submit"
         disabled={loading}
-        className="btn btn-primary mt-5 h-[52px] w-full rounded-[4px]"
+        className="cauth-submit"
       >
         {loading ? (
           <>

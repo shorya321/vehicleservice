@@ -58,18 +58,25 @@ export function CustomerAuthPanel({ screen }: CustomerAuthPanelProps): React.JSX
         </div>
 
         <div className="cauth-panel-bottom">
-          <ul className="cauth-chips">
-            {CHIPS.map(({ icon: Icon, figure, label }) => (
-              <li key={label} className="cauth-chip">
-                <span className="cauth-chip-icon"><Icon aria-hidden="true" /></span>
-                {figure && <strong className="cauth-chip-figure">{figure}</strong>}
-                {label}
-              </li>
-            ))}
-          </ul>
+          <CustomerAuthChips />
           <p className="cauth-panel-caption">Dubai airport and city transfers</p>
         </div>
       </div>
     </aside>
+  )
+}
+
+/** The home hero facts, as glass chips. Shared with the checkout sign-in panel. */
+export function CustomerAuthChips(): React.JSX.Element {
+  return (
+    <ul className="cauth-chips">
+      {CHIPS.map(({ icon: Icon, figure, label }) => (
+        <li key={label} className="cauth-chip">
+          <span className="cauth-chip-icon"><Icon aria-hidden="true" /></span>
+          {figure && <strong className="cauth-chip-figure">{figure}</strong>}
+          {label}
+        </li>
+      ))}
+    </ul>
   )
 }

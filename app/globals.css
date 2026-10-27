@@ -7028,6 +7028,328 @@
 }
 
 /* ============================================
+   CHECKOUT SIGN-IN - /auth/checkout-login
+   The customer auth split screen under the fixed 80px site header, with
+   the booking ticket (route stub, as on the home route cards) on the left.
+   ============================================ */
+
+.cauth-page--header {
+  min-height: calc(100vh - 80px);
+  min-height: calc(100dvh - 80px);
+}
+
+@media (min-width: 1024px) {
+  .cauth-page--header .cauth-panel {
+    top: 80px;
+    height: calc(100vh - 80px);
+    height: calc(100dvh - 80px);
+  }
+
+  .cauth-page--header .cauth-panel-inner {
+    grid-template-rows: 0 1fr auto;
+    padding-top: 8px;
+  }
+
+  .cauth-page--header .cauth-form-wrap {
+    padding-top: 48px;
+  }
+}
+
+.ckt {
+  margin-top: 24px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--stub-top) 0%, var(--stub-mid) 55%, var(--stub-bot) 100%);
+  box-shadow: inset 0 1px 0 var(--stub-edge), 0 0 0 1px var(--stub-line), var(--stub-shadow);
+}
+
+.ckt-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px 0;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ckt-head .cauth-link {
+  font-size: 0.75rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.ckt-body {
+  padding: 14px 20px 16px;
+}
+
+.ckt-route {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ckt-stop {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.ckt-dot {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin-top: 6px;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  background: var(--stub-top);
+}
+
+.ckt-dot--to {
+  background: var(--gold);
+}
+
+.ckt-line {
+  position: absolute;
+  left: 4px;
+  top: 18px;
+  bottom: 28px;
+  border-left: 2px dotted rgba(var(--gold-rgb), 0.7);
+}
+
+.ckt-stop-name {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.ckt-stop-city {
+  margin-top: 2px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.ckt-nums {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.ckt-nums strong {
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.ckt-nums small {
+  margin-left: 3px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.ckt-nums i {
+  width: 1px;
+  height: 18px;
+  background: var(--stub-line);
+}
+
+.ckt-trip {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+
+.ckt-tear {
+  height: 1px;
+  margin: 0 20px;
+  background-image: linear-gradient(90deg, var(--stub-line) 50%, transparent 0);
+  background-size: 7px 1px;
+}
+
+.ckt-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  padding: 14px 20px;
+}
+
+.ckt-facts dt {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ckt-facts dd {
+  margin-top: 4px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.ckt-num {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.ckt-car {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px 14px;
+  border-top: 1px solid var(--stub-line);
+}
+
+.ckt-car-img {
+  flex: none;
+  width: 84px;
+  height: auto;
+  object-fit: contain;
+}
+
+.ckt-car-name {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.ckt-car-spec {
+  margin-top: 2px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.ckt--compact {
+  margin-top: 20px;
+}
+
+.ckt--compact .ckt-body {
+  padding: 14px 16px;
+}
+
+.ckt--compact .ckt-route {
+  gap: 10px;
+}
+
+.ckt--compact .ckt-stop-name {
+  font-size: 0.9375rem;
+}
+
+.ckt--compact .ckt-line {
+  top: 16px;
+  bottom: 26px;
+}
+
+.ckt--compact .ckt-tear {
+  margin: 0 16px;
+}
+
+.ckt-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding: 10px 16px 12px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 1024px) {
+  .ckl-mobile-ticket {
+    display: none;
+  }
+}
+
+.ckl-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+  list-style: none;
+  padding: 0;
+}
+
+.ckl-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 6px;
+  border: 1px solid var(--hero-bar-line);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: var(--hero-chip-glass);
+}
+
+.ckl-steps li span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--gold-text);
+  background: rgba(var(--gold-rgb), 0.1);
+  font-variant-numeric: tabular-nums;
+}
+
+.ckl-steps li[aria-current="step"] {
+  font-weight: 600;
+  color: var(--text-primary);
+  border-color: rgba(var(--gold-rgb), 0.45);
+  background: rgba(var(--gold-rgb), 0.12);
+}
+
+.ckl-steps li[aria-current="step"] span {
+  color: var(--onyx);
+  background: var(--gold);
+}
+
+/* The panel is one viewport tall under the header: drop extras on short screens. */
+@media (min-width: 1024px) and (max-height: 860px) {
+  .cauth-page--header .ckl-steps {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 760px) {
+  .cauth-page--header .cauth-panel-bottom,
+  .cauth-page--header .ckt-car {
+    display: none;
+  }
+}
+
+.ckl-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.ckl-links .cauth-help {
+  margin-top: 0;
+}
+
+/* ============================================
    PRINT STYLES
    ============================================ */
 @media print {
