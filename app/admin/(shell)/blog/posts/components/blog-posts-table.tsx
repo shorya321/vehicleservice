@@ -31,6 +31,7 @@ import {
   Star,
   Archive,
   FileText,
+  ExternalLink,
 } from "lucide-react"
 import {
   AlertDialog,
@@ -250,6 +251,14 @@ export function BlogPostsTable({ posts }: BlogPostsTableProps) {
                             Edit Post
                           </Link>
                         </DropdownMenuItem>
+                        {post.status === 'published' && (
+                          <DropdownMenuItem asChild>
+                            <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="mr-2 h-4 w-4" />
+                              View Page
+                            </a>
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => handleToggleStatus(post.id, post.status)}
