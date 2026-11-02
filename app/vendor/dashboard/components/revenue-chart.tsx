@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import dynamic from 'next/dynamic'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency, cn } from '@/lib/utils'
 import { getVendorRevenueTrend, type PeriodType } from '../actions'
-import { Skeleton } from '@/components/ui/skeleton'
 import { DollarSign } from 'lucide-react'
 import { CustomRangeButton } from './custom-range-button'
 
@@ -14,6 +14,17 @@ interface RevenueChartProps {
     label: string
     revenue: number
   }>
+}
+
+// Recharts measures its container, so it only renders in the browser. The
+// placeholder holds the same 250px so the card does not jump on load.
+const RevenueAreaChart = dynamic(
+  () => import('@/components/dashboard/revenue-area-chart').then((m) => m.RevenueAreaChart),
+  { ssr: false, loading: () => <ChartPlaceholder /> }
+)
+
+function ChartPlaceholder() {
+  return <div className="h-[250px] w-full animate-pulse rounded-lg bg-muted/30" />
 }
 
 const PERIODS: PeriodType[] = ['daily', 'weekly', 'monthly']
@@ -62,14 +73,15 @@ export function RevenueChart({ initialData }: RevenueChartProps) {
     }
   }
 
-  const maxRevenue = Math.max(...revenueTrend.map(d => d.revenue))
   const totalRevenue = revenueTrend.reduce((sum, d) => sum + d.revenue, 0)
   const hasAnyRevenue = totalRevenue > 0
 
   return (
     <Card className="admin-card-hover">
-      <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2 border-b border-border">
-        <div className="flex items-center gap-2">
+      {/* Stacks below sm and wraps above it: title plus four period buttons
+          need ~465px on one row, which widened the whole chart grid on phones. */}
+      <CardHeader className="flex flex-col items-start justify-between gap-3 space-y-0 pb-3 border-b border-border sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="flex min-w-0 items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
             <DollarSign className="h-4 w-4 text-emerald-500" />
           </div>
@@ -110,60 +122,7 @@ export function RevenueChart({ initialData }: RevenueChartProps) {
         </div>
       </CardHeader>
       <CardContent className="pt-4">
-        {isPending ? (
-          <SkeletonBars count={mode === 'custom' ? (revenueTrend.length || 7) : selectedPeriod === 'daily' ? 7 : selectedPeriod === 'weekly' ? 8 : 12} />
-        ) : (
-          <div className="h-[250px] relative">
-            <div className="h-[200px] flex items-end justify-between gap-1 relative">
-              {revenueTrend.map((item) => {
-                // Calculate height with proper scaling
-                const hasRevenue = item.revenue > 0
-                let barHeight = 0
-
-                if (hasRevenue && maxRevenue > 0) {
-                  // Scale from 20px minimum to 180px maximum
-                  barHeight = 20 + ((item.revenue / maxRevenue) * 160)
-                } else if (!hasRevenue) {
-                  barHeight = 8 // Minimal height for empty bars
-                }
-
-                return (
-                  <div
-                    key={`${mode}-${selectedPeriod}-${item.date}`}
-                    className="flex-1 flex flex-col justify-end items-center group relative"
-                  >
-                    {/* Bar */}
-                    <div
-                      className={`
-                        w-full
-                        ${hasRevenue
-                          ? 'bg-primary hover:bg-primary/80'
-                          : 'bg-primary/30 hover:bg-primary/50'}
-                        rounded-t transition-all duration-200
-                        relative
-                      `}
-                      style={{
-                        height: `${barHeight}px`,
-                        minHeight: '4px'
-                      }}
-                    >
-                      {/* Tooltip on hover */}
-                      <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground border px-2 py-1 rounded text-xs whitespace-nowrap z-10 shadow-md pointer-events-none">
-                        <div className="font-semibold">{item.revenue > 0 ? formatCurrency(item.revenue) : 'No revenue'}</div>
-                        <div className="text-xs opacity-75">{item.label}</div>
-                      </div>
-                    </div>
-
-                    {/* Label below bar */}
-                    <div className="text-xs text-muted-foreground text-center mt-2">
-                      {item.label}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
+        {isPending ? <ChartPlaceholder /> : <RevenueAreaChart points={revenueTrend} />}
         {!isPending && !hasAnyRevenue && (
           <p className="text-xs text-muted-foreground text-center mt-2">
             No revenue recorded for this period
@@ -171,22 +130,5 @@ export function RevenueChart({ initialData }: RevenueChartProps) {
         )}
       </CardContent>
     </Card>
-  )
-}
-
-function SkeletonBars({ count }: { count: number }) {
-  const [heights] = useState(() =>
-    Array.from({ length: count }, () => Math.random() * 80 + 20)
-  )
-  return (
-    <div className="h-[200px] flex items-end justify-between gap-1">
-      {heights.slice(0, count).map((h, i) => (
-        <Skeleton
-          key={i}
-          className="flex-1 rounded-t"
-          style={{ height: `${h}%` }}
-        />
-      ))}
-    </div>
   )
 }
