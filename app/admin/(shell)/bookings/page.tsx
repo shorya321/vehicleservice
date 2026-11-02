@@ -36,12 +36,9 @@ interface BookingsPageProps {
 export default async function BookingsPage({ searchParams }: BookingsPageProps) {
   const params = await searchParams
 
-  // Defaults to upcoming: a bare /admin/bookings lands on future trips.
-  // An explicit date range replaces that default. Otherwise a past range would
-  // AND with "pickup >= now()" and always come back empty.
-  const hasDateRange = Boolean(params.dateFrom || params.dateTo)
-  const timeframe = (params.timeframe as BookingFilters['timeframe'])
-    || (hasDateRange ? 'all' : 'upcoming')
+  // Defaults to all time: a bare /admin/bookings lists every booking.
+  // Upcoming and past arrive as an explicit ?timeframe= param.
+  const timeframe = (params.timeframe as BookingFilters['timeframe']) || 'all'
 
   const filters: BookingFilters = {
     search: params.search,

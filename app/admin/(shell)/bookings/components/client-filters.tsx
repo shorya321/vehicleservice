@@ -28,11 +28,8 @@ export function ClientFilters({ initialFilters }: ClientFiltersProps) {
       params.delete('status')
     }
 
-    // 'upcoming' is the default, so omit it. A clean URL means upcoming.
-    // With a date range the default flips to 'all', so 'upcoming' must be spelled
-    // out there or the server can't tell it apart from "not chosen".
-    const hasDateRange = Boolean(filters.dateFrom || filters.dateTo)
-    if (filters.timeframe && (filters.timeframe !== 'upcoming' || hasDateRange)) {
+    // 'all' is the default, so omit it. A clean URL means all time.
+    if (filters.timeframe && filters.timeframe !== 'all') {
       params.set('timeframe', filters.timeframe)
     } else {
       params.delete('timeframe')

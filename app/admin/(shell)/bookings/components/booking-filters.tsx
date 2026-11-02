@@ -114,7 +114,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
       page: 1,
       limit: filters.limit || 10,
       status: 'all',
-      timeframe: 'upcoming',
+      timeframe: 'all',
       paymentStatus: 'all',
       bookingType: 'all',
       tripType: 'all'
@@ -130,9 +130,6 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
       newFilters.dateFrom = format(dateRange.from, 'yyyy-MM-dd')
       // A single click leaves `to` empty; that means one day, not open-ended.
       newFilters.dateTo = format(dateRange.to ?? dateRange.from, 'yyyy-MM-dd')
-      // An explicit range wins over the 'upcoming' default, which would
-      // otherwise silently AND itself in and empty out any past range.
-      newFilters.timeframe = 'all'
     } else {
       delete newFilters.dateFrom
       delete newFilters.dateTo
@@ -157,8 +154,8 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
   const activeFilterCount = [
     filters.search,
     filters.status && filters.status !== 'all' ? filters.status : null,
-    // 'upcoming' is the default view, so it isn't an "active" filter
-    filters.timeframe && filters.timeframe !== 'upcoming' ? filters.timeframe : null,
+    // 'all' is the default view, so it isn't an "active" filter
+    filters.timeframe && filters.timeframe !== 'all' ? filters.timeframe : null,
     filters.bookingType && filters.bookingType !== 'all' ? filters.bookingType : null,
     filters.tripType && filters.tripType !== 'all' ? filters.tripType : null,
     filters.paymentStatus && filters.paymentStatus !== 'all' ? filters.paymentStatus : null,
@@ -196,14 +193,14 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
           </SelectContent>
         </Select>
 
-        <Select value={filters.timeframe || 'upcoming'} onValueChange={handleTimeframeChange}>
+        <Select value={filters.timeframe || 'all'} onValueChange={handleTimeframeChange}>
           <SelectTrigger aria-label="Filter by timeframe" className="w-[160px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="all">All time</SelectItem>
             <SelectItem value="upcoming">Upcoming</SelectItem>
             <SelectItem value="past">Past</SelectItem>
-            <SelectItem value="all">All time</SelectItem>
           </SelectContent>
         </Select>
 
