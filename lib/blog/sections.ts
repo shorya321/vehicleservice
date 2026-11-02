@@ -11,10 +11,11 @@ export const MAX_SECTIONS = 30
 export const MAX_FAQS = 20
 
 export const blogSectionSchema = z.object({
-  title: z.string().trim().min(1, 'Add a heading').max(120, 'Keep it under 120 characters'),
+  /** Optional: an empty heading renders no `<h2>` and no "On this page" entry. */
+  title: z.string().trim().max(120, 'Keep it under 120 characters'),
   /** Rich text from the editor. Sanitised again on render. */
   body: z.string().max(20000, 'This section is too long, split it in two'),
-})
+}).refine((s) => s.title || hasBodyContent(s.body), { message: 'Add a heading or some content', path: ['title'] })
 
 export const blogSectionsSchema = z
   .array(blogSectionSchema)
@@ -55,6 +56,14 @@ function headingText(html: string): string {
     .replace(/&(amp|lt|gt|quot|#39|nbsp);/g, (entity) => ENTITIES[entity] ?? entity)
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+/** Media the editor can insert that carries no text of its own. */
+const MEDIA_TAG = /<(img|table|iframe|video|hr)\b/i
+
+/** False for what the editor leaves behind when cleared, e.g. `<p></p>`. */
+function hasBodyContent(html: string): boolean {
+  return headingText(html) !== '' || MEDIA_TAG.test(html)
 }
 
 function escapeHtml(value: string): string {
@@ -108,7 +117,12 @@ export function withAnchors(sections: readonly BlogSection[]): AnchoredSection[]
 
 /** HTML mirror written to `blog_posts.content` on every save. */
 export function sectionsToHtml(sections: readonly BlogSection[]): string {
-  return sections.map((s) => `<h2>${escapeHtml(s.title.trim())}</h2>${s.body.trim()}`).join('')
+  return sections
+    .map((s) => {
+      const title = s.title.trim()
+      return `${title ? `<h2>${escapeHtml(title)}</h2>` : ''}${s.body.trim()}`
+    })
+    .join('')
 }
 
 /** Rows left fully blank in the editor mean "no question", not an error. */

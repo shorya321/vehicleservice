@@ -72,10 +72,26 @@ describe('sectionsToHtml', () => {
 })
 
 describe('schemas', () => {
-  it('requires at least one section with a title', () => {
+  it('requires at least one section with a heading or content', () => {
     expect(blogSectionsSchema.safeParse([]).success).toBe(false)
     expect(blogSectionsSchema.safeParse([{ title: ' ', body: '' }]).success).toBe(false)
     expect(blogSectionsSchema.safeParse([{ title: 'Ok', body: '<p>x</p>' }]).success).toBe(true)
+    expect(blogSectionsSchema.safeParse([{ title: ' ', body: '<p>x</p>' }]).success).toBe(true)
+  })
+
+  it('treats an editor-empty body as no content when there is no heading', () => {
+    expect(blogSectionsSchema.safeParse([{ title: '', body: '<p></p>' }]).success).toBe(false)
+    expect(blogSectionsSchema.safeParse([{ title: '', body: '<p>&nbsp; <br></p>' }]).success).toBe(false)
+    expect(blogSectionsSchema.safeParse([{ title: 'Ok', body: '<p></p>' }]).success).toBe(true)
+  })
+
+  it('counts an image or table as content even without text', () => {
+    expect(blogSectionsSchema.safeParse([{ title: '', body: '<p><img src="a.jpg" alt=""></p>' }]).success).toBe(true)
+    expect(blogSectionsSchema.safeParse([{ title: '', body: '<table><tr><td></td></tr></table>' }]).success).toBe(true)
+  })
+
+  it('writes no <h2> for a section without a heading', () => {
+    expect(sectionsToHtml([{ title: '', body: '<p>x</p>' }])).toBe('<p>x</p>')
   })
 
   it('drops blank FAQ rows and rejects half-filled ones', () => {

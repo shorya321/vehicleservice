@@ -18,8 +18,13 @@ export function ArticleSections({ sections }: ArticleSectionsProps) {
   return (
     <div className="prose-luxury article-sections">
       {sections.map((section) => (
-        <section key={section.id} id={section.id} aria-labelledby={`${section.id}-h`} className="article-section">
-          <h2 id={`${section.id}-h`}>{section.title}</h2>
+        <section
+          key={section.id}
+          id={section.id}
+          aria-labelledby={section.title ? `${section.id}-h` : undefined}
+          className="article-section"
+        >
+          {section.title && <h2 id={`${section.id}-h`}>{section.title}</h2>}
           <div dangerouslySetInnerHTML={{ __html: wrapTables(DOMPurify.sanitize(section.body)) }} />
         </section>
       ))}

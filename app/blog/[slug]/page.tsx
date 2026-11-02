@@ -84,7 +84,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   const sections = withAnchors(getPostSections(post))
   const faqs = getPostFaqs(post)
   const tocItems: TocItem[] = [
-    ...sections.map((s) => ({ id: s.id, label: s.title })),
+    ...sections.filter((s) => s.title).map((s) => ({ id: s.id, label: s.title })),
     ...(faqs.length > 0 ? [{ id: FAQ_ANCHOR, label: 'FAQ' }] : []),
   ]
   const faqJsonLd = faqPageJsonLd(faqs)

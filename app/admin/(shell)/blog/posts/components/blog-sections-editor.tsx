@@ -20,7 +20,8 @@ interface BlogSectionsEditorProps {
 
 /**
  * Article body as a list of sections. Each heading becomes an entry in the
- * public "On this page" list, in this order.
+ * public "On this page" list, in this order. A section with no heading renders
+ * its body only and gets no list entry.
  */
 export function BlogSectionsEditor({ control }: BlogSectionsEditorProps) {
   const { fields, append, remove, move } = useFieldArray({ control, name: 'sections' })
@@ -31,6 +32,7 @@ export function BlogSectionsEditor({ control }: BlogSectionsEditorProps) {
         <h3 className="text-sm font-medium">Content sections</h3>
         <p className="text-sm text-muted-foreground">
           Each heading is listed in the article&apos;s &quot;On this page&quot; menu. Readers click it to jump to the section.
+          Sections without a heading are left out of the menu.
         </p>
       </div>
 
@@ -68,7 +70,13 @@ export function BlogSectionsEditor({ control }: BlogSectionsEditorProps) {
             </div>
           </div>
 
-          <TextField control={control} name={`sections.${i}.title`} label="Heading (H2)" max={120} />
+          <TextField
+            control={control}
+            name={`sections.${i}.title`}
+            label="Heading (H2, optional)"
+            max={120}
+            description="Leave blank to continue the previous section. It will not appear in the contents menu."
+          />
 
           <FormField
             control={control}
