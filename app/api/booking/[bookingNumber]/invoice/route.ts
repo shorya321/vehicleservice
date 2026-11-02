@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { BookingInvoicePDF, type BookingInvoiceLineItem } from '@/lib/pdf/generators/booking-invoice';
 import { generatePDFBuffer, getPDFDownloadHeaders } from '@/lib/pdf/utils/pdf-generator';
+import { loadPlatformPdfLogo } from '@/lib/pdf/platform-logo';
 import { getEnabledCurrencies, getExchangeRates } from '@/lib/currency/server';
 import { formatPrice, formatAmount } from '@/lib/currency/format';
 // The customer copy, never lib/business/format-child-ages.ts, which the business module owns.
@@ -180,6 +181,7 @@ export async function GET(
         : undefined,
 
       companyName: BRAND_NAME,
+      logo: await loadPlatformPdfLogo(),
       companyAddress: BRAND_ADDRESS,
       companyEmail: process.env.RESEND_REPLY_TO_EMAIL || process.env.RESEND_FROM_EMAIL,
 

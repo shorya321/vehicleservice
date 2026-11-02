@@ -66,6 +66,18 @@ export interface EmailBrandColors {
 }
 
 /**
+ * The admin logo, resolved at send time for platform mail only. Read by the platform
+ * layout alone, so the business layout (which reads `logoUrl`) never shows it.
+ */
+export interface PlatformEmailLogo {
+  /** Absolute https URL a mail client can fetch. */
+  readonly url: string;
+  /** Pixel width at `height`, when the artwork's ratio is known. Null for uploads. */
+  readonly width: number | null;
+  readonly height: number;
+}
+
+/**
  * The brand a template renders under. Resolved per tenant, so a white-label
  * business's customers never see the platform's name.
  */
@@ -82,6 +94,8 @@ export interface EmailBrand {
    */
   readonly showPlatformLinks: boolean;
   readonly colors: EmailBrandColors;
+  /** Set by the sender for platform-scoped mail only. Tenants never carry one. */
+  readonly platformLogo?: PlatformEmailLogo | null;
 }
 
 export interface ResolvedMailConfig {

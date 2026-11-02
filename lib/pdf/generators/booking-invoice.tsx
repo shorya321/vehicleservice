@@ -14,6 +14,7 @@ import { PdfDocument } from '../document/pdf-document';
 import { DocumentHeader } from '../document/document-header';
 import { DetailPanel, MetaGrid, NotesBlock, SectionLabel, TotalsBox, type MetaItem } from '../document/blocks';
 import { platformPdfTheme } from '../document/theme';
+import { imagePixelSize, toDataUri, type PdfImageBytes } from '../utils/image';
 
 export interface BookingInvoiceLineItem {
   label: string;
@@ -35,6 +36,8 @@ export interface BookingInvoiceData {
   companyEmail?: string;
   companyPhone?: string;
   companyAddress?: string;
+  /** Admin logo for the header chip. Absent or null prints companyName as text. */
+  logo?: PdfImageBytes | null;
 
   // Customer (bill to)
   customerName: string;
@@ -96,6 +99,8 @@ export const BookingInvoicePDF = (data: BookingInvoiceData) => {
     >
       <DocumentHeader
         issuerName={data.companyName}
+        logo={data.logo ? toDataUri(data.logo) : undefined}
+        logoSize={data.logo ? (imagePixelSize(data.logo) ?? undefined) : undefined}
         contactLines={[data.companyEmail, data.companyPhone, data.companyAddress]}
         title="INVOICE"
         reference={data.invoiceNumber}

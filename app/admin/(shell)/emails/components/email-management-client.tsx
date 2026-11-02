@@ -23,6 +23,8 @@ import {
 } from '@/lib/email/utils/preview-data';
 import { templateComponents } from '@/lib/email/utils/template-components';
 import { render } from '@react-email/render';
+import { getPlatformBrand, registerBrandResolver } from '@/lib/email/brand/brand';
+import type { PlatformEmailLogo } from '@/lib/email/transport/types';
 import { Mail, Monitor, Smartphone } from 'lucide-react';
 import { sendTestEmail } from '../actions';
 import { toast } from 'sonner';
@@ -30,7 +32,12 @@ import { cn } from '@/lib/utils';
 
 type PreviewMode = 'desktop' | 'mobile';
 
-export function EmailManagementClient() {
+interface EmailManagementClientProps {
+  /** The admin logo, resolved on the server exactly as the sender resolves it. */
+  platformLogo: PlatformEmailLogo;
+}
+
+export function EmailManagementClient({ platformLogo }: EmailManagementClientProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplateType>('welcome');
   const [emailHtml, setEmailHtml] = useState('');
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
@@ -55,6 +62,9 @@ export function EmailManagementClient() {
     const generateEmailHtml = async () => {
       const TemplateComponent = templateComponents[selectedTemplate];
       const previewData = getTemplatePreviewData(selectedTemplate);
+      // The browser has no send scope, so give the preview the platform brand plus the
+      // logo the sender adds. Business templates ignore platformLogo, as when mailed.
+      registerBrandResolver(() => ({ ...getPlatformBrand(), platformLogo }));
       // createElement rather than calling the component directly: a template wrapped
       // in memo or forwardRef has no call signature, and the sender renders it the
       // same way, so the preview cannot diverge from what actually gets mailed.
@@ -63,7 +73,7 @@ export function EmailManagementClient() {
     };
 
     generateEmailHtml();
-  }, [selectedTemplate]);
+  }, [selectedTemplate, platformLogo]);
 
   const handleTemplateChange = async (value: EmailTemplateType) => {
     setSelectedTemplate(value);

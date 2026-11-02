@@ -85,6 +85,14 @@ export const EmailLayout = ({
             <Section className="em-px" style={masthead}>
               {brand.logoUrl ? (
                 <Img src={brand.logoUrl} alt={brand.name} height={40} style={logo} />
+              ) : brand.platformLogo ? (
+                <Img
+                  src={brand.platformLogo.url}
+                  alt={brand.name}
+                  height={brand.platformLogo.height}
+                  width={brand.platformLogo.width ?? undefined}
+                  style={logo}
+                />
               ) : isPlatformName && restWords.length > 0 ? (
                 <>
                   <Text style={wordmark}>{firstWord.toUpperCase()}</Text>

@@ -3,6 +3,7 @@ import { render } from '@react-email/render';
 import type React from 'react';
 import { getResendClient, getEmailConfig } from '../config';
 import { runWithBrand } from '../brand/brand-store.server';
+import { getPlatformEmailLogo } from '../brand/platform-logo.server';
 import {
   deliver,
   formatAddress,
@@ -323,6 +324,23 @@ async function sendViaSmtp(params: SendEmailParams, config: ResolvedMailConfig):
 }
 
 /**
+ * Adds the admin logo to platform-scoped mail. Tenant mail is returned untouched, and
+ * a lookup failure leaves the config as it was, so the masthead falls back to the
+ * wordmark instead of the send failing.
+ */
+async function withPlatformLogo(config: ResolvedMailConfig): Promise<ResolvedMailConfig> {
+  if (config.businessAccountId !== null) return config;
+
+  try {
+    const platformLogo = await getPlatformEmailLogo();
+    return { ...config, brand: { ...config.brand, platformLogo } };
+  } catch (error) {
+    console.error('[Email] Platform logo unavailable, sending with the wordmark:', error);
+    return config;
+  }
+}
+
+/**
  * The single place an email is rendered and handed to a transport.
  *
  * Never throws. A failed send returns { success: false } so that a caller mid-booking
@@ -349,11 +367,12 @@ export async function sendEmailWithConfig(
   let config: ResolvedMailConfig | null = resolved;
 
   try {
-    config =
+    config = await withPlatformLogo(
       resolved ??
-      (await resolveMailConfig(params.businessAccountId ?? null, {
-        forcePlatformTransport: params.forcePlatformTransport,
-      }));
+        (await resolveMailConfig(params.businessAccountId ?? null, {
+          forcePlatformTransport: params.forcePlatformTransport,
+        }))
+    );
 
     if (config.provider === 'platform_smtp' && platformTransportMode() === 'resend') {
       return await sendViaResend(params, config);

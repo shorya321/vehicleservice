@@ -2,6 +2,7 @@ import 'server-only'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { BookingInvoicePDF, type BookingInvoiceLineItem } from '@/lib/pdf/generators/booking-invoice'
 import { generatePDFBuffer, getPDFDownloadHeaders } from '@/lib/pdf/utils/pdf-generator'
+import { loadPlatformPdfLogo } from '@/lib/pdf/platform-logo'
 import { formatAmount } from '@/lib/currency/format'
 import { formatChildAges } from '@/lib/utils/child-ages'
 import { BRAND_ADDRESS, BRAND_NAME } from '@/lib/email/config'
@@ -112,6 +113,7 @@ export async function groupInvoiceResponse(
       ? paymentDetails.type.charAt(0).toUpperCase() + paymentDetails.type.slice(1)
       : undefined,
     companyName: BRAND_NAME,
+    logo: await loadPlatformPdfLogo(),
     companyAddress: BRAND_ADDRESS,
     companyEmail: process.env.RESEND_REPLY_TO_EMAIL || process.env.RESEND_FROM_EMAIL,
     customerName: primary ? `${primary.first_name} ${primary.last_name}` : 'Customer',
