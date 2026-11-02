@@ -17,6 +17,7 @@ import {
   submenuHasCount,
   type PortalNavGroup,
 } from '@/lib/portal-sidebar/nav'
+import type { PortalLogo } from '@/lib/site-settings/logo'
 
 let mockPathname = '/admin/vehicles'
 jest.mock('next/navigation', () => ({ usePathname: () => mockPathname }))
@@ -60,6 +61,15 @@ const groups: PortalNavGroup[] = [
 ]
 
 const brand = { href: '/admin/dashboard', subtitle: 'Admin Panel', icon: Car }
+
+const logo: PortalLogo = {
+  light: '/logo-light.png',
+  dark: '/logo-dark.png',
+  mark: '/mark.png',
+  width: 160,
+  height: 40,
+  custom: true,
+}
 
 function render(props: Partial<Parameters<typeof PortalSidebar>[0]> = {}): string {
   return renderToStaticMarkup(
@@ -115,12 +125,29 @@ describe('PortalSidebar', () => {
 
   it('renders the brand, group labels, View site and Collapse', () => {
     const html = render()
-    expect(html).toContain('VehicleService')
+    expect(html).toContain('Infinia Transfers')
+    expect(html).toContain('aria-label="Infinia Transfers Admin Panel home"')
     expect(html).toContain('Admin Panel')
     expect(html).toContain('Management')
     expect(html).toContain('href="/"')
     expect(html).toContain('View site')
     expect(html).toContain('aria-label="Collapse sidebar"')
+  })
+
+  it('shows both theme logos and the subtitle when a logo is given', () => {
+    const html = render({ logo })
+    expect(html).toContain('src="/logo-light.png"')
+    expect(html).toContain('src="/logo-dark.png"')
+    expect(html).toContain('Admin Panel')
+    expect(html).not.toContain('psb-brand__name')
+    expect(html).not.toContain('src="/mark.png"')
+  })
+
+  it('shows only the mark in the collapsed rail', () => {
+    const html = render({ logo, rail: true })
+    expect(html).toContain('src="/mark.png"')
+    expect(html).not.toContain('src="/logo-light.png"')
+    expect(html).toContain('aria-label="Infinia Transfers Admin Panel home"')
   })
 
   it('opens the parent of the current page and marks only the child current', () => {
