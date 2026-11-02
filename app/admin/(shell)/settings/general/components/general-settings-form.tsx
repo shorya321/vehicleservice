@@ -94,6 +94,8 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
       header_logo_dark_url: currentSettings.header_logo_dark_url,
       footer_logo_url: currentSettings.footer_logo_url,
       footer_logo_dark_url: currentSettings.footer_logo_dark_url,
+      admin_logo_url: currentSettings.admin_logo_url,
+      admin_logo_dark_url: currentSettings.admin_logo_dark_url,
       favicon_url: currentSettings.favicon_url,
       copyright_text: currentSettings.copyright_text,
       support_email: currentSettings.support_email,

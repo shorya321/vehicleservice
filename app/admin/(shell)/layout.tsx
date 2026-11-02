@@ -8,11 +8,13 @@
  */
 
 import { AdminLayout } from '@/components/layout/admin-layout';
+import { getPortalLogo } from '@/lib/site-settings/portal-logo';
 
-export default function AdminShellLayout({
+export default async function AdminShellLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <AdminLayout>{children}</AdminLayout>;
+  const logo = await getPortalLogo();
+  return <AdminLayout logo={logo}>{children}</AdminLayout>;
 }

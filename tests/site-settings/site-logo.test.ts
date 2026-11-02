@@ -68,3 +68,31 @@ describe('resolveSiteLogo', () => {
     expect(logo.custom).toBe(false)
   })
 })
+
+describe('the admin and vendor portal logo slot', () => {
+  it('reads as no upload on a config saved before the slot existed', () => {
+    const parsed = settings({ header_logo_url: 'https://x/h.png' })
+    expect(parsed.admin_logo_url).toBeNull()
+    expect(parsed.admin_logo_dark_url).toBeNull()
+  })
+
+  it('falls back to the bundled horizontal Infinia logo, not the header upload', () => {
+    const logo = resolveSiteLogo(settings({ header_logo_url: 'https://x/h.png' }), 'admin')
+    expect(logo).toMatchObject({
+      custom: false,
+      light: BUILT_IN_LOGOS.horizontal.light,
+      dark: BUILT_IN_LOGOS.horizontal.dark,
+    })
+  })
+
+  it('uses its own upload, filling the other theme when only one is set', () => {
+    const logo = resolveSiteLogo(settings({ admin_logo_dark_url: 'https://x/a.png' }), 'admin')
+    expect(logo).toMatchObject({ custom: true, light: 'https://x/a.png', dark: 'https://x/a.png' })
+  })
+
+  it('leaves the header and footer slots alone', () => {
+    const parsed = settings({ admin_logo_url: 'https://x/a.png' })
+    expect(resolveSiteLogo(parsed, 'header').custom).toBe(false)
+    expect(resolveSiteLogo(parsed, 'footer').custom).toBe(false)
+  })
+})

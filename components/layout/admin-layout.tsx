@@ -10,14 +10,17 @@ import { TopProgressBar } from "./navigation-progress/top-progress-bar"
 import { ContentLoader } from "./navigation-progress/content-loader"
 import { flattenNavLabels } from "./navigation-progress/classify-navigation"
 import { useScrollbarReveal } from "@/lib/hooks/use-scrollbar-reveal"
+import type { PortalLogo } from "@/lib/site-settings/logo"
 
 const ADMIN_NAV_LABELS = flattenNavLabels(navGroups)
 
 interface AdminLayoutProps {
   children: React.ReactNode
+  /** Sidebar logo, set in Settings > General > Logos. */
+  logo?: PortalLogo
 }
 
-export function AdminLayout({ children }: AdminLayoutProps) {
+export function AdminLayout({ children, logo }: AdminLayoutProps) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   useScrollbarReveal()
@@ -58,7 +61,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             sidebarOpen ? "visible translate-x-0" : "invisible -translate-x-full"
           )}
         >
-          <Sidebar />
+          <Sidebar logo={logo} />
         </aside>
 
         <div className="flex flex-1 flex-col overflow-hidden">

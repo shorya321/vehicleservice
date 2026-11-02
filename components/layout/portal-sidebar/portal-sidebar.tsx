@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation"
 import { ExternalLink, PanelLeftClose, PanelLeftOpen, X, type LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { activeParentNames, type PortalNavCounts, type PortalNavGroup } from "@/lib/portal-sidebar/nav"
+import type { PortalLogo } from "@/lib/site-settings/logo"
 import { PortalNavItem } from "./portal-nav-item"
 
 export interface PortalSidebarBrand {
@@ -18,6 +19,8 @@ export interface PortalSidebarBrand {
 interface PortalSidebarProps {
   groups: readonly PortalNavGroup[]
   brand: PortalSidebarBrand
+  /** Wordmark shown in the brand row when expanded. Without it, the icon and name show. */
+  logo?: PortalLogo
   rail: boolean
   canRail: boolean
   onToggleRail: () => void
@@ -27,11 +30,26 @@ interface PortalSidebarProps {
 }
 
 const NO_COUNTS: PortalNavCounts = {}
+const BRAND_NAME = "Infinia Transfers"
+
+/** Both theme files render; CSS shows the one matching the admin theme class. */
+function PortalSidebarLogo({ logo, subtitle }: { logo: PortalLogo; subtitle: string }) {
+  return (
+    <span className="psb-brand__logo-wrap">
+      {/* eslint-disable-next-line @next/next/no-img-element -- admin upload of unknown size, sized by CSS */}
+      <img src={logo.light} alt="" className="psb-brand__logo psb-brand__logo--light" />
+      {/* eslint-disable-next-line @next/next/no-img-element -- admin upload of unknown size, sized by CSS */}
+      <img src={logo.dark} alt="" className="psb-brand__logo psb-brand__logo--dark" />
+      <span className="psb-brand__sub">{subtitle}</span>
+    </span>
+  )
+}
 
 /** The admin and vendor sidebar: brand row, grouped navigation, footer. */
 export function PortalSidebar({
   groups,
   brand,
+  logo,
   rail,
   canRail,
   onToggleRail,
@@ -63,15 +81,24 @@ export function PortalSidebar({
   return (
     <div className={cn("portal-sidebar psb", rail && "psb--rail")}>
       <div className="psb-brand">
-        <Link href={brand.href} className="psb-brand__link" aria-label={`VehicleService ${brand.subtitle} home`}>
-          <span className="psb-brand__mark" aria-hidden="true">
-            <BrandIcon className="h-[17px] w-[17px]" />
-          </span>
-          {rail ? null : (
-            <span className="psb-brand__text">
-              <span className="psb-brand__name">VehicleService</span>
-              <span className="psb-brand__sub">{brand.subtitle}</span>
-            </span>
+        <Link href={brand.href} className="psb-brand__link" aria-label={`${BRAND_NAME} ${brand.subtitle} home`}>
+          {logo && !rail ? (
+            <PortalSidebarLogo logo={logo} subtitle={brand.subtitle} />
+          ) : logo ? (
+            // eslint-disable-next-line @next/next/no-img-element -- admin upload of unknown size, sized by CSS
+            <img src={logo.mark} alt="" className="psb-brand__railmark" />
+          ) : (
+            <>
+              <span className="psb-brand__mark" aria-hidden="true">
+                <BrandIcon className="h-[17px] w-[17px]" />
+              </span>
+              {rail ? null : (
+                <span className="psb-brand__text">
+                  <span className="psb-brand__name">{BRAND_NAME}</span>
+                  <span className="psb-brand__sub">{brand.subtitle}</span>
+                </span>
+              )}
+            </>
           )}
         </Link>
         {onClose ? (

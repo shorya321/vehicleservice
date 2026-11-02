@@ -1517,6 +1517,15 @@ html.light[style*="--admin-surface-0"] [role="menu"].hdr-menu [role="menuitem"].
 .psb-brand__text { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
 .psb-brand__name { font-family: var(--admin-font-display); font-size: 14px; font-weight: 700; color: hsl(var(--foreground)); }
 .psb-brand__sub { font-size: 11.5px; color: var(--psb-label); }
+.psb-brand__logo-wrap { display: flex; flex-direction: column; justify-content: center; gap: 4px; min-width: 0; }
+/* 56px row = logo + sub-label with ~8px air above and below. */
+.psb-brand__logo { display: block; height: auto; max-height: 24px; max-width: 168px; width: auto; object-fit: contain; object-position: left center; }
+.psb-brand__logo-wrap .psb-brand__sub { font-size: 10px; line-height: 1; letter-spacing: 0.08em; text-transform: uppercase; padding-left: 1px; }
+/* Dark is the portal default; .light swaps to the light-background file. */
+.psb-brand__logo--light { display: none; }
+.light .psb-brand__logo--light { display: block; }
+.light .psb-brand__logo--dark { display: none; }
+.psb-brand__railmark { display: block; width: 40px; height: 40px; object-fit: contain; }
 .psb-brand__close { align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; color: hsl(var(--muted-foreground)); }
 .psb-brand__close:hover { background: var(--psb-hover); color: hsl(var(--foreground)); }
 

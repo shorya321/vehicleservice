@@ -8,9 +8,15 @@ import { ImageUpload } from '@/components/ui/image-upload'
 import type { SiteSettingsFormValues } from '@/lib/site-settings/schema'
 import { resolveSiteLogo, type LogoSlot } from '@/lib/site-settings/logo'
 
-export type LogoUploadType = 'header' | 'header_dark' | 'footer' | 'footer_dark' | 'favicon'
+export type LogoUploadType = 'header' | 'header_dark' | 'footer' | 'footer_dark' | 'admin' | 'admin_dark' | 'favicon'
 
-type LogoField = 'header_logo_url' | 'header_logo_dark_url' | 'footer_logo_url' | 'footer_logo_dark_url'
+type LogoField =
+  | 'header_logo_url'
+  | 'header_logo_dark_url'
+  | 'footer_logo_url'
+  | 'footer_logo_dark_url'
+  | 'admin_logo_url'
+  | 'admin_logo_dark_url'
 
 interface LogosSettingsCardProps {
   form: UseFormReturn<SiteSettingsFormValues>
@@ -35,6 +41,14 @@ const SLOTS: { slot: LogoSlot; title: string; fields: { name: LogoField; type: L
     fields: [
       { name: 'footer_logo_url', type: 'footer', label: 'Light mode', help: 'Dark lettering, for a light background.' },
       { name: 'footer_logo_dark_url', type: 'footer_dark', label: 'Dark mode', help: 'Light lettering, for a dark background.' },
+    ],
+  },
+  {
+    slot: 'admin',
+    title: 'Admin and vendor portal',
+    fields: [
+      { name: 'admin_logo_url', type: 'admin', label: 'Light mode', help: 'Dark lettering, for a light background.' },
+      { name: 'admin_logo_dark_url', type: 'admin_dark', label: 'Dark mode', help: 'Light lettering, for a dark background.' },
     ],
   },
 ]

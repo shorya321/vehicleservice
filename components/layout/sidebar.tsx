@@ -21,6 +21,7 @@ import { useAdminNotifications } from "@/lib/hooks/use-admin-notifications"
 import { usePendingVendorApplications } from "@/lib/hooks/use-pending-vendor-applications"
 import { useSidebarRail } from "@/lib/hooks/use-sidebar-rail"
 import type { PortalNavGroup } from "@/lib/portal-sidebar/nav"
+import type { PortalLogo } from "@/lib/site-settings/logo"
 import { PortalSidebar, type PortalSidebarBrand } from "./portal-sidebar/portal-sidebar"
 
 export const navGroups: PortalNavGroup[] = [
@@ -115,7 +116,11 @@ const ADMIN_BRAND: PortalSidebarBrand = {
   icon: Car,
 }
 
-export function Sidebar() {
+interface SidebarProps {
+  logo?: PortalLogo
+}
+
+export function Sidebar({ logo }: SidebarProps) {
   const { rail, canRail, toggleRail } = useSidebarRail("admin-sidebar-rail", 768)
   const { unreadCount } = useAdminNotifications(5)
   const pendingApplications = usePendingVendorApplications()
@@ -124,6 +129,7 @@ export function Sidebar() {
     <PortalSidebar
       groups={navGroups}
       brand={ADMIN_BRAND}
+      logo={logo}
       rail={rail}
       canRail={canRail}
       onToggleRail={toggleRail}

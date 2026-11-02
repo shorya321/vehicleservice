@@ -16,7 +16,7 @@ export const BUILT_IN_LOGOS = {
   },
 } as const
 
-export type LogoSlot = 'header' | 'footer'
+export type LogoSlot = 'header' | 'footer' | 'admin'
 
 export interface ResolvedLogo {
   light: string
@@ -28,7 +28,13 @@ export interface ResolvedLogo {
   custom: boolean
 }
 
-const SLOT_ARTWORK = { header: 'horizontal', footer: 'stacked' } as const
+/** Admin and vendor sidebar logo, plus the mark shown when the sidebar is collapsed. */
+export interface PortalLogo extends ResolvedLogo {
+  /** The favicon upload, else the gold Infinia mark. */
+  mark: string
+}
+
+const SLOT_ARTWORK = { header: 'horizontal', footer: 'stacked', admin: 'horizontal' } as const
 
 /**
  * The file each theme shows for a slot. One upload fills both themes, so a
@@ -36,19 +42,32 @@ const SLOT_ARTWORK = { header: 'horizontal', footer: 'stacked' } as const
  */
 export type LogoSettings = Pick<
   SiteSettingsConfig,
-  'header_logo_url' | 'header_logo_dark_url' | 'footer_logo_url' | 'footer_logo_dark_url'
+  | 'header_logo_url'
+  | 'header_logo_dark_url'
+  | 'footer_logo_url'
+  | 'footer_logo_dark_url'
+  | 'admin_logo_url'
+  | 'admin_logo_dark_url'
 >
 
+const SLOT_FIELDS = {
+  header: { light: 'header_logo_url', dark: 'header_logo_dark_url', width: 160, height: 40 },
+  footer: { light: 'footer_logo_url', dark: 'footer_logo_dark_url', width: 180, height: 48 },
+  admin: { light: 'admin_logo_url', dark: 'admin_logo_dark_url', width: 160, height: 40 },
+} as const satisfies Record<LogoSlot, { light: keyof LogoSettings; dark: keyof LogoSettings; width: number; height: number }>
+
 export function resolveSiteLogo(settings: LogoSettings, slot: LogoSlot): ResolvedLogo {
-  const light = slot === 'header' ? settings.header_logo_url : settings.footer_logo_url
-  const dark = slot === 'header' ? settings.header_logo_dark_url : settings.footer_logo_dark_url
+  const fields = SLOT_FIELDS[slot]
+  // `?? null` keeps settings saved before a slot existed reading as "no upload".
+  const light = settings[fields.light] ?? null
+  const dark = settings[fields.dark] ?? null
 
   if (light || dark) {
     return {
       light: light ?? dark ?? '',
       dark: dark ?? light ?? '',
-      width: slot === 'header' ? 160 : 180,
-      height: slot === 'header' ? 40 : 48,
+      width: fields.width,
+      height: fields.height,
       custom: true,
     }
   }

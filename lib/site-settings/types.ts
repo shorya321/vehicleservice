@@ -35,6 +35,9 @@ export interface SiteSettingsConfig {
   header_logo_dark_url: string | null
   footer_logo_url: string | null
   footer_logo_dark_url: string | null
+  /** Admin and vendor portal sidebar. Null shows the bundled Infinia logo. */
+  admin_logo_url: string | null
+  admin_logo_dark_url: string | null
   /** Browser tab and home-screen icon. Null shows the bundled Infinia icon. */
   favicon_url: string | null
   copyright_text: string
@@ -86,6 +89,8 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsConfig = {
   header_logo_dark_url: null,
   footer_logo_url: null,
   footer_logo_dark_url: null,
+  admin_logo_url: null,
+  admin_logo_dark_url: null,
   favicon_url: null,
   copyright_text: 'Infinia Transfers',
   support_email: 'support@infiniatransfers.com',
@@ -138,6 +143,8 @@ export function parseSiteSettings(raw: unknown): SiteSettingsConfig {
     header_logo_dark_url: typeof obj.header_logo_dark_url === 'string' ? obj.header_logo_dark_url : null,
     footer_logo_url: typeof obj.footer_logo_url === 'string' ? obj.footer_logo_url : null,
     footer_logo_dark_url: typeof obj.footer_logo_dark_url === 'string' ? obj.footer_logo_dark_url : null,
+    admin_logo_url: typeof obj.admin_logo_url === 'string' ? obj.admin_logo_url : null,
+    admin_logo_dark_url: typeof obj.admin_logo_dark_url === 'string' ? obj.admin_logo_dark_url : null,
     favicon_url: typeof obj.favicon_url === 'string' ? obj.favicon_url : null,
     copyright_text: typeof obj.copyright_text === 'string' ? obj.copyright_text : DEFAULT_SITE_SETTINGS.copyright_text,
     support_email: typeof obj.support_email === 'string' ? obj.support_email : DEFAULT_SITE_SETTINGS.support_email,

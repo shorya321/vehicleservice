@@ -33,9 +33,11 @@ import { useSidebarRail } from "@/lib/hooks/use-sidebar-rail"
 import { useScrollbarReveal } from "@/lib/hooks/use-scrollbar-reveal"
 import type { PortalNavGroup } from "@/lib/portal-sidebar/nav"
 import { PortalSidebar, type PortalSidebarBrand } from "./portal-sidebar/portal-sidebar"
+import type { PortalLogo } from "@/lib/site-settings/logo"
 
 interface VendorLayoutProps {
   children: React.ReactNode
+  logo?: PortalLogo
 }
 
 const navGroups: PortalNavGroup[] = [
@@ -78,7 +80,7 @@ const VENDOR_PROFILE_LINKS: ProfileMenuLink[] = [
   { href: "/vendor/profile", label: "Business profile", icon: User },
 ]
 
-export function VendorLayout({ children }: VendorLayoutProps) {
+export function VendorLayout({ children, logo }: VendorLayoutProps) {
   const { user, vendorApplication } = useVendorData()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { isOpen: commandOpen, setIsOpen: setCommandOpen } = useCommandPalette()
@@ -116,6 +118,7 @@ export function VendorLayout({ children }: VendorLayoutProps) {
           <PortalSidebar
             groups={navGroups}
             brand={VENDOR_BRAND}
+            logo={logo}
             rail={rail}
             canRail={canRail}
             onToggleRail={toggleRail}

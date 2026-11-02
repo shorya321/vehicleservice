@@ -12,6 +12,7 @@ import { VendorLayoutShell } from '@/components/layout/vendor-layout-shell';
 import { VendorDataProvider } from '@/lib/vendor/vendor-data-context';
 import { getCurrentUserProfile } from '@/lib/auth/user-actions';
 import { createClient } from '@/lib/supabase/server';
+import { getPortalLogo } from '@/lib/site-settings/portal-logo';
 
 export const dynamic = 'force-dynamic'
 
@@ -20,7 +21,7 @@ export default async function VendorRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const theme = await getAdminThemeSettings();
+  const [theme, logo] = await Promise.all([getAdminThemeSettings(), getPortalLogo()]);
 
   // Fetch vendor data at layout level so sidebar/header always have it
   let vendorData: { user?: any; vendorApplication?: any } = {};
@@ -51,7 +52,7 @@ export default async function VendorRootLayout({
     <div className="portal-shell font-[family-name:var(--admin-font-body)]">
       <AdminThemeContextProvider theme={theme}>
         <VendorDataProvider data={vendorData}>
-          <VendorLayoutShell>
+          <VendorLayoutShell logo={logo}>
             {children}
           </VendorLayoutShell>
         </VendorDataProvider>

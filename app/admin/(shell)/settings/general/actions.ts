@@ -135,6 +135,8 @@ export async function uploadSiteLogo(
       header_dark: 'header_logo_dark',
       footer: 'footer_logo',
       footer_dark: 'footer_logo_dark',
+      admin: 'admin_logo',
+      admin_dark: 'admin_logo_dark',
       favicon: 'favicon',
     }
     const prefix = PREFIX_BY_TYPE[logoType ?? ''] ?? 'header_logo'
