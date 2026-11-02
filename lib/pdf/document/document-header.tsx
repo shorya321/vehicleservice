@@ -6,11 +6,17 @@
 
 import { usePdfcnTheme } from '@/components/pdf/theme-provider';
 import { Image, Text, View } from '@/lib/pdf-primitives';
+import type { PixelSize } from '../utils/image';
+import { fitLogo, LOGO_HEIGHT, LOGO_MAX_WIDTH } from './logo-fit';
+
+const LOGO_CHIP_PADDING = 6;
 
 interface DocumentHeaderProps {
   issuerName: string;
   /** Data URI (see lib/pdf/utils/image.ts). Omit to print issuerName as a wordmark. */
   logo?: string;
+  /** Pixel size of `logo` (see imagePixelSize). Lets the chip wrap the logo tightly. */
+  logoSize?: PixelSize;
   contactLines: Array<string | undefined>;
   title: string;
   reference: string;
@@ -21,6 +27,7 @@ interface DocumentHeaderProps {
 export function DocumentHeader({
   issuerName,
   logo,
+  logoSize,
   contactLines,
   title,
   reference,
@@ -30,6 +37,7 @@ export function DocumentHeader({
   const onBand = theme.colors.primaryForeground;
   const contact = contactLines.filter((line): line is string => Boolean(line));
   const meta = metaLines.filter((line): line is string => Boolean(line));
+  const fit = logoSize ? fitLogo(logoSize) : null;
 
   return (
     <View
@@ -51,12 +59,18 @@ export function DocumentHeader({
               alignSelf: 'flex-start',
               backgroundColor: '#ffffff',
               borderRadius: 3,
-              padding: 6,
+              padding: LOGO_CHIP_PADDING,
               marginBottom: 8,
+              // Forme ignores alignSelf here and stretches the chip to the column, so give it
+              // the logo's width when known. Without a size, keep the previous behaviour.
+              ...(fit ? { width: fit.width + LOGO_CHIP_PADDING * 2 } : {}),
             }}
           >
-            {/* Height only: Forme keeps the aspect ratio when one dimension is given. */}
-            <Image src={logo} alt={issuerName} height={30} style={{ maxWidth: 140 }} />
+            {fit ? (
+              <Image src={logo} alt={issuerName} width={fit.width} height={fit.height} />
+            ) : (
+              <Image src={logo} alt={issuerName} height={LOGO_HEIGHT} style={{ maxWidth: LOGO_MAX_WIDTH }} />
+            )}
           </View>
         ) : (
           <Text style={{ color: onBand, fontSize: 18, fontWeight: 700, marginBottom: 6 }}>

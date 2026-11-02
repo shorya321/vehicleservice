@@ -22,7 +22,7 @@ import { PdfDocument } from '../document/pdf-document';
 import { DocumentHeader } from '../document/document-header';
 import { MetaGrid, NotesBlock, SectionLabel, TotalsBox } from '../document/blocks';
 import { pdfTheme } from '../document/theme';
-import { toDataUri } from '../utils/image';
+import { imagePixelSize, toDataUri } from '../utils/image';
 
 /** In-memory image for the PDF engine. Declared locally so lib/pdf stays independent. */
 export interface QuotationPdfLogo {
@@ -206,6 +206,7 @@ export const QuotationPDF = (data: QuotationPdfData) => {
       <DocumentHeader
         issuerName={data.brandName}
         logo={data.logo ? toDataUri(data.logo) : undefined}
+        logoSize={data.logo ? (imagePixelSize(data.logo) ?? undefined) : undefined}
         contactLines={[data.companyEmail, data.companyPhone, data.companyAddress]}
         title="QUOTATION"
         reference={data.quotationNumber}
