@@ -74,7 +74,7 @@ export function SearchPageSkeleton() {
         </div>
       </section>
 
-      <section className="editorial-section editorial-section--raised border-t border-[var(--graphite)]">
+      <section className="editorial-section editorial-section--raised">
         <div className="luxury-container">
           <div className="max-w-2xl">
             <Bar className="h-3 w-20" />

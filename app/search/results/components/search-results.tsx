@@ -268,7 +268,7 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
         </motion.section>
 
         {/* ---- Band 2: the fleet for this trip -------------------------- */}
-        <section className="editorial-section editorial-section--raised border-t border-[var(--graphite)]">
+        <section className="editorial-section editorial-section--raised">
           <div className="luxury-container">
             <motion.header
               className="max-w-2xl"

@@ -8438,6 +8438,58 @@
     }
   }
 
+  /* Search results "Three steps from here to pickup."
+     (app/search/results/components/booking-steps-band.tsx, shared by the
+     transfer, hourly and multi-city results pages).
+
+     The home promise-route card without the road: no fill, stub hairline
+     and shadow, an icon in the gold ring. Static list items, so no pressed
+     state and no pointer. */
+  .steps-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.5rem;
+    background: transparent;
+    border: 1px solid var(--stub-line);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+    transition: border-color 250ms var(--ease-luxury);
+  }
+
+  .steps-card:hover {
+    border-color: rgba(var(--gold-rgb), 0.5);
+  }
+
+  .steps-card__icon {
+    display: grid;
+    place-items: center;
+    align-self: flex-start;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 1.25rem;
+    border: 1px solid rgba(var(--gold-rgb), 0.55);
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(var(--gold-rgb), 0.1);
+    color: var(--gold-text);
+  }
+
+  .steps-card .editorial-list-body {
+    margin-bottom: 1rem;
+  }
+
+  .steps-card__foot {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--graphite);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .steps-card {
+      transition: none;
+    }
+  }
+
   /* Onboard extras tiles, "Quietly included"
      (components/home/additional-services.tsx).
 

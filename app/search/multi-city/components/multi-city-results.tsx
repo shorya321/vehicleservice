@@ -116,7 +116,7 @@ export function MultiCityResults({ legs, vehicleTypes, vehicleTypesByCategory, m
         </div>
       </motion.section>
 
-      <section className="editorial-section editorial-section--raised border-t border-[var(--graphite)]">
+      <section className="editorial-section editorial-section--raised">
         <div className="luxury-container">
           <header className="max-w-2xl">
             <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />The fleet</p>

@@ -181,7 +181,7 @@ export function HourlyResults({
         </div>
       </motion.section>
 
-      <section className="editorial-section editorial-section--raised border-t border-[var(--graphite)]">
+      <section className="editorial-section editorial-section--raised">
         <div className="luxury-container">
           <motion.header
             className="max-w-2xl"
