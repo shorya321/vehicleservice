@@ -1,7 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { detectCurrencyFromAcceptLanguage, isWellFormedCurrencyCode } from '@/lib/currency/detect'
-import { CURRENCY_COOKIE_NAME, CURRENCY_COOKIE_MAX_AGE } from '@/lib/currency/types'
 
 /**
  * Routes whose Server Actions authenticate themselves, so middleware does not have to.
@@ -113,29 +111,8 @@ export async function proxy(request: NextRequest) {
     console.error('Middleware fetch error:', error)
   }
 
-  // Currency preference handling (after auth so supabaseResponse has refreshed cookies)
-  const currencyCookie = request.cookies.get(CURRENCY_COOKIE_NAME)
-  if (!currencyCookie?.value) {
-    const acceptLanguage = request.headers.get('accept-language')
-    const detectedCurrency = detectCurrencyFromAcceptLanguage(acceptLanguage)
-    supabaseResponse.cookies.set(CURRENCY_COOKIE_NAME, detectedCurrency, {
-      maxAge: CURRENCY_COOKIE_MAX_AGE,
-      path: '/',
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: false,
-    })
-  } else if (!isWellFormedCurrencyCode(currencyCookie.value)) {
-    const acceptLanguage = request.headers.get('accept-language')
-    const detectedCurrency = detectCurrencyFromAcceptLanguage(acceptLanguage)
-    supabaseResponse.cookies.set(CURRENCY_COOKIE_NAME, detectedCurrency, {
-      maxAge: CURRENCY_COOKIE_MAX_AGE,
-      path: '/',
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: false,
-    })
-  }
+  // Currency: no cookie means the platform default (currency_settings.is_default).
+  // The cookie is only written when the visitor picks one in the selector.
 
   // Domain-based business identification for white-labeling
   const hostname = request.headers.get('host') || request.nextUrl.hostname
