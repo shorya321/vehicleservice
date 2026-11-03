@@ -146,7 +146,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </div>
       )}
       {content.fleet.visible && (
-        <div className="bg-[var(--black-rich)] border-t border-[var(--graphite)]">
+        <div className="bg-[var(--black-rich)]">
           <VehicleClasses content={content.fleet} />
         </div>
       )}
@@ -158,7 +158,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       {/* Testimonials reads uncached review data far below the fold, so it
           streams in rather than holding back the hero's HTML. */}
       {content.testimonials.visible && (
-        <div className="border-t border-[var(--graphite)]">
+        <div>
           <Suspense fallback={null}>
             <Testimonials content={content.testimonials} />
           </Suspense>
