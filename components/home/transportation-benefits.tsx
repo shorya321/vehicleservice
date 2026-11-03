@@ -2,6 +2,7 @@
 import { motion, useReducedMotion } from "motion/react"
 
 import type { HomeContent } from "@/lib/cms/templates/home/schema"
+import { PromiseRoute } from "./promise-route"
 
 interface TransportationBenefitsProps {
   content: HomeContent['benefits']
@@ -42,29 +43,7 @@ export function TransportationBenefits({ content }: TransportationBenefitsProps)
           {content.body && <p className="editorial-body mt-6">{content.body}</p>}
         </motion.header>
 
-        {/* Straight 1 to 3 at 900px, with no 2-col step: three items in two
-            columns leaves one of them stranded on its own row. */}
-        <ol className="mt-12 grid grid-cols-1 gap-5 min-[900px]:grid-cols-3">
-          {content.items.map((p, index) => (
-            <motion.li
-              key={index}
-              className="promise-card"
-              initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: reduceMotion ? 0 : 0.45,
-                delay: reduceMotion ? 0 : index * 0.06,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              viewport={{ once: true, amount: 0.2 }}
-            >
-              <span className="promise-card__index numeric">{String(index + 1).padStart(2, '0')}</span>
-              <h3 className="editorial-list-title">{p.title}</h3>
-              <p className="editorial-list-body">{p.body}</p>
-              {p.meta && <span className="promise-card__foot editorial-list-meta">{p.meta}</span>}
-            </motion.li>
-          ))}
-        </ol>
+        <PromiseRoute items={content.items} />
       </div>
     </section>
   )
