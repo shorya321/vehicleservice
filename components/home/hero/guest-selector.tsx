@@ -12,7 +12,7 @@
  * shadcn, not the luxury CSS vars used here.
  */
 
-import { ChevronDown, Minus, Plus, Users } from 'lucide-react'
+import { ChevronDown, Loader2, Minus, Plus, Users } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { formatGuestSummary, getSeatedCount, type GuestBreakdown } from './guest-breakdown'
 
@@ -42,6 +42,11 @@ interface GuestSelectorProps {
    * change is expensive (e.g. a server round trip) should act on close instead.
    */
   onOpenChange?: (open: boolean) => void
+  /**
+   * Swaps the guests icon for a spinner, the way the results date picker swaps its calendar icon.
+   * Opt-in: only the search-results header has a change that loads.
+   */
+  loading?: boolean
 }
 
 interface StepperRowProps {
@@ -122,6 +127,7 @@ export function GuestSelector({
   className,
   showChevron = false,
   onOpenChange,
+  loading = false,
 }: GuestSelectorProps) {
   const seated = getSeatedCount(value)
   const seatsFull = seated >= maxSeated
@@ -139,10 +145,17 @@ export function GuestSelector({
           className={className ?? 'search-bar-input search-bar-date-trigger'}
           aria-label={`Guests, ${formatGuestSummary(value)}`}
         >
-          <Users
-            className="w-4 h-4 shrink-0 text-[var(--text-muted)]"
-            aria-hidden
-          />
+          {loading ? (
+            <Loader2
+              className="w-4 h-4 shrink-0 animate-spin text-[var(--gold-text)] motion-reduce:animate-none"
+              aria-hidden
+            />
+          ) : (
+            <Users
+              className="w-4 h-4 shrink-0 text-[var(--text-muted)]"
+              aria-hidden
+            />
+          )}
           <span className="min-w-0 truncate">{formatGuestSummary(value)}</span>
           {showChevron && (
             <ChevronDown

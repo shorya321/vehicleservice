@@ -13,7 +13,6 @@
  */
 
 import { useCallback, useOptimistic, useState } from 'react'
-import { Loader2 } from 'lucide-react'
 import { rebuildSearchUrl, type ResultsSearchParams } from './results-search-params'
 import { describeSearch, useSearchRefresh } from './search-refresh-context'
 import { GuestSelector } from '@/components/home/hero/guest-selector'
@@ -109,17 +108,14 @@ export function ResultsGuestPicker({ searchParams, className }: ResultsGuestPick
         onOpenChange={(open) => {
           if (!open) commit(guests)
         }}
+        // Inside the trigger, in place of the guests icon, like the date picker's spinner. It used
+        // to float 20px outside the field, where it read as loose on a phone.
+        loading={isLoadingThis}
         className={
           className ??
           'flex min-h-9 w-full items-center gap-1.5 rounded-md border border-[var(--graphite)] bg-transparent px-2.5 text-[1rem] text-[var(--text-primary)] transition-colors hover:border-[var(--gold-text)]'
         }
       />
-      {isLoadingThis && (
-        <Loader2
-          className="absolute -right-5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin text-[var(--gold-text)] motion-reduce:animate-none"
-          aria-hidden="true"
-        />
-      )}
     </div>
   )
 }
