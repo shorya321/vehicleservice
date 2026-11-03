@@ -4352,8 +4352,12 @@
   color: #d08700;
 }
 
+.dark .checkout-service-age-hint {
+  color: #e8b339;
+}
+
 @media (prefers-color-scheme: dark) {
-  .checkout-service-age-hint {
+  :root:not(.light) .checkout-service-age-hint {
     color: #e8b339;
   }
 }

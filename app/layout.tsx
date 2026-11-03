@@ -118,8 +118,8 @@ export default async function RootLayout({
         <BookingTimezoneSync timeZone={timeZone} />
         <NextThemesProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem={true}
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
           {children}
