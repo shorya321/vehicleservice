@@ -8790,27 +8790,12 @@
     display: grid;
     gap: 1.75rem;
     padding: clamp(1.75rem, 5vw, 4.5rem);
-    background-color: var(--stub-bot);
-    background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
-    border: 1px solid var(--stub-line);
+    /* One even tone: the old top-to-bottom gradient went beige at the foot in
+       light and grey at the head in dark. The distance rings carry the depth. */
+    background-color: var(--stub-mid);
     border-radius: 28px;
     box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
     color: var(--text-primary);
-  }
-
-  /* Dot field behind the map, faded out before it reaches the copy. */
-  .after-book-plate__field {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background-image: radial-gradient(
-      color-mix(in srgb, var(--text-primary) 14%, transparent) 0.8px,
-      transparent 1px
-    );
-    background-size: 16px 16px;
-    mask-image: linear-gradient(to bottom, transparent 45%, #000 75%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 45%, #000 75%);
   }
 
   .after-book-plate__copy {
@@ -8912,16 +8897,13 @@
       align-items: center;
       min-height: 460px;
     }
-
-    .after-book-plate__field {
-      mask-image: linear-gradient(to right, transparent 40%, #000 72%);
-      -webkit-mask-image: linear-gradient(to right, transparent 40%, #000 72%);
-    }
   }
 
   /* Zone network. Nodes are centred on their point; labels hang off one side. */
   .after-book-net {
     position: relative;
+    /* The rings are spaced in cqw, so they scale with the drawing's width. */
+    container-type: inline-size;
     height: 300px;
     margin-inline: 0.5rem;
   }
@@ -8939,6 +8921,45 @@
     width: 100%;
     height: 100%;
     overflow: visible;
+  }
+
+  /* Distance rings from DXB, one every --ring-step (10 km of the drawing's
+     east-west scale, set inline from zone-geometry.ts). One element holds the
+     rings and a soft gold light, faded out radially so the field dissolves
+     before it reaches the copy. The plate's overflow clips it to the card. */
+  .after-book-net__rings {
+    position: absolute;
+    z-index: -1;
+    width: calc(var(--ring-step) * 11);
+    height: calc(var(--ring-step) * 11);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    background:
+      repeating-radial-gradient(
+        circle,
+        transparent 0 calc(var(--ring-step) - 1px),
+        color-mix(in srgb, var(--text-primary) 9%, transparent) calc(var(--ring-step) - 1px) var(--ring-step)
+      ),
+      radial-gradient(closest-side, rgba(var(--gold-rgb), 0.1), transparent 60%);
+    mask-image: radial-gradient(closest-side, #000 30%, transparent 95%);
+    -webkit-mask-image: radial-gradient(closest-side, #000 30%, transparent 95%);
+  }
+
+  /* Each label sits where its ring crosses the hub's row, west of DXB, on a
+     patch of the plate's tone so the ring breaks around the text. */
+  .after-book-net__ring-label {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    padding: 1px 3px;
+    border-radius: 3px;
+    background: var(--stub-mid);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    white-space: nowrap;
+    color: color-mix(in srgb, var(--text-muted) 80%, transparent);
+    font-variant-numeric: tabular-nums;
   }
 
   .after-book-net__arc {

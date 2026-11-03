@@ -6,7 +6,7 @@
 import { jsx } from 'react/jsx-runtime'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { AfterYouBookPlate } from '@/components/home/after-you-book/after-you-book-plate'
-import { HUB, ZONES, arcPath, project } from '@/components/home/after-you-book/zone-geometry'
+import { HUB, RING_KM, ZONES, arcPath, kmToWidthPercent, project } from '@/components/home/after-you-book/zone-geometry'
 
 import { DEFAULT_HOME_CONTENT } from '@/lib/cms/templates/home/defaults'
 
@@ -66,6 +66,32 @@ describe('zone geometry', () => {
       const d = arcPath(zone)
       expect(d.startsWith(`M${h.x.toFixed(2)},${h.y.toFixed(2)} Q`)).toBe(true)
       expect(d.endsWith(`${z.x.toFixed(2)},${z.y.toFixed(2)}`)).toBe(true)
+    }
+  })
+})
+
+describe('distance rings', () => {
+  it('draws the ring field once and one km label per ring', () => {
+    const html = render()
+    expect(html.match(/class="after-book-net__rings"/g)).toHaveLength(1)
+    for (const km of RING_KM) {
+      expect(html).toContain(`>${km} km<`)
+    }
+  })
+
+  it('scales by real kilometres, so 20 km is twice 10 km', () => {
+    expect(kmToWidthPercent(20)).toBeCloseTo(kmToWidthPercent(10) * 2, 6)
+  })
+
+  it('matches the map: Deira (about 6 km west-north-west) sits inside 10 km', () => {
+    const deira = ZONES.find((z) => z.name === 'Deira')!
+    const dx = Math.abs(project(deira).x - project(HUB).x)
+    expect(dx).toBeLessThan(kmToWidthPercent(10))
+  })
+
+  it('keeps every km label inside the drawing', () => {
+    for (const km of RING_KM) {
+      expect(project(HUB).x - kmToWidthPercent(km)).toBeGreaterThan(0)
     }
   })
 })

@@ -74,3 +74,23 @@ export function arcPath(zone: ZonePoint): string {
 
   return `M${h.x.toFixed(2)},${h.y.toFixed(2)} Q${cx.toFixed(2)},${cy.toFixed(2)} ${z.x.toFixed(2)},${z.y.toFixed(2)}`
 }
+
+/* ---- Distance rings ----
+   Round rings centred on DXB, one every 10 km. The drawing is stretched to
+   the plate, so a true km circle would be an oval; the rings stay round and
+   take their spacing from the east-west scale, so each one is 10 km further
+   out along that axis, where the km labels sit. A degree of longitude is
+   111.32 km times the cosine of the latitude, taken at the hub. */
+
+const KM_PER_DEG_LON = 111.32 * Math.cos((HUB.lat * Math.PI) / 180)
+
+/** Ring distances from DXB that carry a label, in kilometres. */
+export const RING_KM: readonly number[] = [10, 20, 30]
+
+/** Spacing between rings. */
+export const RING_STEP_KM = 10
+
+/** A distance in km as a share of the drawing's width, 0 to 100. */
+export function kmToWidthPercent(km: number): number {
+  return (km / (KM_PER_DEG_LON * (LON_MAX - LON_MIN))) * 100
+}

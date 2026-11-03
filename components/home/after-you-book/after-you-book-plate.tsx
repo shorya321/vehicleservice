@@ -20,8 +20,6 @@ interface AfterYouBookPlateProps {
 export function AfterYouBookPlate({ content }: AfterYouBookPlateProps): React.JSX.Element {
   return (
     <div className="after-book-plate">
-      <div className="after-book-plate__field" aria-hidden="true" />
-
       <div className="after-book-plate__copy">
         <span className="after-book-plate__eyebrow">
           <i aria-hidden="true" />
