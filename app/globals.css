@@ -452,9 +452,11 @@
     text-wrap: pretty;
   }
 
-  /* Skip Navigation Link */
+  /* Skip Navigation Link. Fixed, not absolute: on client navigation Next's
+     App Router focuses the page segment's first element unless it is
+     fixed/sticky, and an absolute link here got focused and revealed itself. */
   .skip-nav {
-    position: absolute;
+    position: fixed;
     top: -100%;
     left: 50%;
     transform: translateX(-50%);
