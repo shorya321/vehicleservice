@@ -1,7 +1,7 @@
 'use client'
 
 import { bookingTodayAsCalendarDate } from '@/lib/utils/timezone'
-import { UseFormReturn } from 'react-hook-form'
+import { UseFormReturn, useFormState } from 'react-hook-form'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
@@ -57,7 +57,10 @@ export function TransferDetailsSection({
   onLegChange,
   scheduleError,
 }: TransferDetailsSectionProps) {
-  const { register, formState: { errors }, watch, setValue } = form
+  const { register, watch, setValue } = form
+  // Subscribed here: this section renders from a memoised list, so errors read off `form`
+  // never re-rendered it and the date and time messages stayed hidden.
+  const { errors } = useFormState({ control: form.control })
   const hourly = trip?.kind === 'hourly' ? trip : null
   const grouped = trip && isGroupedCheckout(trip) ? trip : null
   const firstLeg = grouped?.legs[0]
@@ -144,6 +147,7 @@ export function TransferDetailsSection({
               {hourly ? 'Start date' : grouped?.kind === 'round_trip' ? 'Outbound date' : 'Pickup date'}
             </Label>
             <FormDatePicker
+              id="pickupDate"
               value={pickupDateValue}
               onChange={handleDatePickerChange}
               disabled={(date) => date < bookingTodayAsCalendarDate()}
@@ -151,7 +155,7 @@ export function TransferDetailsSection({
               className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] focus-visible:ring-1 focus-visible:ring-[var(--gold)]/15 focus-visible:border-[var(--gold)]"
             />
             {errors.pickupDate && (
-              <p id="pickupDate-error" role="alert" className="text-sm text-[var(--destructive)] mt-1.5">{errors.pickupDate.message as string}</p>
+              <p id="pickupDate-error" className="text-sm text-destructive mt-1.5">{errors.pickupDate.message as string}</p>
             )}
           </div>
           <div>
@@ -169,7 +173,7 @@ export function TransferDetailsSection({
               aria-describedby={errors.pickupTime ? 'pickupTime-error' : undefined}
             />
             {errors.pickupTime && (
-              <p id="pickupTime-error" role="alert" className="text-sm text-[var(--destructive)] mt-1.5">{errors.pickupTime.message as string}</p>
+              <p id="pickupTime-error" className="text-sm text-destructive mt-1.5">{errors.pickupTime.message as string}</p>
             )}
           </div>
         </div>
@@ -179,7 +183,7 @@ export function TransferDetailsSection({
         )}
 
         {scheduleError && (
-          <p role="alert" className="text-sm text-[var(--destructive)]">{scheduleError}</p>
+          <p role="alert" className="text-sm text-destructive">{scheduleError}</p>
         )}
 
         {/* Guests and flight number share the two-column grid. Guests previously sat at

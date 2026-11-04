@@ -18,6 +18,7 @@ import { sendBookingConfirmationEmail } from '@/lib/email/services/booking-email
 import { sendNewBookingNotificationEmail } from '@/lib/email/services/admin-emails'
 import { getAdminEmail, getAppUrl } from '@/lib/email/config'
 import { verifyBookingSignature, verifyPaymentAmount } from '@/lib/security/booking-hmac'
+import { signatureSubject } from '@/lib/security/guest-checkout'
 import { convertAmount } from '@/lib/currency/format'
 import { getBookingTimezone } from '@/lib/utils/timezone'
 import type { ExchangeRatesMap } from '@/lib/currency/types'
@@ -80,11 +81,17 @@ export async function finalizeBookingPayment(
 
   // Re-verify HMAC signature to ensure booking wasn't tampered
   if (booking.price_signature && booking.price_signature_timestamp && booking.price_signature_nonce) {
+    // The account id, or `guest:<email>` for a guest booking (see signatureSubject).
+    const subject = signatureSubject(booking)
+    if (!subject) {
+      console.error('SECURITY ALERT: booking has no customer and no guest email at payment finalization', { bookingId })
+      return { ok: false, status: 403, error: 'Booking integrity verification failed' }
+    }
     const hmacResult = verifyBookingSignature(
       {
         bookingId: booking.id,
         totalPrice: booking.total_price,
-        customerId: booking.customer_id!,
+        customerId: subject,
         vehicleTypeId: booking.vehicle_type_id,
         signature: booking.price_signature,
         timestamp: Number(booking.price_signature_timestamp),
@@ -107,6 +114,13 @@ export async function finalizeBookingPayment(
 
   if (paymentIntent.status !== 'succeeded') {
     return { ok: false, status: 400, error: 'Payment not completed' }
+  }
+
+  // The intent must be this booking's own: a paid intent for another booking of the same
+  // price must not confirm this one. Every intent is created with `metadata.bookingId`.
+  if (paymentIntent.metadata?.bookingId !== bookingId) {
+    console.error('SECURITY ALERT: PaymentIntent does not belong to this booking', { bookingId, paymentIntentId })
+    return { ok: false, status: 403, error: 'Payment amount verification failed' }
   }
 
   // Verify Stripe amount matches DB total_price
@@ -207,7 +221,7 @@ export async function sendBookingEmails(
     const customerName = passenger
       ? `${passenger.first_name} ${passenger.last_name}`
       : 'Customer'
-    const customerEmail = passenger?.email || userEmail || ''
+    const customerEmail = passenger?.email || userEmail || updatedBooking.guest_email || ''
 
     // Admin needs a number to call. The passenger row is the better source because it
     // describes whoever is actually travelling, but the field is optional at checkout,

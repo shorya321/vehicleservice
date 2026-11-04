@@ -36,6 +36,8 @@ import { getGroupForPayment, getOrCreateGroupPaymentIntent } from '../lib/group-
 import { GroupPaymentScreen } from './group-payment-screen'
 import { PickupPassedScreen } from '../components/pickup-passed-screen'
 import { firstPickupHasPassed } from '@/lib/trips/pickup-passed'
+import { signatureSubject } from '@/lib/security/guest-checkout'
+import { payerOwns, receiptEmail, resolvePayer, stripeCustomerAccount, type Payer } from '../lib/payer'
 
 export const metadata: Metadata = {
   // The root layout's title template appends ' | Infinia Transfers'.
@@ -47,7 +49,7 @@ interface PaymentRoutePageProps {
   params: Promise<{ bookingNumber: string }>
 }
 
-async function getBookingByNumber(bookingNumber: string, userId: string) {
+async function getBookingByNumber(bookingNumber: string, payer: Payer) {
   const adminClient = createAdminClient()
 
   const { data: booking, error } = await adminClient
@@ -74,10 +76,9 @@ async function getBookingByNumber(bookingNumber: string, userId: string) {
       )
     `)
     .eq('booking_number', bookingNumber)
-    .eq('customer_id', userId)
     .single()
 
-  if (error || !booking) {
+  if (error || !booking || !payerOwns(booking.customer_id, payer)) {
     return null
   }
 
@@ -87,8 +88,7 @@ async function getBookingByNumber(bookingNumber: string, userId: string) {
 async function getOrCreatePaymentIntent(
   bookingId: string,
   amount: number,
-  userId: string,
-  userEmail: string,
+  payer: Payer,
   userName?: string,
   userPhone?: string
 ) {
@@ -97,12 +97,15 @@ async function getOrCreatePaymentIntent(
 
   const { data: bookingRecord } = await adminClient
     .from('bookings')
-    .select('stripe_payment_intent_id')
+    .select('stripe_payment_intent_id, customer_id')
     .eq('id', bookingId)
-    .eq('customer_id', userId)
     .single()
 
-  if (bookingRecord?.stripe_payment_intent_id) {
+  if (!bookingRecord || !payerOwns(bookingRecord.customer_id, payer)) {
+    throw new Error('Booking not found')
+  }
+
+  if (bookingRecord.stripe_payment_intent_id) {
     try {
       const { retrievePaymentIntent } = await import('@/lib/stripe/server')
       const existingIntent = await retrievePaymentIntent(bookingRecord.stripe_payment_intent_id)
@@ -115,16 +118,21 @@ async function getOrCreatePaymentIntent(
   // Verify HMAC signature before creating payment intent
   const { data: bookingForSig } = await adminClient
     .from('bookings')
-    .select('total_price, customer_id, vehicle_type_id, price_signature, price_signature_timestamp, price_signature_nonce')
+    .select('total_price, customer_id, guest_email, vehicle_type_id, price_signature, price_signature_timestamp, price_signature_nonce')
     .eq('id', bookingId)
-    .eq('customer_id', userId)
     .single()
 
-  if (bookingForSig?.price_signature && bookingForSig.price_signature_timestamp && bookingForSig.price_signature_nonce) {
+  if (!bookingForSig || !payerOwns(bookingForSig.customer_id, payer)) {
+    throw new Error('Booking not found')
+  }
+
+  if (bookingForSig.price_signature && bookingForSig.price_signature_timestamp && bookingForSig.price_signature_nonce) {
+    const subject = signatureSubject(bookingForSig)
+    if (!subject) throw new Error('Booking integrity verification failed')
     const hmacResult = verifyBookingSignature({
       bookingId,
       totalPrice: bookingForSig.total_price,
-      customerId: bookingForSig.customer_id!,
+      customerId: subject,
       vehicleTypeId: bookingForSig.vehicle_type_id,
       signature: bookingForSig.price_signature,
       timestamp: Number(bookingForSig.price_signature_timestamp),
@@ -137,8 +145,13 @@ async function getOrCreatePaymentIntent(
     }
   }
 
-  const stripeCustomerId = await createOrRetrieveStripeCustomer(userId, userEmail, userName, userPhone)
-  const paymentIntent = await createPaymentIntent(amount, bookingId, stripeCustomerId, userEmail)
+  // A guest has no profile to hold a Stripe customer; the receipt email alone is enough.
+  const email = receiptEmail(bookingForSig.customer_id, payer, bookingForSig.guest_email)
+  const account = stripeCustomerAccount(bookingForSig.customer_id, payer)
+  const stripeCustomerId = account
+    ? await createOrRetrieveStripeCustomer(account, email, userName, userPhone)
+    : undefined
+  const paymentIntent = await createPaymentIntent(amount, bookingId, stripeCustomerId, email || undefined)
 
   await adminClient
     .from('bookings')
@@ -165,15 +178,19 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) {
-    const returnUrl = `/payment/${bookingNumber}`
-    redirect(`/auth/checkout-login?returnUrl=${encodeURIComponent(returnUrl)}`)
+  // A signed-in customer pays for their own booking; a guest booking only from the browser
+  // that made it (signed in since or not). Anyone else signs in first and comes back here.
+  const payer = await resolvePayer(bookingNumber, user)
+  if (!payer) {
+    redirect(`/login?redirect=${encodeURIComponent(`/payment/${bookingNumber}`)}`)
   }
 
   // Fetch user profile for header
   let profile = null
-  const { data: profileData } = await supabase.from('profiles').select(HEADER_PROFILE_COLUMNS).eq('id', user.id).single()
-  profile = profileData
+  if (user) {
+    const { data: profileData } = await supabase.from('profiles').select(HEADER_PROFILE_COLUMNS).eq('id', user.id).single()
+    profile = profileData
+  }
 
   // Fetch currency data
   const [featuredCurrencies, allCurrencies, rates, defaultCurrency, siteSettings] = await Promise.all([
@@ -190,7 +207,7 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
 
   // A round trip or multi-city trip is paid as one, under its group number.
   if (bookingNumber.startsWith(GROUP_NUMBER_PREFIX)) {
-    const group = await getGroupForPayment(bookingNumber, user.id)
+    const group = await getGroupForPayment(bookingNumber, payer)
     if (!group) notFound()
     if (group.paymentStatus === 'completed') redirect(buildConfirmationUrl(group.groupNumber))
     if (firstPickupHasPassed(group.pickupTimes)) {
@@ -207,7 +224,7 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
     let groupSecret: string | null = null
     let groupError: string | null = null
     try {
-      groupSecret = (await getOrCreateGroupPaymentIntent(group, user.id, user.email || '')).clientSecret
+      groupSecret = (await getOrCreateGroupPaymentIntent(group, payer)).clientSecret
     } catch (error) {
       console.error('Group payment intent creation failed:', error)
       groupError = error instanceof Error ? error.message : 'Failed to initialize payment'
@@ -232,7 +249,7 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
   }
 
   // Get booking details by booking number
-  const booking = await getBookingByNumber(bookingNumber, user.id)
+  const booking = await getBookingByNumber(bookingNumber, payer)
 
   if (!booking) {
     notFound()
@@ -270,7 +287,7 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
   )
   const userName = primaryPassenger
     ? `${primaryPassenger.first_name} ${primaryPassenger.last_name}`
-    : user.user_metadata?.full_name || ''
+    : user?.user_metadata?.full_name || ''
   const userPhone = primaryPassenger?.phone || ''
 
   let clientSecret: string | null = null
@@ -280,8 +297,7 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
     const result = await getOrCreatePaymentIntent(
       booking.id,
       booking.total_price,
-      user.id,
-      user.email || '',
+      payer,
       userName,
       userPhone
     )

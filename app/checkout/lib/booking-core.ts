@@ -1,6 +1,10 @@
 import 'server-only'
+import { randomInt } from 'crypto'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/security/rate-limit'
+import { clientAddress } from '@/lib/security/guest-access'
+import { normaliseGuestEmail, signatureSubject } from '@/lib/security/guest-checkout'
 import type { createAdminClient } from '@/lib/supabase/admin'
 import { phoneSchema } from '@/lib/validation/phone'
 import { roundMoney } from '@/lib/trips/pricing'
@@ -40,6 +44,8 @@ export const tripContactSchema = z.object({
   agreeToTerms: z.literal(true),
   paymentMethod: z.literal('card'),
   selectedAddons: z.array(tripAddonSchema).max(20).optional(),
+  /** Honeypot: hidden from people, so any value means a bot filled the form. */
+  website: z.string().max(200).optional(),
 })
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
@@ -78,17 +84,70 @@ export class BookingInputError extends Error {
   }
 }
 
-/** The signed-in customer, or a thrown error for anyone else (same rule as `createBooking`). */
-export async function requireBookingCustomer(): Promise<{ userId: string }> {
+/** Who is booking: a signed-in customer, or a guest identified only by email. */
+export type BookingActor =
+  | { kind: 'customer'; userId: string }
+  | { kind: 'guest'; email: string }
+
+/** Guest bookings allowed per client address in one window (best effort, per instance). */
+const GUEST_BOOKING_LIMIT = { max: 5, windowMs: 10 * 60 * 1000 }
+
+/**
+ * Resolves who is booking. A signed-in customer books exactly as before; a signed-in
+ * admin, vendor or business account is still refused; an anonymous visitor books as a
+ * guest after the honeypot and rate-limit checks.
+ */
+export async function resolveBookingActor(input: {
+  email: string
+  website?: string
+}): Promise<BookingActor> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new BookingInputError('Please sign in to complete your booking.')
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || profile.role !== 'customer') {
-    throw new BookingInputError('Only customer accounts can book vehicles.')
+  if (user) {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (!profile || profile.role !== 'customer') {
+      throw new BookingInputError('Only customer accounts can book vehicles.')
+    }
+    return { kind: 'customer', userId: user.id }
   }
-  return { userId: user.id }
+
+  return resolveGuestActor(input)
+}
+
+/**
+ * The guest half of `resolveBookingActor`, for callers that have already found no
+ * signed-in user: rejects a filled honeypot and rate-limits by client address.
+ */
+export async function resolveGuestActor(input: {
+  email: string
+  website?: string
+}): Promise<{ kind: 'guest'; email: string }> {
+  if (input.website && input.website.trim() !== '') {
+    throw new BookingInputError('We could not place this booking. Please try again.')
+  }
+
+  const address = await clientAddress()
+  const limit = checkRateLimit(`guest-booking:${address}`, GUEST_BOOKING_LIMIT)
+  if (!limit.allowed) {
+    throw new BookingInputError('Too many bookings from this connection. Please wait a few minutes and try again.')
+  }
+
+  return { kind: 'guest', email: normaliseGuestEmail(input.email) }
+}
+
+/** The owner columns every bookings and booking_groups row written for this actor carries. */
+export function ownerColumns(actor: BookingActor): { customer_id: string | null; guest_email: string | null } {
+  return actor.kind === 'customer'
+    ? { customer_id: actor.userId, guest_email: null }
+    : { customer_id: null, guest_email: actor.email }
+}
+
+/** The customer field of this actor's price signature (see `signatureSubject`). */
+export function actorSignatureSubject(actor: BookingActor): string {
+  const subject = signatureSubject(ownerColumns(actor))
+  if (!subject) throw new Error('A booking must have an account or a guest email')
+  return subject
 }
 
 export function assertPartyFits(
@@ -196,11 +255,22 @@ export function primaryPassengerRow(
   }
 }
 
+const BASE36 = '0123456789abcdefghijklmnopqrstuvwxyz'
+
+/**
+ * `length` random base-36 characters from a CSPRNG. The booking number is the bearer
+ * for the public confirmation and invoice pages, so its random part must not be
+ * predictable. Same alphabet and length as the old `Math.random` suffix.
+ */
+export function randomBase36(length: number): string {
+  return Array.from({ length }, () => BASE36[randomInt(BASE36.length)]).join('')
+}
+
 export function newBookingNumber(prefix = 'BK'): string {
-  return `${prefix}${Date.now()}${Math.random().toString(36).slice(2, 7)}`.toUpperCase()
+  return `${prefix}${Date.now()}${randomBase36(5)}`.toUpperCase()
 }
 
 /** `GR` + a sortable stamp + random suffix; the payment and invoice routes key on the prefix. */
 export function newGroupNumber(): string {
-  return `${GROUP_NUMBER_PREFIX}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`.toUpperCase()
+  return `${GROUP_NUMBER_PREFIX}${Date.now().toString(36)}${randomBase36(4)}`.toUpperCase()
 }

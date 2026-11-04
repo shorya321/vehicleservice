@@ -4,6 +4,7 @@ import { CheckCircle2, XCircle } from "lucide-react"
 import Link from "next/link"
 import { AuthHeroPanel } from "@/components/auth/auth-hero-panel"
 import { AuthLogo } from "@/components/auth/auth-logo"
+import { linkGuestBookings } from '@/lib/bookings/link-guest-bookings'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,6 +56,12 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
 
   const { data: result, error } = await supabase
     .rpc('verify_email_with_token', { p_token: token })
+
+  // A newly verified customer picks up any guest bookings made with this email.
+  const verifiedUserId = (result as Record<string, unknown> | null)?.user_id
+  if (!error && (result as Record<string, unknown>)?.success && typeof verifiedUserId === 'string') {
+    await linkGuestBookings(verifiedUserId)
+  }
 
   if (error || !(result as Record<string, unknown>)?.success) {
     return (

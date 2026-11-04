@@ -18,7 +18,7 @@ export function FieldValidationIcon({
   if (hasError) {
     return (
       <AlertCircle
-        className="h-4 w-4 text-[var(--destructive)] shrink-0"
+        className="h-4 w-4 text-destructive shrink-0"
         aria-hidden="true"
       />
     )

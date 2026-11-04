@@ -180,8 +180,9 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
+    // Legacy id-based link: signed-in owners only. Guests pay at /payment/<reference>.
     const returnUrl = `/payment?${new URLSearchParams(params as any).toString()}`
-    redirect(`/auth/checkout-login?returnUrl=${encodeURIComponent(returnUrl)}`)
+    redirect(`/login?redirect=${encodeURIComponent(returnUrl)}`)
   }
 
   // Fetch user profile for header

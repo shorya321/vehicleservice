@@ -112,6 +112,8 @@ interface Booking {
   hourly_package?: string | null
   duration_hours?: number | null
   included_km?: number | null
+  /** Null for a guest booking (no account). Absent on a narrowed select, which reads as an account. */
+  customer_id?: string | null
 }
 
 interface ConfirmationContentProps {
@@ -381,10 +383,19 @@ export function ConfirmationContent({
 
           {/* Kept from the page this replaces: the two ways onward. */}
           <div className="confirm-sat__links print:hidden">
-            <Link href="/account" className="editorial-action min-h-[44px]">
-              View my bookings
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
+            {/* A guest has no account to open; once they sign up with this email and verify it,
+                the booking moves into the new account. */}
+            {booking.customer_id === null ? (
+              <Link href="/register" className="editorial-action min-h-[44px]">
+                Create an account to keep your trips
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            ) : (
+              <Link href="/account" className="editorial-action min-h-[44px]">
+                View my bookings
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            )}
             <Link href="/" className="editorial-action min-h-[44px]">
               Book another transfer
               <ArrowRight className="h-4 w-4" aria-hidden="true" />

@@ -49,6 +49,8 @@ export interface PastBookingAssignment {
     /** Paid hours of an hourly hire; null for a transfer. */
     duration_hours?: number | null
     customer: { full_name: string | null; phone: string | null } | null
+    /** Lead passenger: the contact on a guest booking, which has no customer profile. */
+    booking_passengers?: { first_name: string | null; last_name: string | null; phone: string | null; is_primary: boolean | null }[] | null
   } | null
   business_booking: {
     booking_number: string | null
@@ -306,7 +308,8 @@ export class AvailabilityService {
         dropoff_address,
         pickup_datetime,
         duration_hours,
-        customer:profiles(full_name, phone)
+        customer:profiles(full_name, phone),
+        booking_passengers(first_name, last_name, phone, is_primary)
       ),
       vehicle:vehicles(id, make, model, registration_number),
       driver:vendor_drivers(id, first_name, last_name, phone)

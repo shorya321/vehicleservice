@@ -700,6 +700,7 @@ export async function acceptAndAssignResources(
           ...tripDetails,
           customerName: booking.customerName,
           customerEmail: booking.customerEmail,
+          isGuest: booking.isGuest,
         })
       }
     } else {

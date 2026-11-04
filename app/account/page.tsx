@@ -9,6 +9,7 @@ import { RouteBandMap } from "@/app/search/results/components/route-band-map"
 import { getAccountOverview } from "./overview-actions"
 import { getRecentNotifications } from "./notification-actions"
 import type { NotificationListItem } from "@/components/account/types"
+import { linkGuestBookings } from '@/lib/bookings/link-guest-bookings'
 
 type AccountClientProps = ComponentProps<typeof AccountClient>
 
@@ -39,6 +40,11 @@ export default async function AccountPage({
 
   if (!profile) {
     redirect("/login")
+  }
+
+  // Guest bookings made with this (verified) email join the account before it is read.
+  if (profile.role === 'customer') {
+    await linkGuestBookings(user.id)
   }
 
   // The overview is the landing panel, so its content is read here rather than from an effect on

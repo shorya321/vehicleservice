@@ -63,7 +63,7 @@ const selectedAddonsField = z
 const bookingSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Enter a valid email address, like name@example.com'),
   phone: phoneField,
   pickupDate: z.string().min(1, 'Pickup date is required'),
   pickupTime: z.string().min(1, 'Pickup time is required'),
@@ -74,6 +74,8 @@ const bookingSchema = z.object({
     message: 'You must agree to the terms and conditions'
   }),
   selectedAddons: selectedAddonsField,
+  /** Honeypot, rendered off-screen by PassengerInfoSection. */
+  website: z.string().optional(),
 })
 
 type BookingFormData = z.infer<typeof bookingSchema>
@@ -159,6 +161,9 @@ export function BookingForm({
   const [guests, setGuests] = useState<GuestBreakdown>(initialGuests)
   const passengers = getSeatedCount(guests)
   const [stepValidationAttempted, setStepValidationAttempted] = useState(false)
+  /** Bumped on every rejected Continue or submit; StepErrorSummary scrolls to itself on each bump. */
+  const [errorFocusSignal, setErrorFocusSignal] = useState(0)
+  const formRef = useRef<HTMLFormElement>(null)
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -270,6 +275,7 @@ export function BookingForm({
         email: data.email,
         phone: data.phone,
         specialRequests: data.specialRequests,
+        website: data.website,
         basePrice: basePrice,
         agreeToTerms: data.agreeToTerms,
         paymentMethod: data.paymentMethod,
@@ -304,7 +310,10 @@ export function BookingForm({
     if (fields.length > 0) {
       setStepValidationAttempted(true)
       const isValid = await trigger(fields)
-      if (!isValid) return
+      if (!isValid) {
+        setErrorFocusSignal((n) => n + 1)
+        return
+      }
     }
     // Journey times and hourly notice are checked here, before extras, not at the very end.
     if (currentStep === 0 && trip.kind !== 'one_way' && !checkBeforeContinue()) return
@@ -322,7 +331,36 @@ export function BookingForm({
   // Without an onInvalid handler a rejected submit does nothing at all. StepErrorSummary only
   // renders once `stepValidationAttempted` is set, which until now only "Continue" ever did. That
   // left both a missing child age and an unticked terms box failing silently on the final step.
-  const onInvalid = useCallback(() => setStepValidationAttempted(true), [])
+  const onInvalid = useCallback(() => {
+    setStepValidationAttempted(true)
+    setErrorFocusSignal((n) => n + 1)
+  }, [])
+
+  // Once Continue has been pressed, a field that is showing an error re-checks as it is
+  // corrected, so its message (and the summary line) clears while typing rather than only
+  // on blur. Fields without an error are left to the normal on-touched rule.
+  useEffect(() => {
+    if (!stepValidationAttempted) return
+    const subscription = watch((_values, { name }) => {
+      if (!name) return
+      const field = name as keyof BookingFormData
+      if (form.getFieldState(field).error) void trigger(field)
+    })
+    return () => subscription.unsubscribe()
+  }, [stepValidationAttempted, watch, trigger, form])
+
+  /** From the error summary: bring the field into view and put the cursor in it. */
+  const focusField = useCallback((name: string) => {
+    const root = formRef.current
+    if (!root) return
+    // Inputs carry their field name as id; the extras step marks its open problem with aria-invalid.
+    const target =
+      (root.querySelector(`#${CSS.escape(name)}`) as HTMLElement | null) ??
+      (root.querySelector('[aria-invalid="true"]') as HTMLElement | null)
+    if (!target) return
+    target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' })
+    target.focus({ preventScroll: true })
+  }, [reduceMotion])
 
   // AdditionalServicesSection owns the addon selection (and the child-seat budget derived from
   // it), so removal has to be delegated back into it. It registers itself on mount; this
@@ -383,7 +421,7 @@ export function BookingForm({
         onLegChange={tripBooking.updateLeg}
         scheduleError={tripBooking.scheduleError}
       />
-      <PassengerInfoSection form={form} />
+      <PassengerInfoSection form={form} isGuest={!user} />
     </div>,
     <div key="services-pay">
       <AdditionalServicesSection
@@ -395,10 +433,10 @@ export function BookingForm({
       />
       <PaymentMethodSection form={form} />
     </div>,
-  ], [form, vehicleType, guests, setGuests, changeHref, onDateTimeChange, addonsByCategory, handleRemoveReady, trip, tripBooking.schedule, tripBooking.updateLeg, tripBooking.scheduleError])
+  ], [form, vehicleType, guests, setGuests, changeHref, onDateTimeChange, addonsByCategory, handleRemoveReady, trip, tripBooking.schedule, tripBooking.updateLeg, tripBooking.scheduleError, user])
 
   return (
-    <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-0" aria-label="Booking form">
+    <form ref={formRef} onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-0" aria-label="Booking form">
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={currentStep}
@@ -415,6 +453,8 @@ export function BookingForm({
             <StepErrorSummary
               errors={errors}
               fieldNames={STEP_FIELDS[currentStep]?.map(String) || []}
+              focusSignal={errorFocusSignal}
+              onSelectField={focusField}
             />
           )}
 

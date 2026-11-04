@@ -19,6 +19,8 @@ export interface TripContactValues {
   email: string
   phone: string
   specialRequests?: string
+  /** Honeypot; see PassengerInfoSection. */
+  website?: string
   selectedAddons?: Array<{
     addon_id: string
     quantity: number
@@ -129,6 +131,7 @@ export function useTripBooking({
       email: values.email,
       phone: values.phone,
       specialRequests: values.specialRequests,
+      website: values.website,
       agreeToTerms: true as const,
       paymentMethod: 'card' as const,
       // superRefine has guaranteed every age is filled in; `requires_child_age` is re-derived server-side.

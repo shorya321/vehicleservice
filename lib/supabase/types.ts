@@ -591,6 +591,7 @@ export type Database = {
           discount_amount: number
           discount_percent: number
           group_number: string
+          guest_email: string | null
           id: string
           leg_count: number
           paid_at: string | null
@@ -615,6 +616,7 @@ export type Database = {
           discount_amount?: number
           discount_percent?: number
           group_number: string
+          guest_email?: string | null
           id?: string
           leg_count: number
           paid_at?: string | null
@@ -639,6 +641,7 @@ export type Database = {
           discount_amount?: number
           discount_percent?: number
           group_number?: string
+          guest_email?: string | null
           id?: string
           leg_count?: number
           paid_at?: string | null
@@ -730,6 +733,7 @@ export type Database = {
           dropoff_address: string
           from_location_id: string | null
           from_zone_id: string | null
+          guest_email: string | null
           id: string
           infants: number
           luggage_count: number | null
@@ -777,6 +781,7 @@ export type Database = {
           dropoff_address: string
           from_location_id?: string | null
           from_zone_id?: string | null
+          guest_email?: string | null
           id?: string
           infants?: number
           luggage_count?: number | null
@@ -824,6 +829,7 @@ export type Database = {
           dropoff_address?: string
           from_location_id?: string | null
           from_zone_id?: string | null
+          guest_email?: string | null
           id?: string
           infants?: number
           luggage_count?: number | null
@@ -4601,6 +4607,7 @@ export type Database = {
       }
       get_vendor_user_id: { Args: { p_vendor_app_id: string }; Returns: string }
       is_admin: { Args: { user_id: string }; Returns: boolean }
+      link_guest_bookings: { Args: { p_user_id: string }; Returns: number }
       log_business_activity: {
         Args: {
           p_action: string

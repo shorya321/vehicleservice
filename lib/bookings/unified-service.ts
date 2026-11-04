@@ -39,6 +39,81 @@ function toBookingDay(value: string): string | null {
   return format(toBookingTz(parsed.toISOString()), 'yyyy-MM-dd');
 }
 
+/** The lead passenger's contact on a customer booking, used when there is no account. */
+interface PassengerContact {
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+type PassengerEmbed = {
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  phone: string | null;
+  is_primary: boolean | null;
+};
+
+function passengerContact(rows: PassengerEmbed[] | null | undefined): PassengerContact | null {
+  const lead = rows?.find((p) => p.is_primary) ?? rows?.[0];
+  if (!lead) return null;
+  const name = `${lead.first_name ?? ''} ${lead.last_name ?? ''}`.trim();
+  return { name: name || null, email: lead.email, phone: lead.phone };
+}
+
+/** Lead passengers of the given customer bookings, keyed by booking id (one query). */
+async function leadPassengersByBooking(
+  supabase: ReturnType<typeof createAdminClient>,
+  bookingIds: string[]
+): Promise<Map<string, PassengerContact>> {
+  if (bookingIds.length === 0) return new Map();
+  const { data, error } = await supabase
+    .from('booking_passengers')
+    .select('booking_id, first_name, last_name, email, phone, is_primary')
+    .in('booking_id', bookingIds);
+  if (error) {
+    console.error('Failed to load guest booking passengers:', error);
+    return new Map();
+  }
+  const grouped = new Map<string, PassengerEmbed[]>();
+  for (const row of data ?? []) {
+    if (!row.booking_id) continue;
+    grouped.set(row.booking_id, [...(grouped.get(row.booking_id) ?? []), row]);
+  }
+  const contacts = new Map<string, PassengerContact>();
+  grouped.forEach((rows, id) => {
+    const contact = passengerContact(rows);
+    if (contact) contacts.set(id, contact);
+  });
+  return contacts;
+}
+
+/**
+ * Display contact for a customer booking: the account holder when there is one (unchanged
+ * behaviour), otherwise the guest's lead passenger, then the email the guest booked with.
+ */
+function customerContact(
+  profile: { full_name: string | null; email: string | null; phone: string | null } | null | undefined,
+  passenger: PassengerContact | null,
+  guestEmail: string | null
+): { customerName: string; customerEmail: string | null; customerPhone: string | null; isGuest: boolean } {
+  if (profile) {
+    return {
+      customerName: profile.full_name || 'Unknown',
+      customerEmail: profile.email || null,
+      customerPhone: profile.phone || null,
+      isGuest: false,
+    };
+  }
+  const isGuest = Boolean(guestEmail);
+  return {
+    customerName: (isGuest && passenger?.name) || 'Unknown',
+    customerEmail: isGuest ? passenger?.email || guestEmail : null,
+    customerPhone: isGuest ? passenger?.phone || null : null,
+    isGuest,
+  };
+}
+
 /**
  * Unified booking interface - common fields from both booking types
  */
@@ -50,6 +125,8 @@ export interface UnifiedBooking {
   customerName: string;
   customerEmail: string | null;
   customerPhone: string | null;
+  /** Customer booking made at guest checkout (no account): contact comes from the passenger. */
+  isGuest?: boolean;
   pickupDatetime: string;
   pickupAddress: string | null;
   dropoffAddress: string | null;
@@ -175,6 +252,7 @@ export async function getUnifiedBookingDetails(
       .select(`
         *,
         profiles!bookings_customer_id_fkey(full_name, email, phone),
+        booking_passengers(first_name, last_name, email, phone, is_primary),
         booking_group:booking_group_id(group_number, leg_count),
         from_locations:from_location_id(name, city),
         to_locations:to_location_id(name, city),
@@ -199,9 +277,12 @@ export async function getUnifiedBookingDetails(
       bookingType: 'customer',
       bookingNumber: data.booking_number,
       tripNumber: data.trip_number,
-      customerName: (data as any).profiles?.full_name || 'Unknown',
-      customerEmail: (data as any).profiles?.email || null,
-      customerPhone: (data as any).profiles?.phone || null,
+      // Account holder first, as before; a guest booking falls back to its lead passenger.
+      ...customerContact(
+        (data as any).profiles,
+        passengerContact((data as any).booking_passengers),
+        data.guest_email
+      ),
       pickupDatetime: data.pickup_datetime,
       pickupAddress: data.pickup_address,
       dropoffAddress: data.dropoff_address,
@@ -778,10 +859,30 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
       .ilike('email', emailPattern);
 
     const matchingIds = (matchingProfiles || []).map(p => p.id);
-    hasCustomerEmailMatches = matchingIds.length > 0;
 
-    if (hasCustomerEmailMatches) {
-      customerQuery = customerQuery.in('customer_id', matchingIds);
+    // Guest bookings carry their email on the row itself.
+    const { data: matchingGuestBookings } = await supabase
+      .from('bookings')
+      .select('id')
+      .is('customer_id', null)
+      .ilike('guest_email', emailPattern)
+      .limit(500);
+    const guestBookingIds = (matchingGuestBookings || []).map(b => b.id);
+
+    hasCustomerEmailMatches = matchingIds.length > 0 || guestBookingIds.length > 0;
+
+    if (guestBookingIds.length === 0) {
+      if (hasCustomerEmailMatches) {
+        customerQuery = customerQuery.in('customer_id', matchingIds);
+      }
+    } else {
+      // Ids are uuids from our own reads, so they are safe inside or().
+      customerQuery = customerQuery.or(
+        [
+          ...(matchingIds.length > 0 ? [`customer_id.in.(${matchingIds.join(',')})`] : []),
+          `id.in.(${guestBookingIds.join(',')})`,
+        ].join(',')
+      );
     }
 
     businessQuery = businessQuery.ilike('customer_email', emailPattern);
@@ -831,14 +932,21 @@ export async function getUnifiedBookingsList(filters?: UnifiedBookingsFilters) {
 
     const profilesMap = new Map(profiles.map(p => [p.id, p]));
 
+    // Guest bookings have no profile; their contact is the lead passenger.
+    const guestPassengers = await leadPassengersByBooking(
+      supabase,
+      customerResult.data.filter((b: any) => !b.customer_id && b.guest_email).map((b: any) => b.id)
+    );
+
     customerBookings = customerResult.data.map((b: any) => {
-      const profile = profilesMap.get(b.customer_id);
+      const contact = customerContact(profilesMap.get(b.customer_id), guestPassengers.get(b.id) ?? null, b.guest_email);
       return {
         ...b,
         bookingType: 'customer' as const,
-        customer_name: profile?.full_name || 'Unknown',
-        customer_email: profile?.email || null,
-        customer_phone: profile?.phone || null,
+        customer_name: contact.customerName,
+        customer_email: contact.customerEmail,
+        customer_phone: contact.customerPhone,
+        is_guest: contact.isGuest,
       };
     });
   }

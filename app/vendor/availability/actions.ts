@@ -32,7 +32,8 @@ const ASSIGNMENT_CALENDAR_SELECT = `
     dropoff_address,
     pickup_datetime,
     duration_hours,
-    customer:profiles(full_name, phone)
+    customer:profiles(full_name, phone),
+    booking_passengers(first_name, last_name, phone, is_primary)
   ),
   business_booking:business_bookings(
     booking_number,
@@ -62,6 +63,18 @@ function directBookingColor(status: string): string {
   return status === 'completed'
     ? CALENDAR_COLORS.offlineCompleted
     : CALENDAR_COLORS.pastNoTrip
+}
+
+/** Lead passenger of a customer booking; the only contact a guest booking has. */
+function guestLead(assignment: PastBookingAssignment) {
+  const rows = assignment.booking?.booking_passengers
+  return rows?.find((p) => p.is_primary) ?? rows?.[0] ?? null
+}
+
+function guestLeadName(assignment: PastBookingAssignment): string | undefined {
+  const lead = guestLead(assignment)
+  const name = `${lead?.first_name ?? ''} ${lead?.last_name ?? ''}`.trim()
+  return name || undefined
 }
 
 /**
@@ -125,8 +138,8 @@ function assignmentToCalendarEvent(
       bookingNumber: bookingData?.booking_number,
       tripNumber: bookingData?.trip_number,
       reference: null,
-      customer: bookingData?.customer?.full_name,
-      phone: bookingData?.customer?.phone,
+      customer: bookingData?.customer?.full_name ?? guestLeadName(assignment),
+      phone: bookingData?.customer?.phone ?? guestLead(assignment)?.phone ?? null,
       pickup: bookingData?.pickup_address,
       dropoff: bookingData?.dropoff_address,
       status,

@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/popover"
 
 interface FormDatePickerProps {
+  /** Id for the trigger button, so a <Label htmlFor> or an error summary can reach it. */
+  id?: string
   value: Date | undefined
   onChange: (date: Date | undefined) => void
   placeholder?: string
@@ -33,6 +35,7 @@ interface FormDatePickerProps {
 }
 
 export function FormDatePicker({
+  id,
   value,
   onChange,
   placeholder = "Pick a date",
@@ -51,6 +54,7 @@ export function FormDatePicker({
   const trigger = (
     <PopoverTrigger asChild>
       <button
+        id={id}
         type="button"
         disabled={isDisabled}
         className={cn(

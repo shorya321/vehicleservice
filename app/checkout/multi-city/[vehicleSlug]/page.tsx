@@ -13,7 +13,7 @@ import { parseTripSearchParams } from '@/lib/trips/search-params'
 import type { CheckoutTrip } from '@/lib/trips/checkout-trip'
 import type { RouteDetails } from '../../actions'
 import { getActiveAddons, getVehicleType } from '../../actions'
-import { currentCheckoutPath, loadCheckoutCustomer } from '../../lib/checkout-customer'
+import { loadCheckoutCustomer } from '../../lib/checkout-customer'
 import { redirectIfPastDates } from '@/lib/trips/past-dates-server'
 
 export const dynamic = 'force-dynamic'
@@ -69,7 +69,7 @@ export default async function MultiCityCheckoutPage({ params, searchParams }: Mu
   const resolvedLegs = legs.map((leg) => ({ leg, from: locations.get(leg.from), to: locations.get(leg.to) }))
   if (resolvedLegs.some(({ from, to }) => !from || !to)) redirect('/')
 
-  const { user, profile } = await loadCheckoutCustomer(currentCheckoutPath(`/checkout/multi-city/${vehicleSlug}`, sp))
+  const { user, profile } = await loadCheckoutCustomer()
 
   const [vehicleType, addonsData, { data: multiplierRow }] = await Promise.all([
     getVehicleType(vehicleRef.id),

@@ -43,19 +43,14 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // If not authenticated, redirect to login with return URL
-  if (!user) {
-    const returnUrl = `/checkout?${new URLSearchParams(params as any).toString()}`
-    const encodedReturnUrl = encodeURIComponent(returnUrl)
-    redirect(`/auth/checkout-login?returnUrl=${encodedReturnUrl}`)
-  }
-
-  // Get user profile with retry logic for new registrations
-  let { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  // Anonymous visitors book as guests; a signed-in account loads its profile.
+  let { data: profile } = user
+    ? await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+    : { data: null }
 
   // Check user role - only customers can make bookings
   if (profile && profile.role !== 'customer') {
@@ -73,7 +68,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   // In memory only: profiles has no first_name/last_name columns, so the upsert
   // that used to follow always failed and never wrote anything. The booking form
   // reads first and last name from user_metadata itself.
-  if (!profile || !profile.phone) {
+  if (user && (!profile || !profile.phone)) {
     const userData = user.user_metadata
     if (userData && (userData.first_name || userData.last_name || userData.phone)) {
       // Metadata may carry a malformed phone from an older signup - never trust it

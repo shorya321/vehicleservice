@@ -18,7 +18,8 @@ interface GroupPaymentScreenProps {
   group: GroupForPayment
   clientSecret: string | null
   stripeError: string | null
-  user: User
+  /** Null for a guest booking. */
+  user: User | null
   profile: Parameters<typeof PublicHeader>[0]['initialProfile']
   currency: Omit<CurrencyProviderProps, 'children'>
   siteSettings: SiteSettingsConfig

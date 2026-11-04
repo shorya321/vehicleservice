@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { signBookingPayload, signGroupPayload } from '@/lib/security/booking-hmac'
+import { grantGuestAccess } from '@/lib/security/guest-access'
 import { bookingWallClockToUtc } from '@/lib/utils/timezone'
 import { getSiteSettings } from '@/lib/site-settings/server'
 import { AS_DIRECTED } from '@/lib/trips/constants'
@@ -19,7 +20,9 @@ import {
   newGroupNumber,
   primaryPassengerRow,
   hourlyBookingSchema,
-  requireBookingCustomer,
+  actorSignatureSubject,
+  ownerColumns,
+  resolveBookingActor,
   verifyAddons,
   type GroupBookingInput,
   type HourlyBookingInput,
@@ -44,13 +47,13 @@ function failure(error: unknown, fallback: string): TripBookingResult {
 
 export async function createHourlyBooking(input: HourlyBookingInput): Promise<TripBookingResult> {
   try {
-    const { userId } = await requireBookingCustomer()
-
     const parsed = hourlyBookingSchema.safeParse(input)
     if (!parsed.success) {
       return { success: false, error: 'Some booking details are missing or invalid. Please review the form.' }
     }
     const data = parsed.data
+    const actor = await resolveBookingActor(data)
+    const owner = ownerColumns(actor)
 
     const settings = await getSiteSettings()
     if (!settings.trip_types.hourly_enabled) {
@@ -95,7 +98,7 @@ export async function createHourlyBooking(input: HourlyBookingInput): Promise<Tr
         booking_number: bookingNumber,
         // Set by the set_booking_trip_number trigger (code H for hourly); the value here is replaced.
         trip_number: bookingNumber,
-        customer_id: userId,
+        ...owner,
         vehicle_type_id: data.vehicleTypeId,
         trip_type: 'hourly',
         hourly_package: data.hourlyPackage,
@@ -138,7 +141,7 @@ export async function createHourlyBooking(input: HourlyBookingInput): Promise<Tr
     const { signature, timestamp, nonce } = signBookingPayload({
       bookingId: booking.id,
       totalPrice,
-      customerId: userId,
+      customerId: actorSignatureSubject(actor),
       vehicleTypeId: data.vehicleTypeId,
     })
     const { error: sigError } = await adminClient
@@ -162,6 +165,7 @@ export async function createHourlyBooking(input: HourlyBookingInput): Promise<Tr
     revalidatePath('/admin/dashboard')
     revalidatePath('/admin/bookings')
     revalidatePath('/account')
+    if (actor.kind === 'guest') await grantGuestAccess(booking.booking_number)
 
     return { success: true, reference: booking.booking_number }
   } catch (error) {
@@ -171,13 +175,13 @@ export async function createHourlyBooking(input: HourlyBookingInput): Promise<Tr
 
 export async function createGroupBooking(input: GroupBookingInput): Promise<TripBookingResult> {
   try {
-    const { userId } = await requireBookingCustomer()
-
     const parsed = groupBookingSchema.safeParse(input)
     if (!parsed.success) {
       return { success: false, error: 'Some booking details are missing or invalid. Please review the form.' }
     }
     const data = parsed.data
+    const actor = await resolveBookingActor(data)
+    const owner = ownerColumns(actor)
     const isRoundTrip = data.tripType === 'round_trip'
 
     const settings = await getSiteSettings()
@@ -259,7 +263,7 @@ export async function createGroupBooking(input: GroupBookingInput): Promise<Trip
       .from('booking_groups')
       .insert({
         group_number: groupNumber,
-        customer_id: userId,
+        ...owner,
         trip_type: data.tripType,
         leg_count: data.legs.length,
         vehicle_type_id: data.vehicleTypeId,
@@ -295,7 +299,7 @@ export async function createGroupBooking(input: GroupBookingInput): Promise<Trip
         booking_number: bookingNumber,
         // Replaced by the set_booking_trip_number trigger.
         trip_number: bookingNumber,
-        customer_id: userId,
+        ...owner,
         vehicle_type_id: data.vehicleTypeId,
         trip_type: data.tripType,
         booking_group_id: group.id,
@@ -336,7 +340,7 @@ export async function createGroupBooking(input: GroupBookingInput): Promise<Trip
     const { signature, timestamp, nonce } = signGroupPayload({
       groupId: group.id,
       totalPrice: quote.total,
-      customerId: userId,
+      customerId: actorSignatureSubject(actor),
       vehicleTypeId: data.vehicleTypeId,
       legCount: data.legs.length,
     })
@@ -363,6 +367,7 @@ export async function createGroupBooking(input: GroupBookingInput): Promise<Trip
     revalidatePath('/admin/dashboard')
     revalidatePath('/admin/bookings')
     revalidatePath('/account')
+    if (actor.kind === 'guest') await grantGuestAccess(group.group_number)
 
     return { success: true, reference: group.group_number }
   } catch (error) {

@@ -15,7 +15,7 @@ import { isHhMm, isIsoDate, parseTripSearchParams } from '@/lib/trips/search-par
 import type { CheckoutTrip } from '@/lib/trips/checkout-trip'
 import type { RouteDetails } from '../../../actions'
 import { getActiveAddons, getLocationDetails, getVehicleType } from '../../../actions'
-import { currentCheckoutPath, loadCheckoutCustomer } from '../../../lib/checkout-customer'
+import { loadCheckoutCustomer } from '../../../lib/checkout-customer'
 import { redirectIfPastDates } from '@/lib/trips/past-dates-server'
 
 export const dynamic = 'force-dynamic'
@@ -52,9 +52,7 @@ export default async function HourlyCheckoutPage({ params, searchParams }: Hourl
   ])
   if (!origin || !origin.allowPickup || !vehicleRef) redirect('/')
 
-  const { user, profile } = await loadCheckoutCustomer(
-    currentCheckoutPath(`/checkout/hourly/${originSlug}/${vehicleSlug}`, sp)
-  )
+  const { user, profile } = await loadCheckoutCustomer()
 
   const [originLocation, vehicleType, pkg, addonsData] = await Promise.all([
     getLocationDetails(origin.id),

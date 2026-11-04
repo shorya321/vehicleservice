@@ -61,7 +61,10 @@ export interface BookingWithCustomer {
   booking_number: string
   trip_number: string
   bookingType?: 'customer' | 'business' // Added for unified booking assignment
-  customer_id: string
+  /** Null for a guest booking, or one whose customer was deleted. */
+  customer_id: string | null
+  /** Set on a guest checkout booking (no account). */
+  guest_email?: string | null
   vehicle_type_id: string
   pickup_datetime: string
   pickup_address: string

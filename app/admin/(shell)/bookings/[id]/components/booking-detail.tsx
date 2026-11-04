@@ -48,6 +48,7 @@ import { toast } from 'sonner'
 import { hourlyEndTime, hourlySummary, isHourlyBooking } from '@/lib/trips/display'
 import { journeyTabs, viewingJourney } from '@/lib/trips/journey-tabs'
 import { TripGroupCard } from './trip-group-card'
+import { GuestCustomerInfo } from './guest-customer-info'
 import { RefundBusinessBookingDialog } from '../../components/refund-business-booking-dialog'
 import { businessStatusChangeBlockedReason } from '@/lib/business/booking-guards'
 
@@ -590,6 +591,9 @@ export function BookingDetail({ booking }: BookingDetailProps) {
             <CardTitle>Customer Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {!booking.customer && booking.guest_email ? (
+              <GuestCustomerInfo guestEmail={booking.guest_email} passengers={booking.booking_passengers} />
+            ) : (<>
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={booking.customer?.avatar_url} />
@@ -600,7 +604,10 @@ export function BookingDetail({ booking }: BookingDetailProps) {
               <div className="space-y-1">
                 <p className="font-medium">{booking.customer?.full_name || 'N/A'}</p>
                 <p className="text-sm text-muted-foreground">
-                  {booking.customer?.role?.charAt(0).toUpperCase() + booking.customer?.role?.slice(1)}
+                  {/* No customer (account deleted): `undefined + undefined` rendered as NaN here. */}
+                  {booking.customer?.role
+                    ? booking.customer.role.charAt(0).toUpperCase() + booking.customer.role.slice(1)
+                    : 'No account'}
                 </p>
               </div>
             </div>
@@ -625,6 +632,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                 <span>Status: {booking.customer?.status || 'N/A'}</span>
               </div>
             </div>
+            </>)}
           </CardContent>
         </Card>
 

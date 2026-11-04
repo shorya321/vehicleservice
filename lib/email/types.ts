@@ -349,6 +349,8 @@ export interface DriverAssignedTripDetails {
 export interface CustomerDriverAssignedEmailData extends DriverAssignedTripDetails {
   customerName: string;
   customerEmail: string;
+  /** Guest booking (no account): the button opens the confirmation page instead of /account. */
+  isGuest?: boolean;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,6 +1,8 @@
 'use client'
 
-import { UseFormReturn } from 'react-hook-form'
+import Link from 'next/link'
+import { usePathname, useSearchParams } from 'next/navigation'
+import { UseFormReturn, useFormState } from 'react-hook-form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -11,10 +13,27 @@ const FIELD_LABEL = 'checkout-field-label mb-2.5 block'
 
 interface PassengerInfoSectionProps {
   form: UseFormReturn<any>
+  /** No account signed in: the booking is made as a guest. */
+  isGuest?: boolean
 }
 
-export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
-  const { register, formState: { errors, touchedFields } } = form
+/** Off-screen and out of the tab order: people never fill it, form bots do. */
+const HONEYPOT_STYLE = { position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' } as const
+
+/** Sign in, then come straight back to this checkout with the search intact. */
+function useSignInHref(): string {
+  const pathname = usePathname()
+  const query = useSearchParams().toString()
+  const back = query ? `${pathname}?${query}` : pathname
+  return `/login?redirect=${encodeURIComponent(back)}`
+}
+
+export function PassengerInfoSection({ form, isGuest = false }: PassengerInfoSectionProps) {
+  const { register } = form
+  // Subscribed here, not read off `form`: the form renders this section from a memoised list,
+  // so errors read through the parent never re-render it and the field messages stayed hidden.
+  const { errors, touchedFields } = useFormState({ control: form.control })
+  const signInHref = useSignInHref()
 
   const fieldState = (name: string) => ({
     isTouched: !!touchedFields[name],
@@ -30,6 +49,20 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
       </div>
 
       <div className="checkout-section-content space-y-6">
+        {isGuest && (
+          <p className="text-sm text-[var(--text-secondary)]">
+            Booking as a guest. Have an account?{' '}
+            <Link href={signInHref} className="checkout-vehicle-change">
+              Sign in
+            </Link>
+          </p>
+        )}
+
+        <div aria-hidden="true" style={HONEYPOT_STYLE}>
+          <label htmlFor="website">Website</label>
+          <input id="website" type="text" tabIndex={-1} autoComplete="off" {...register('website')} />
+        </div>
+
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="firstName" className={FIELD_LABEL}>
@@ -38,7 +71,7 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
             <div className="relative">
               <Input
                 id="firstName"
-                className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)] pr-10"
+                className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)] aria-[invalid=true]:border-destructive pr-10"
                 {...register('firstName')}
                 placeholder="John"
                 aria-required="true"
@@ -50,7 +83,7 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
               </div>
             </div>
             {errors.firstName && (
-              <p id="firstName-error" role="alert" className="text-sm text-[var(--destructive)] mt-1.5">
+              <p id="firstName-error" className="text-sm text-destructive mt-1.5">
                 {errors.firstName.message as string}
               </p>
             )}
@@ -62,7 +95,7 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
             <div className="relative">
               <Input
                 id="lastName"
-                className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)] pr-10"
+                className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)] aria-[invalid=true]:border-destructive pr-10"
                 {...register('lastName')}
                 placeholder="Doe"
                 aria-required="true"
@@ -74,7 +107,7 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
               </div>
             </div>
             {errors.lastName && (
-              <p id="lastName-error" role="alert" className="text-sm text-[var(--destructive)] mt-1.5">
+              <p id="lastName-error" className="text-sm text-destructive mt-1.5">
                 {errors.lastName.message as string}
               </p>
             )}
@@ -90,7 +123,7 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
               <Input
                 id="email"
                 type="email"
-                className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)] pr-10"
+                className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)] aria-[invalid=true]:border-destructive pr-10"
                 {...register('email')}
                 placeholder="john@example.com"
                 aria-required="true"
@@ -102,7 +135,7 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
               </div>
             </div>
             {errors.email ? (
-              <p id="email-error" role="alert" className="text-sm text-[var(--destructive)] mt-1.5">
+              <p id="email-error" className="text-sm text-destructive mt-1.5">
                 {errors.email.message as string}
               </p>
             ) : (
@@ -119,7 +152,7 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
               <Input
                 id="phone"
                 type="tel"
-                className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)] pr-10"
+                className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-1 focus:ring-[var(--gold)]/15 focus:border-[var(--gold)] aria-[invalid=true]:border-destructive pr-10"
                 {...register('phone')}
                 placeholder="+971 50 123 4567"
                 aria-required="true"
@@ -131,7 +164,7 @@ export function PassengerInfoSection({ form }: PassengerInfoSectionProps) {
               </div>
             </div>
             {errors.phone ? (
-              <p id="phone-error" role="alert" className="text-sm text-[var(--destructive)] mt-1.5">
+              <p id="phone-error" className="text-sm text-destructive mt-1.5">
                 {errors.phone.message as string}
               </p>
             ) : (

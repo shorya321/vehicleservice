@@ -12,6 +12,7 @@
 import { retrievePaymentIntent } from '@/lib/stripe/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { verifyGroupSignature, verifyPaymentAmount } from '@/lib/security/booking-hmac'
+import { signatureSubject } from '@/lib/security/guest-checkout'
 import { toCents } from '@/lib/trips/pricing'
 import { sendBookingEmails, type FinalizeBookingResult } from './finalize-booking'
 
@@ -40,7 +41,9 @@ export async function finalizeGroupPayment(params: FinalizeGroupParams): Promise
     return { ok: true, status: 200, booking: group, alreadyCompleted: true }
   }
 
-  if (!group.price_signature || !group.price_signature_timestamp || !group.price_signature_nonce || !group.customer_id) {
+  // The account id, or `guest:<email>` for a guest trip (see signatureSubject).
+  const subject = signatureSubject(group)
+  if (!group.price_signature || !group.price_signature_timestamp || !group.price_signature_nonce || !subject) {
     console.error('SECURITY ALERT: unsigned booking group at payment finalization', { groupId })
     return { ok: false, status: 403, error: 'Booking integrity verification failed' }
   }
@@ -49,7 +52,7 @@ export async function finalizeGroupPayment(params: FinalizeGroupParams): Promise
     {
       groupId: group.id,
       totalPrice: Number(group.total_price),
-      customerId: group.customer_id,
+      customerId: subject,
       vehicleTypeId: group.vehicle_type_id,
       legCount: group.leg_count,
       signature: group.price_signature,

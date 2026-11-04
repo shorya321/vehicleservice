@@ -4,6 +4,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { verifyGroupSignature } from '@/lib/security/booking-hmac'
 import { toBookingTz } from '@/lib/utils/timezone'
 import { legLabel } from '@/lib/trips/display'
+import { signatureSubject } from '@/lib/security/guest-checkout'
+import { payerOwns, receiptEmail, stripeCustomerAccount, type Payer } from './payer'
 import type { LedgerLeg } from '@/components/checkout/booking-ledger'
 
 export interface GroupForPayment {
@@ -25,19 +27,20 @@ export interface GroupForPayment {
   ledgerLegs: LedgerLeg[]
   /** Every journey's pickup instant, so the page can refuse a trip whose first pickup has gone. */
   pickupTimes: string[]
+  /** Set for a guest trip (no account): where the receipt goes. */
+  guestEmail: string | null
 }
 
-/** A customer's own round trip or multi-city trip, with its journeys, for the payment page. */
-export async function getGroupForPayment(groupNumber: string, userId: string): Promise<GroupForPayment | null> {
+/** The payer's own round trip or multi-city trip, with its journeys, for the payment page. */
+export async function getGroupForPayment(groupNumber: string, payer: Payer): Promise<GroupForPayment | null> {
   const adminClient = createAdminClient()
 
   const { data: group } = await adminClient
     .from('booking_groups')
-    .select('id, group_number, trip_type, total_price, subtotal, discount_amount, discount_percent, payment_status, vehicle_type:vehicle_types(name, passenger_capacity, luggage_capacity)')
+    .select('id, group_number, trip_type, total_price, subtotal, discount_amount, discount_percent, payment_status, customer_id, guest_email, vehicle_type:vehicle_types(name, passenger_capacity, luggage_capacity)')
     .eq('group_number', groupNumber)
-    .eq('customer_id', userId)
     .maybeSingle()
-  if (!group) return null
+  if (!group || !payerOwns(group.customer_id, payer)) return null
 
   const { data: legs } = await adminClient
     .from('bookings')
@@ -66,6 +69,7 @@ export async function getGroupForPayment(groupNumber: string, userId: string): P
     primaryName: primary ? `${primary.first_name} ${primary.last_name}` : null,
     primaryPhone: primary?.phone ?? null,
     pickupTimes: legs.map((leg) => leg.pickup_datetime),
+    guestEmail: group.guest_email,
     ledgerLegs: legs.map((leg) => ({
       key: leg.id,
       label: legLabel(leg, legs.length) ?? 'Journey',
@@ -84,19 +88,17 @@ export async function getGroupForPayment(groupNumber: string, userId: string): P
  */
 export async function getOrCreateGroupPaymentIntent(
   group: GroupForPayment,
-  userId: string,
-  userEmail: string
+  payer: Payer
 ): Promise<{ clientSecret: string | null }> {
   const { createGroupPaymentIntent, createOrRetrieveStripeCustomer, retrievePaymentIntent } = await import('@/lib/stripe/server')
   const adminClient = createAdminClient()
 
   const { data: record } = await adminClient
     .from('booking_groups')
-    .select('stripe_payment_intent_id, total_price, customer_id, vehicle_type_id, leg_count, price_signature, price_signature_timestamp, price_signature_nonce')
+    .select('stripe_payment_intent_id, total_price, customer_id, guest_email, vehicle_type_id, leg_count, price_signature, price_signature_timestamp, price_signature_nonce')
     .eq('id', group.id)
-    .eq('customer_id', userId)
     .single()
-  if (!record) throw new Error('Booking not found')
+  if (!record || !payerOwns(record.customer_id, payer)) throw new Error('Booking not found')
 
   if (record.stripe_payment_intent_id) {
     try {
@@ -107,13 +109,14 @@ export async function getOrCreateGroupPaymentIntent(
     }
   }
 
-  if (!record.price_signature || !record.price_signature_timestamp || !record.price_signature_nonce) {
+  const subject = signatureSubject(record)
+  if (!subject || !record.price_signature || !record.price_signature_timestamp || !record.price_signature_nonce) {
     throw new Error('Booking integrity verification failed')
   }
   const hmac = verifyGroupSignature({
     groupId: group.id,
     totalPrice: Number(record.total_price),
-    customerId: record.customer_id ?? userId,
+    customerId: subject,
     vehicleTypeId: record.vehicle_type_id,
     legCount: record.leg_count,
     signature: record.price_signature,
@@ -125,8 +128,13 @@ export async function getOrCreateGroupPaymentIntent(
     throw new Error('Booking integrity verification failed')
   }
 
-  const stripeCustomerId = await createOrRetrieveStripeCustomer(userId, userEmail, group.primaryName ?? undefined, group.primaryPhone ?? undefined)
-  const intent = await createGroupPaymentIntent(Number(record.total_price), group.id, stripeCustomerId, userEmail)
+  // A guest has no profile to hold a Stripe customer; the receipt email alone is enough.
+  const email = receiptEmail(record.customer_id, payer, record.guest_email)
+  const account = stripeCustomerAccount(record.customer_id, payer)
+  const stripeCustomerId = account
+    ? await createOrRetrieveStripeCustomer(account, email, group.primaryName ?? undefined, group.primaryPhone ?? undefined)
+    : undefined
+  const intent = await createGroupPaymentIntent(Number(record.total_price), group.id, stripeCustomerId, email || undefined)
 
   await adminClient
     .from('booking_groups')

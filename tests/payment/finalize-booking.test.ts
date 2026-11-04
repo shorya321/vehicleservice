@@ -120,6 +120,8 @@ function buildPaymentIntent(overrides: Record<string, unknown> = {}): Record<str
     latest_charge: 'ch_test_1',
     payment_method_types: ['card'],
     currency: 'aed',
+    // Every intent is created with its booking id (lib/stripe/server.ts createPaymentIntent).
+    metadata: { bookingId: BOOKING_ID },
     ...overrides,
   }
 }
@@ -217,6 +219,66 @@ describe('finalizeBookingPayment', () => {
     expect(result.ok).toBe(false)
     expect(result.status).toBe(400)
     expect(result.error).toBe('Payment not completed')
+  })
+
+  it('rejects a succeeded PaymentIntent that belongs to another booking with 403', async () => {
+    currentBookingRow = buildSignedBooking()
+    mockRetrievePI.mockResolvedValue(buildPaymentIntent({ metadata: { bookingId: 'another-booking' } }))
+
+    const result = await finalizeBookingPayment({
+      paymentIntentId: 'pi_test_1',
+      bookingId: BOOKING_ID,
+      userCurrency: 'AED',
+    })
+
+    expect(result.ok).toBe(false)
+    expect(result.status).toBe(403)
+    expect(mockCustomerEmail).not.toHaveBeenCalled()
+  })
+
+  it('guest booking: verifies the guest signature subject and confirms', async () => {
+    const guestEmail = 'guest@example.com'
+    const sig = signBookingPayload({
+      bookingId: BOOKING_ID,
+      totalPrice: TOTAL_PRICE,
+      customerId: `guest:${guestEmail}`,
+      vehicleTypeId: VEHICLE_TYPE_ID,
+    })
+    const guestRow = {
+      customer_id: null,
+      guest_email: guestEmail,
+      price_signature: sig.signature,
+      price_signature_timestamp: sig.timestamp,
+      price_signature_nonce: sig.nonce,
+    }
+    currentBookingRow = buildSignedBooking(guestRow)
+    currentUpdatedRow = buildSignedBooking({ ...guestRow, payment_status: 'completed', booking_status: 'confirmed' })
+    mockRetrievePI.mockResolvedValue(buildPaymentIntent())
+
+    const result = await finalizeBookingPayment({
+      paymentIntentId: 'pi_test_1',
+      bookingId: BOOKING_ID,
+      userCurrency: 'AED',
+      userEmail: guestEmail,
+    })
+
+    expect(result.ok).toBe(true)
+    expect(result.status).toBe(200)
+  })
+
+  it('rejects a signed row with neither an account nor a guest email with 403', async () => {
+    currentBookingRow = buildSignedBooking({ customer_id: null, guest_email: null })
+    mockRetrievePI.mockResolvedValue(buildPaymentIntent())
+
+    const result = await finalizeBookingPayment({
+      paymentIntentId: 'pi_test_1',
+      bookingId: BOOKING_ID,
+      userCurrency: 'AED',
+    })
+
+    expect(result.ok).toBe(false)
+    expect(result.status).toBe(403)
+    expect(mockRetrievePI).not.toHaveBeenCalled()
   })
 
   it('returns 404 when the booking is not found', async () => {

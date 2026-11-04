@@ -12,7 +12,8 @@ type CurrencyProviderProps = Parameters<typeof CurrencyProvider>[0]
 interface PickupPassedScreenProps {
   /** Booking or trip number, shown so the customer can quote it to support. */
   reference: string
-  user: User
+  /** Null for a guest booking. */
+  user: User | null
   profile: Parameters<typeof PublicHeader>[0]['initialProfile']
   currency: Omit<CurrencyProviderProps, 'children'>
 }

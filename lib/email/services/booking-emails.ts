@@ -1,4 +1,5 @@
 import { getAppUrl } from '../config';
+import { buildConfirmationUrl } from '@/lib/utils/url-builder';
 import { sendEmail } from '../utils/send-email';
 import {
   type EmailResult,
@@ -97,7 +98,9 @@ export async function sendBookingDriverAssignedEmail(
       driverPhone: data.driverPhone,
       pickupDate: data.pickupDate,
       pickupTime: data.pickupTime,
-      accountUrl: `${getAppUrl()}/account`,
+      accountUrl: data.isGuest
+        ? `${getAppUrl()}${buildConfirmationUrl(data.bookingReference)}`
+        : `${getAppUrl()}/account`,
     },
   });
 }

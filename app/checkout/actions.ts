@@ -9,6 +9,9 @@ import { phoneSchema } from '@/lib/validation/phone'
 import { bookingWallClockToUtc } from '@/lib/utils/timezone'
 import { validatePickupStart } from '@/lib/trips/validation'
 import type { TablesInsert } from '@/lib/supabase/types'
+import { grantGuestAccess } from '@/lib/security/guest-access'
+import { signatureSubject } from '@/lib/security/guest-checkout'
+import { newBookingNumber, ownerColumns, resolveGuestActor, type BookingActor } from './lib/booking-core'
 
 export async function getLocationDetails(locationId: string) {
   const supabase = await createClient()
@@ -275,6 +278,8 @@ const bookingSchema = z.object({
   }),
   paymentMethod: z.enum(['card']),
   selectedAddons: z.array(selectedAddonSchema).optional(),
+  /** Honeypot: hidden from people, so any value means a bot filled the form. */
+  website: z.string().max(200).optional(),
 })
   // The breakdown must agree with the total. Without this a client could post
   // `passengerCount: 1, adults: 50`. The capacity guard below only inspects passengerCount, so the
@@ -298,33 +303,38 @@ export async function createBooking(formData: BookingFormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) {
-    throw new Error('Authentication required to create booking')
-  }
+  // Validate the form data
+  const validatedData = bookingSchema.parse(formData)
 
-  // Get user profile to check role
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  // Signed in: only customers may book (unchanged). Anonymous: a guest, after the
+  // honeypot and rate-limit checks.
+  let actor: BookingActor
+  if (user) {
+    // Get user profile to check role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
 
-  // Only customers can create bookings
-  if (!profile || profile.role !== 'customer') {
-    const roleMessage = profile?.role ?
-      `${profile.role.charAt(0).toUpperCase() + profile.role.slice(1)} users` :
-      'Users'
-    throw new Error(`${roleMessage} cannot create bookings. Only customers can book vehicles.`)
+    // Only customers can create bookings
+    if (!profile || profile.role !== 'customer') {
+      const roleMessage = profile?.role ?
+        `${profile.role.charAt(0).toUpperCase() + profile.role.slice(1)} users` :
+        'Users'
+      throw new Error(`${roleMessage} cannot create bookings. Only customers can book vehicles.`)
+    }
+    actor = { kind: 'customer', userId: user.id }
+  } else {
+    actor = await resolveGuestActor(validatedData)
   }
+  const owner = ownerColumns(actor)
 
   // Use admin client for database operations to bypass RLS
   const adminClient = createAdminClient()
-  
-  // Validate the form data
-  const validatedData = bookingSchema.parse(formData)
-  
+
   // Generate booking number
-  const bookingNumber = `BK${Date.now()}${Math.random().toString(36).substr(2, 5)}`.toUpperCase()
+  const bookingNumber = newBookingNumber()
   
   // Combine date and time for pickup datetime (interpreted as Dubai wall-clock)
   const pickupDateTime = bookingWallClockToUtc(validatedData.pickupDate, validatedData.pickupTime)
@@ -444,7 +454,7 @@ export async function createBooking(formData: BookingFormData) {
     .from('bookings')
     .insert({
       booking_number: bookingNumber,
-      customer_id: user.id,
+      ...owner,
       vehicle_type_id: validatedData.vehicleTypeId,
       from_location_id: validatedData.fromLocationId || null,
       to_location_id: validatedData.toLocationId || null,
@@ -474,7 +484,7 @@ export async function createBooking(formData: BookingFormData) {
     console.error('Error creating booking:', bookingError)
     console.error('Booking data attempted:', {
       booking_number: bookingNumber,
-      customer_id: user.id,
+      ...owner,
       vehicle_type_id: validatedData.vehicleTypeId,
       from_location_id: validatedData.fromLocationId,
       to_location_id: validatedData.toLocationId,
@@ -497,10 +507,12 @@ export async function createBooking(formData: BookingFormData) {
 
   // Sign booking with HMAC for payment integrity
   try {
+    const subject = signatureSubject(owner)
+    if (!subject) throw new Error('Failed to secure booking signature')
     const { signature, timestamp, nonce } = signBookingPayload({
       bookingId: booking.id,
       totalPrice,
-      customerId: user.id,
+      customerId: subject,
       vehicleTypeId: validatedData.vehicleTypeId,
     })
 
@@ -601,6 +613,7 @@ export async function createBooking(formData: BookingFormData) {
   revalidatePath('/admin/dashboard')
   revalidatePath('/admin/bookings')
   revalidatePath('/account')
+  if (actor.kind === 'guest') await grantGuestAccess(booking.booking_number)
 
   return {
     success: true,
