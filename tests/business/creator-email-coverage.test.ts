@@ -172,7 +172,9 @@ describe('admin status updates', () => {
     const source = read('app/admin/(shell)/bookings/actions.ts');
 
     expect(source).toContain('previousStatus === status');
-    expect(source).toContain('previousStatuses.get(id) !== status');
+    // Bulk status changes were removed from the admin (2026-11-04), so the single-booking
+    // path above is the only one left to guard.
+    expect(source).not.toContain('bulkUpdateBookingStatus');
   });
 });
 
@@ -204,6 +206,5 @@ describe('admin cancellation', () => {
 
     expect(source).not.toContain('newBalance: 0,');
     expect(source).toContain('newBalance: emailDetails.walletBalance');
-    expect(source).toContain('newBalance: details.walletBalance');
   });
 });

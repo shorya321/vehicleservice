@@ -34,6 +34,9 @@ import { format } from 'date-fns'
 import { getBookingTimezone, toBookingTz, startOfBookingDayUtc, bookingDaysAgoUtc } from '@/lib/utils/timezone'
 import { legLabel, tripAssignmentLabel, tripTypeLabel } from '@/lib/trips/display'
 import type { AdminTripGroup } from '@/lib/trips/admin-types'
+import { vendorAssignBlockedReason } from '@/lib/bookings/unpaid-expiry'
+import { customerPaymentBlockedReason, customerStatusBlockedReason, customerTripPaidBlockedReason } from '@/lib/bookings/admin-booking-rules'
+import { syncGroupAfterCancellation } from '@/app/account/lib/cancellation'
 
 export interface BookingFilters {
   search?: string
@@ -65,6 +68,8 @@ export interface BookingWithCustomer {
   customer_id: string | null
   /** Set on a guest checkout booking (no account). */
   guest_email?: string | null
+  /** Customer bookings: set when the unpaid-expiry job closed the booking. */
+  payment_expired_at?: string | null
   vehicle_type_id: string
   pickup_datetime: string
   pickup_address: string
@@ -335,7 +340,7 @@ export async function getBookingDetails(bookingId: string) {
       const [{ data: group }, { data: legs }] = await Promise.all([
         adminClient
           .from('booking_groups')
-          .select('id, group_number, trip_type, leg_count, subtotal, discount_percent, discount_amount, total_price, payment_status, booking_status, paid_at, stripe_payment_intent_id')
+          .select('id, group_number, trip_type, leg_count, subtotal, discount_percent, discount_amount, total_price, payment_status, booking_status, paid_at, stripe_payment_intent_id, payment_expired_at')
           .eq('id', customerBooking.booking_group_id)
           .single(),
         adminClient
@@ -611,6 +616,24 @@ export async function updateBookingStatus(
     return { success: true, unchanged: true }
   }
 
+  // Customer bookings: only the changes the admin panel offers (lib/bookings/admin-booking-rules).
+  if (bookingType === 'customer') {
+    if (status === 'pending') return { error: 'A booking cannot be moved back to pending.' }
+    const { data: customerRow } = await adminClient
+      .from('bookings')
+      .select('booking_status, payment_status, payment_expired_at, booking_group_id')
+      .eq('id', bookingId)
+      .maybeSingle()
+    if (!customerRow) return { error: 'Booking not found' }
+    const blocked = customerStatusBlockedReason(customerRow, status)
+    if (blocked) return { error: blocked }
+
+    // A round trip or multi-city trip is confirmed as one, so the trip and its journeys agree.
+    if (status === 'confirmed' && customerRow.booking_group_id) {
+      return confirmCustomerTrip(customerRow.booking_group_id, bookingId)
+    }
+  }
+
   // A business booking's cancellation is final (its wallet may already have been refunded),
   // and a completed trip cannot be cancelled. Customer bookings keep their existing rules.
   if (bookingType === 'business' && beforeUpdate) {
@@ -686,6 +709,19 @@ export async function updateBookingStatus(
           console.error('Failed to send driver cancellation email (non-critical):', driverCancelEmailError)
         }
       }
+    }
+  }
+
+  // Customer trip: once every journey is cancelled, the trip itself reads cancelled
+  // (the same rule the customer's own cancellation applies).
+  if (bookingType === 'customer' && status === 'cancelled') {
+    const { data: cancelledRow } = await adminClient
+      .from('bookings')
+      .select('booking_group_id')
+      .eq('id', bookingId)
+      .maybeSingle()
+    if (cancelledRow?.booking_group_id) {
+      await syncGroupAfterCancellation(adminClient, cancelledRow.booking_group_id)
     }
   }
 
@@ -805,6 +841,89 @@ export async function updateBookingStatus(
   return { success: true }
 }
 
+/**
+ * Manual "Paid" for a customer round trip or multi-city trip: the trip and every journey
+ * become paid and confirmed together, the same result as a card payment (finalize-group).
+ * Every journey must still be pending; one cancelled journey blocks it.
+ */
+async function markCustomerTripPaid(groupId: string, bookingId: string): Promise<{ success?: boolean; error?: string }> {
+  const adminClient = createAdminClient()
+  const now = new Date().toISOString()
+
+  const { data: legs, error: legsReadError } = await adminClient
+    .from('bookings')
+    .select('booking_status')
+    .eq('booking_group_id', groupId)
+  if (legsReadError) {
+    console.error('Error reading trip journeys:', legsReadError)
+    return { error: 'Failed to update payment status' }
+  }
+  const blocked = customerTripPaidBlockedReason(legs ?? [])
+  if (blocked) return { error: blocked }
+
+  const { data: group, error: groupError } = await adminClient
+    .from('booking_groups')
+    .update({ payment_status: 'completed', paid_at: now, booking_status: 'confirmed' })
+    .eq('id', groupId)
+    .eq('booking_status', 'pending')
+    .in('payment_status', ['pending', 'processing'])
+    .is('payment_expired_at', null)
+    .select('id')
+  if (groupError) {
+    console.error('Error marking trip paid:', groupError)
+    return { error: 'Failed to update payment status' }
+  }
+  if (!group || group.length === 0) {
+    return { error: 'Only a trip waiting for payment can be marked paid.' }
+  }
+
+  const { error: legsError } = await adminClient
+    .from('bookings')
+    .update({ payment_status: 'completed', paid_at: now, booking_status: 'confirmed', updated_at: now })
+    .eq('booking_group_id', groupId)
+    .eq('booking_status', 'pending')
+    .in('payment_status', ['pending', 'processing'])
+  if (legsError) {
+    console.error('Error marking trip journeys paid:', legsError)
+    return { error: 'Failed to update payment status' }
+  }
+
+  revalidatePath('/admin/bookings')
+  revalidatePath(`/admin/bookings/${bookingId}`)
+  return { success: true }
+}
+
+/** Admin Confirm on a journey of a paid customer trip: the trip and its paid pending journeys. */
+async function confirmCustomerTrip(groupId: string, bookingId: string): Promise<{ success?: boolean; error?: string }> {
+  const adminClient = createAdminClient()
+  const now = new Date().toISOString()
+
+  const { error: legsError } = await adminClient
+    .from('bookings')
+    .update({ booking_status: 'confirmed', updated_at: now })
+    .eq('booking_group_id', groupId)
+    .eq('booking_status', 'pending')
+    .eq('payment_status', 'completed')
+  if (legsError) {
+    console.error('Error confirming trip journeys:', legsError)
+    throw new Error('Failed to update booking status')
+  }
+
+  const { error: groupError } = await adminClient
+    .from('booking_groups')
+    .update({ booking_status: 'confirmed' })
+    .eq('id', groupId)
+    .eq('booking_status', 'pending')
+  if (groupError) {
+    console.error('Error confirming trip:', groupError)
+    throw new Error('Failed to update booking status')
+  }
+
+  revalidatePath('/admin/bookings')
+  revalidatePath(`/admin/bookings/${bookingId}`)
+  return { success: true }
+}
+
 export async function updatePaymentStatus(
   bookingId: string,
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'refunded',
@@ -841,6 +960,26 @@ export async function updatePaymentStatus(
     }
   }
 
+  // Customer bookings: only the changes the admin panel offers (lib/bookings/admin-booking-rules).
+  if (bookingType === 'customer') {
+    if (status === 'pending' || status === 'processing') {
+      return { error: 'A payment cannot be moved back to waiting.' }
+    }
+    const { data: customerRow } = await adminClient
+      .from('bookings')
+      .select('booking_status, payment_status, payment_expired_at, booking_group_id')
+      .eq('id', bookingId)
+      .maybeSingle()
+    if (!customerRow) return { error: 'Booking not found' }
+    const blocked = customerPaymentBlockedReason(customerRow, status)
+    if (blocked) return { error: blocked }
+
+    // A round trip or multi-city trip is paid as one: mark the trip and every journey.
+    if (status === 'completed' && customerRow.booking_group_id) {
+      return markCustomerTripPaid(customerRow.booking_group_id, bookingId)
+    }
+  }
+
   const updateData: any = {
     payment_status: status,
     updated_at: new Date().toISOString()
@@ -850,6 +989,8 @@ export async function updatePaymentStatus(
   if (tableName === 'bookings') {
     if (status === 'completed') {
       updateData.paid_at = new Date().toISOString()
+      // A payment taken outside the website confirms the booking, the same as a card payment.
+      updateData.booking_status = 'confirmed'
     }
 
     if (status === 'failed' && paymentError) {
@@ -858,11 +999,15 @@ export async function updatePaymentStatus(
   }
 
   // Select the touched row back so a no-match is an error instead of a silent success.
-  const { data: updated, error } = await adminClient
-    .from(tableName)
-    .update(updateData)
-    .eq('id', bookingId)
-    .select('id')
+  let paymentUpdate = adminClient.from(tableName).update(updateData).eq('id', bookingId)
+  // Customer "Paid" also confirms, so it may only land on a booking still waiting for payment.
+  if (bookingType === 'customer' && status === 'completed') {
+    paymentUpdate = paymentUpdate
+      .eq('booking_status', 'pending')
+      .in('payment_status', ['pending', 'processing'])
+      .is('payment_expired_at', null)
+  }
+  const { data: updated, error } = await paymentUpdate.select('id')
 
   if (error) {
     console.error('Error updating payment status:', error)
@@ -903,6 +1048,54 @@ function sumRevenue(result: RevenueResult): number {
   }
 
   return (result.data ?? []).reduce((sum, row) => sum + (Number(row.total_price) || 0), 0)
+}
+
+type AdminClient = ReturnType<typeof createAdminClient>
+
+/**
+ * Upcoming trips, counted the way the grouped bookings list shows them: each
+ * single booking once, and each round trip or multi-city group once however many
+ * of its journeys are still ahead. Two head counts, so nothing is downloaded.
+ */
+async function countUpcomingTrips(
+  client: AdminClient,
+  source: 'customer' | 'business',
+  nowIso: string
+): Promise<CountResult> {
+  const singlesQuery =
+    source === 'customer'
+      ? client.from('bookings').select('*', { count: 'exact', head: true })
+      : client.from('business_bookings').select('*', { count: 'exact', head: true })
+
+  const groupsQuery =
+    source === 'customer'
+      ? client
+          .from('booking_groups')
+          .select('id, bookings!inner(id)', { count: 'exact', head: true })
+          .gte('bookings.pickup_datetime', nowIso)
+          .not('bookings.booking_number', 'like', TEST_BOOKING_PATTERN)
+      : client
+          .from('business_booking_groups')
+          .select('id, business_bookings!inner(id)', { count: 'exact', head: true })
+          .gte('business_bookings.pickup_datetime', nowIso)
+          .not('business_bookings.booking_number', 'like', TEST_BOOKING_PATTERN)
+
+  const [singles, groups] = await Promise.all([
+    singlesQuery
+      .is('booking_group_id', null)
+      .gte('pickup_datetime', nowIso)
+      .not('booking_number', 'like', TEST_BOOKING_PATTERN),
+    groupsQuery,
+  ])
+
+  if (singles.error) {
+    console.error(`Error counting upcoming ${source} single bookings:`, singles.error)
+  }
+  if (groups.error) {
+    console.error(`Error counting upcoming ${source} trip groups:`, groups.error)
+  }
+
+  return { count: (singles.count ?? 0) + (groups.count ?? 0), error: null }
 }
 
 export async function getBookingStats() {
@@ -954,14 +1147,16 @@ export async function getBookingStats() {
       .gte('created_at', todayStart.toISOString())
       .lt('created_at', todayEnd.toISOString()),
 
-    // Upcoming is a date fact, not a status. Matches the list's timeframe=upcoming filter
-    countCustomer().gte('pickup_datetime', now.toISOString()),
-    countBusiness().gte('pickup_datetime', now.toISOString()),
+    // Upcoming is a date fact, not a status. Matches the list's timeframe=upcoming filter,
+    // which shows one row per trip: a round trip or multi-city order counts once.
+    countUpcomingTrips(adminClient, 'customer', now.toISOString()),
+    countUpcomingTrips(adminClient, 'business', now.toISOString()),
 
     countCustomer().eq('booking_status', 'completed'),
     countBusiness().eq('booking_status', 'completed'),
 
-    countCustomer().eq('booking_status', 'cancelled'),
+    // Checkouts closed unpaid by the expiry job were never bookings, so not cancellations.
+    countCustomer().eq('booking_status', 'cancelled').is('payment_expired_at', null),
     countBusiness().eq('booking_status', 'cancelled'),
 
     adminClient
@@ -1056,210 +1251,6 @@ export async function exportBookingsToCSV(bookingIds: string[]) {
   ].join('\n')
 
   return csv
-}
-
-export async function bulkUpdateBookingStatus(
-  bookingIds: string[],
-  status: 'confirmed' | 'cancelled'
-): Promise<{ success?: boolean; unchanged?: boolean; skipped?: number; error?: string }> {
-  const auth = await requireAdminAction()
-  if ('error' in auth) return { error: auth.error }
-
-  const adminClient = createAdminClient()
-
-  const updateData: any = {
-    booking_status: status,
-    updated_at: new Date().toISOString()
-  }
-
-  if (status === 'cancelled') {
-    updateData.cancelled_at = new Date().toISOString()
-    updateData.cancellation_reason = 'Bulk cancellation by admin'
-  }
-
-  // Snapshot each booking's status before overwriting it, so the notifications can report
-  // the change that actually happened. This path used to hardcode 'pending' as the
-  // previous status, so confirming an already-confirmed booking told the recipient it had
-  // moved from pending. Both tables are read because the action is table-agnostic and
-  // fires the same update at each.
-  const previousStatuses = new Map<string, string>()
-  // Business bookings this change may not touch: a cancelled one stays cancelled, a completed
-  // one is never cancelled. They are left out of the update and its notifications entirely.
-  const blockedBusinessIds = new Set<string>()
-
-  for (const table of ['bookings', 'business_bookings'] as const) {
-    const { data: before } = await adminClient
-      .from(table)
-      .select('id, booking_status')
-      .in('id', bookingIds)
-
-    for (const row of (before ?? []) as Array<{ id: string; booking_status: string | null }>) {
-      if (row.booking_status) previousStatuses.set(row.id, row.booking_status)
-      if (table === 'business_bookings' && businessStatusChangeBlockedReason(row.booking_status, status)) {
-        blockedBusinessIds.add(row.id)
-      }
-    }
-  }
-
-  // Drop the ones already in the target status. Rewriting a row to the value it
-  // already holds is not a change, but it did fire the whole notification set, so a
-  // bulk cancel that overlapped an earlier one mailed those passengers a second
-  // "your transfer has been cancelled". Ids with no snapshot are kept: they were not
-  // readable here, and the update below is a no-op for them anyway.
-  const idsToUpdate = bookingIds.filter(
-    (id) => previousStatuses.get(id) !== status && !blockedBusinessIds.has(id)
-  )
-
-  if (idsToUpdate.length === 0) {
-    return { success: true, unchanged: true, skipped: blockedBusinessIds.size }
-  }
-
-  // Update customer bookings
-  const { error } = await adminClient
-    .from('bookings')
-    .update(updateData)
-    .in('id', idsToUpdate)
-
-  if (error) {
-    console.error('Error bulk updating customer booking status:', error)
-  }
-
-  // Update business bookings
-  // The guard is repeated in the write, as in updateBookingStatus, so a booking cancelled
-  // meanwhile is not reopened and a completed one is not cancelled.
-  let bizUpdate = adminClient
-    .from('business_bookings')
-    .update(updateData)
-    .in('id', idsToUpdate)
-    .neq('booking_status', 'cancelled')
-  if (status === 'cancelled') bizUpdate = bizUpdate.neq('booking_status', 'completed')
-  const { error: bizError } = await bizUpdate
-
-  if (bizError) {
-    console.error('Error bulk updating business booking status:', bizError)
-  }
-
-  if (error && bizError) {
-    throw new Error('Failed to bulk update booking status')
-  }
-
-  // Close assignments and free vehicles/drivers. Bulk cancel previously touched neither, so
-  // every resource stayed blocked. Ids are passed for both booking types because this action
-  // is table-agnostic. It fires the same update at `bookings` and `business_bookings`.
-  if (status === 'cancelled') {
-    for (const bookingId of idsToUpdate) {
-      const { error: closeError } = await closeActiveAssignments({
-        bookingId,
-        businessBookingId: bookingId,
-        outcome: 'cancelled',
-        reason: 'Bulk cancellation by admin',
-      })
-
-      if (closeError) {
-        console.error('Failed to close assignments during bulk cancel:', { bookingId, closeError })
-      }
-    }
-  }
-
-  // Send notifications for business bookings. Not awaited so the caller is not held up,
-  // but inside after() so the sends survive past the response.
-  after(() =>
-    Promise.allSettled(
-    idsToUpdate.map(async (bookingId) => {
-      try {
-        const details = await getBusinessBookingEmailDetails(bookingId)
-        if (!details) return
-
-        const previousStatus = previousStatuses.get(bookingId) ?? 'pending'
-
-        // Both audiences, matching the single-booking path. Bulk previously sent only the
-        // passenger copy, so cancelling twenty bookings one at a time notified the owner
-        // twenty times and cancelling the same twenty at once notified them not at all.
-        if (status === 'cancelled') {
-          if (details.customerEmail) {
-            await sendBusinessCustomerBookingCancelledEmail({
-              businessAccountId: details.businessAccountId,
-              customerName: details.customerName,
-              customerEmail: details.customerEmail,
-              businessName: details.businessName,
-              bookingNumber: details.bookingNumber,
-              tripNumber: details.tripNumber,
-              pickupLocation: details.pickupLocation,
-              dropoffLocation: details.dropoffLocation,
-              pickupDateTime: details.pickupDateTime,
-              cancellationReason: 'Bulk cancellation by admin',
-            })
-          }
-
-          await notifyBusinessBookingCancelled(
-            buildBusinessSideRecipients({
-              ownerEmail: details.businessEmail || null,
-              ownerName: details.businessName,
-              creator: await loadBookingCreatorById(details.createdByUserId),
-            }),
-            {
-              businessAccountId: details.businessAccountId,
-              businessName: details.businessName,
-              bookingNumber: details.bookingNumber,
-              tripNumber: details.tripNumber,
-              customerName: details.customerName,
-              pickupLocation: details.pickupLocation,
-              dropoffLocation: details.dropoffLocation,
-              pickupDateTime: details.pickupDateTime,
-              cancellationReason: 'Bulk cancellation by admin',
-              refundAmount: 0,
-              newBalance: details.walletBalance,
-              currency: details.currency,
-              walletUrl: `${getAppUrl()}/business/wallet`,
-            }
-          )
-        } else {
-          if (details.customerEmail) {
-            await sendBusinessCustomerBookingStatusUpdateEmail({
-              businessAccountId: details.businessAccountId,
-              email: details.customerEmail,
-              businessName: details.businessName,
-              bookingNumber: details.bookingNumber,
-              tripNumber: details.tripNumber,
-              customerName: details.customerName,
-              pickupLocation: details.pickupLocation,
-              dropoffLocation: details.dropoffLocation,
-              pickupDateTime: details.pickupDateTime,
-              previousStatus,
-              newStatus: status,
-            })
-          }
-
-          await notifyBusinessBookingStatus(
-            buildBusinessSideRecipients({
-              ownerEmail: details.businessEmail || null,
-              ownerName: details.businessName,
-              creator: await loadBookingCreatorById(details.createdByUserId),
-            }),
-            {
-              businessAccountId: details.businessAccountId,
-              businessName: details.businessName,
-              bookingNumber: details.bookingNumber,
-              tripNumber: details.tripNumber,
-              customerName: details.customerName,
-              pickupLocation: details.pickupLocation,
-              dropoffLocation: details.dropoffLocation,
-              pickupDateTime: details.pickupDateTime,
-              previousStatus,
-              newStatus: status,
-            }
-          )
-        }
-      } catch (err) {
-        console.error(`Failed to send email for bulk booking ${bookingId}:`, err)
-      }
-    })
-    ).catch((err) => console.error('Bulk email notification error:', err))
-  )
-
-  revalidatePath('/admin/bookings')
-
-  return { success: true, skipped: blockedBusinessIds.size }
 }
 
 /**
@@ -1532,11 +1523,33 @@ export async function assignBookingToVendor(
   notes?: string,
   reassignmentReason?: string
 ) {
+  // Every other mutating action here checks for an admin; this one only checked for a session.
+  const auth = await requireAdminAction()
+  if ('error' in auth) {
+    throw new Error(auth.error)
+  }
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     throw new Error('User not authenticated')
+  }
+
+  // Customer bookings go to a vendor only once paid (the UI hides the button too).
+  if (bookingType === 'customer') {
+    const { data: paymentRow, error: paymentError } = await createAdminClient()
+      .from('bookings')
+      .select('payment_status')
+      .eq('id', bookingId)
+      .maybeSingle()
+    if (paymentError || !paymentRow) {
+      throw new Error('Booking not found')
+    }
+    const blocked = vendorAssignBlockedReason('customer', paymentRow.payment_status)
+    if (blocked) {
+      throw new Error(blocked)
+    }
   }
 
   // Create assignment (automatically cancels any existing active assignment)

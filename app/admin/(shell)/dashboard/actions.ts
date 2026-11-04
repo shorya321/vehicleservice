@@ -21,6 +21,7 @@ import {
   type RevenueTrendResult,
 } from '@/lib/dashboard/revenue-range'
 import { routeLabel } from '@/lib/trips/display'
+import { customerPickupName } from '@/lib/dashboard/upcoming-pickups'
 
 export interface DashboardMetrics {
   // Primary KPIs
@@ -190,7 +191,9 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
         created_at,
         trip_type,
         duration_hours,
+        guest_email,
         customer:profiles!customer_id(full_name),
+        booking_passengers(first_name, last_name, is_primary),
         from_location:locations!from_location_id(name),
         to_location:locations!to_location_id(name)
       `)
@@ -220,7 +223,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     id: b.id,
     bookingNumber: b.booking_number,
     tripNumber: b.trip_number,
-    customerName: b.customer?.full_name || 'Guest',
+    customerName: customerPickupName(b.customer?.full_name, b.booking_passengers, b.guest_email),
     route: routeLabel(b, b.from_location?.name, b.to_location?.name),
     status: b.booking_status,
     amount: Number(b.total_price),
@@ -354,7 +357,9 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       created_at,
       trip_type,
       duration_hours,
+      guest_email,
       customer:profiles!customer_id(full_name),
+      booking_passengers(first_name, last_name, is_primary),
       from_location:locations!from_location_id(name),
       to_location:locations!to_location_id(name)
     `)
@@ -363,7 +368,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     .limit(10)
 
   recentBookingsActivity?.forEach(booking => {
-    const customerName = booking.customer?.full_name || 'Guest'
+    const customerName = customerPickupName(booking.customer?.full_name, booking.booking_passengers, booking.guest_email)
     const route = routeLabel(booking, booking.from_location?.name, booking.to_location?.name)
     activities.push({
       id: `booking-${booking.id}`,

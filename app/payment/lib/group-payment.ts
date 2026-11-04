@@ -7,6 +7,7 @@ import { legLabel } from '@/lib/trips/display'
 import { signatureSubject } from '@/lib/security/guest-checkout'
 import { payerOwns, receiptEmail, stripeCustomerAccount, type Payer } from './payer'
 import type { LedgerLeg } from '@/components/checkout/booking-ledger'
+import type { CheckoutState } from '@/lib/bookings/unpaid-expiry'
 
 export interface GroupForPayment {
   id: string
@@ -29,6 +30,8 @@ export interface GroupForPayment {
   pickupTimes: string[]
   /** Set for a guest trip (no account): where the receipt goes. */
   guestEmail: string | null
+  /** The trip's own status, age and expiry marker, for the unpaid-expiry check. */
+  checkoutState: CheckoutState
 }
 
 /** The payer's own round trip or multi-city trip, with its journeys, for the payment page. */
@@ -37,14 +40,14 @@ export async function getGroupForPayment(groupNumber: string, payer: Payer): Pro
 
   const { data: group } = await adminClient
     .from('booking_groups')
-    .select('id, group_number, trip_type, total_price, subtotal, discount_amount, discount_percent, payment_status, customer_id, guest_email, vehicle_type:vehicle_types(name, passenger_capacity, luggage_capacity)')
+    .select('id, group_number, trip_type, total_price, subtotal, discount_amount, discount_percent, payment_status, booking_status, payment_expired_at, created_at, customer_id, guest_email, vehicle_type:vehicle_types(name, passenger_capacity, luggage_capacity)')
     .eq('group_number', groupNumber)
     .maybeSingle()
   if (!group || !payerOwns(group.customer_id, payer)) return null
 
   const { data: legs } = await adminClient
     .from('bookings')
-    .select('id, trip_type, leg_index, pickup_address, dropoff_address, pickup_datetime, base_price, discount_amount, amenities_price, passenger_count, booking_passengers(first_name, last_name, phone, is_primary)')
+    .select('id, trip_type, leg_index, booking_status, pickup_address, dropoff_address, pickup_datetime, base_price, discount_amount, amenities_price, passenger_count, booking_passengers(first_name, last_name, phone, is_primary)')
     .eq('booking_group_id', group.id)
     .order('leg_index', { ascending: true })
   if (!legs || legs.length === 0) return null
@@ -70,6 +73,13 @@ export async function getGroupForPayment(groupNumber: string, payer: Payer): Pro
     primaryPhone: primary?.phone ?? null,
     pickupTimes: legs.map((leg) => leg.pickup_datetime),
     guestEmail: group.guest_email,
+    checkoutState: {
+      // A trip whose journeys were all cancelled is closed even if the trip row was not updated.
+      bookingStatus: legs.every((leg) => leg.booking_status === 'cancelled') ? 'cancelled' : group.booking_status,
+      paymentStatus: group.payment_status,
+      paymentExpiredAt: group.payment_expired_at,
+      createdAt: group.created_at,
+    },
     ledgerLegs: legs.map((leg) => ({
       key: leg.id,
       label: legLabel(leg, legs.length) ?? 'Journey',

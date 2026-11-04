@@ -582,6 +582,36 @@ export type Database = {
           },
         ]
       }
+      booking_automation_settings: {
+        Row: {
+          expire_unpaid_enabled: boolean
+          expire_unpaid_minutes: number
+          id: string
+          last_run_at: string | null
+          last_run_expired: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          expire_unpaid_enabled?: boolean
+          expire_unpaid_minutes?: number
+          id?: string
+          last_run_at?: string | null
+          last_run_expired?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          expire_unpaid_enabled?: boolean
+          expire_unpaid_minutes?: number
+          id?: string
+          last_run_at?: string | null
+          last_run_expired?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       booking_groups: {
         Row: {
           booking_status: string
@@ -592,6 +622,7 @@ export type Database = {
           discount_percent: number
           group_number: string
           guest_email: string | null
+          payment_expired_at: string | null
           id: string
           leg_count: number
           paid_at: string | null
@@ -617,6 +648,7 @@ export type Database = {
           discount_percent?: number
           group_number: string
           guest_email?: string | null
+          payment_expired_at?: string | null
           id?: string
           leg_count: number
           paid_at?: string | null
@@ -642,6 +674,7 @@ export type Database = {
           discount_percent?: number
           group_number?: string
           guest_email?: string | null
+          payment_expired_at?: string | null
           id?: string
           leg_count?: number
           paid_at?: string | null
@@ -734,6 +767,7 @@ export type Database = {
           from_location_id: string | null
           from_zone_id: string | null
           guest_email: string | null
+          payment_expired_at: string | null
           id: string
           infants: number
           luggage_count: number | null
@@ -782,6 +816,7 @@ export type Database = {
           from_location_id?: string | null
           from_zone_id?: string | null
           guest_email?: string | null
+          payment_expired_at?: string | null
           id?: string
           infants?: number
           luggage_count?: number | null
@@ -830,6 +865,7 @@ export type Database = {
           from_location_id?: string | null
           from_zone_id?: string | null
           guest_email?: string | null
+          payment_expired_at?: string | null
           id?: string
           infants?: number
           luggage_count?: number | null
@@ -4608,6 +4644,11 @@ export type Database = {
       get_vendor_user_id: { Args: { p_vendor_app_id: string }; Returns: string }
       is_admin: { Args: { user_id: string }; Returns: boolean }
       link_guest_bookings: { Args: { p_user_id: string }; Returns: number }
+      expire_unpaid_bookings: { Args: { p_force?: boolean }; Returns: number }
+      get_unpaid_expiry_job: {
+        Args: never
+        Returns: { schedule: string; active: boolean }[]
+      }
       log_business_activity: {
         Args: {
           p_action: string

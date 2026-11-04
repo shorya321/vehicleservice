@@ -1,4 +1,4 @@
-import { summarizePickups, vendorState, type PickupRow } from '@/lib/dashboard/upcoming-pickups'
+import { customerPickupName, summarizePickups, vendorState, type PickupRow } from '@/lib/dashboard/upcoming-pickups'
 
 const row = (overrides: Partial<PickupRow> = {}): PickupRow => ({
   id: 'b1',
@@ -52,5 +52,32 @@ describe('summarizePickups', () => {
   it('attaches the vendor state to each item', () => {
     const { items } = summarizePickups([row({ assignments: [{ status: 'pending' }] })])
     expect(items[0].vendor).toBe('awaiting')
+  })
+})
+
+describe('customerPickupName', () => {
+  const passenger = (first: string | null, last: string | null, primary: boolean | null) => ({
+    first_name: first,
+    last_name: last,
+    is_primary: primary,
+  })
+
+  it('uses the account name when there is one', () => {
+    expect(customerPickupName('Atul Sharma', [passenger('Gina', 'Guest', true)], null)).toBe('Atul Sharma')
+  })
+
+  it('names a guest by the lead passenger', () => {
+    expect(
+      customerPickupName(null, [passenger('Second', 'Rider', false), passenger('Gina', 'Guest', true)], 'g@example.com')
+    ).toBe('Gina Guest')
+  })
+
+  it('falls back to the first passenger when none is marked lead', () => {
+    expect(customerPickupName(undefined, [passenger('Omar', null, null)], null)).toBe('Omar')
+  })
+
+  it('falls back to the booking email, then Guest', () => {
+    expect(customerPickupName('  ', [passenger(null, ' ', true)], 'g@example.com')).toBe('g@example.com')
+    expect(customerPickupName(null, null, null)).toBe('Guest')
   })
 })

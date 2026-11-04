@@ -2,7 +2,7 @@ import 'server-only'
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { routeLabel } from '@/lib/trips/display'
-import { summarizePickups, type PickupRow, type PickupSummary } from '@/lib/dashboard/upcoming-pickups'
+import { customerPickupName, summarizePickups, type PickupRow, type PickupSummary } from '@/lib/dashboard/upcoming-pickups'
 
 /** Same exclusion the bookings page stats use. */
 const TEST_BOOKING_PATTERN = 'TEST-%'
@@ -30,7 +30,9 @@ export async function getUpcomingPickups(): Promise<UpcomingPickupsResult> {
           pickup_datetime,
           trip_type,
           duration_hours,
+          guest_email,
           customer:profiles!customer_id(full_name),
+          booking_passengers(first_name, last_name, is_primary),
           from_location:locations!from_location_id(name),
           to_location:locations!to_location_id(name),
           booking_assignments(status)
@@ -64,7 +66,7 @@ export async function getUpcomingPickups(): Promise<UpcomingPickupsResult> {
         id: b.id,
         pickupAt: b.pickup_datetime,
         route: routeLabel(b, b.from_location?.name, b.to_location?.name),
-        who: b.customer?.full_name || 'Guest',
+        who: customerPickupName(b.customer?.full_name, b.booking_passengers, b.guest_email),
         source: 'customer' as const,
         assignments: b.booking_assignments,
       })),

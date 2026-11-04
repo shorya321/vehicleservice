@@ -68,7 +68,19 @@ async function sourceTotals(client: AdminClient, table: BookingTable, monthStart
   const [allBookings, monthBookings, monthCancelled, revenue] = await Promise.all([
     countRows(base()),
     countRows(base().gte('created_at', monthStartIso)),
-    countRows(base().gte('created_at', monthStartIso).eq('booking_status', 'cancelled')),
+    // A customer checkout closed unpaid by the expiry job was never a booking, so it
+    // is not a cancellation. Business bookings have no such state.
+    countRows(
+      table === 'bookings'
+        ? client
+            .from('bookings')
+            .select('id', { count: 'exact', head: true })
+            .not('booking_number', 'like', TEST_BOOKING_PATTERN)
+            .gte('created_at', monthStartIso)
+            .eq('booking_status', 'cancelled')
+            .is('payment_expired_at', null)
+        : base().gte('created_at', monthStartIso).eq('booking_status', 'cancelled')
+    ),
     paidRevenue(client, table, monthStartIso),
   ])
 

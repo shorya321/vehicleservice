@@ -115,7 +115,7 @@ export async function finalizeGroupPayment(params: FinalizeGroupParams): Promise
   // The claim. Whoever flips processing to completed sends the emails; the loser returns quietly.
   const { data: claimed, error: claimError } = await adminClient
     .from('booking_groups')
-    .update({ ...paymentFields, stripe_payment_intent_id: paymentIntent.id })
+    .update({ ...paymentFields, stripe_payment_intent_id: paymentIntent.id, payment_expired_at: null })
     .eq('id', groupId)
     .neq('payment_status', 'completed')
     .select('*')
@@ -128,9 +128,14 @@ export async function finalizeGroupPayment(params: FinalizeGroupParams): Promise
     return { ok: true, status: 200, booking: group, alreadyCompleted: true }
   }
 
+  // A payment after the unpaid-expiry job closed the trip still wins (see finalize-booking).
+  const legFields = group.payment_expired_at
+    ? { ...paymentFields, payment_expired_at: null, cancelled_at: null, cancellation_reason: null }
+    : paymentFields
+
   const { data: updatedLegs, error: updateError } = await adminClient
     .from('bookings')
-    .update(paymentFields)
+    .update(legFields)
     .eq('booking_group_id', groupId)
     .select('*')
 

@@ -36,6 +36,8 @@ import { getGroupForPayment, getOrCreateGroupPaymentIntent } from '../lib/group-
 import { GroupPaymentScreen } from './group-payment-screen'
 import { PickupPassedScreen } from '../components/pickup-passed-screen'
 import { firstPickupHasPassed } from '@/lib/trips/pickup-passed'
+import { isCheckoutClosed } from '@/lib/bookings/unpaid-expiry'
+import { getUnpaidExpirySettings } from '@/lib/bookings/unpaid-expiry-settings'
 import { signatureSubject } from '@/lib/security/guest-checkout'
 import { payerOwns, receiptEmail, resolvePayer, stripeCustomerAccount, type Payer } from '../lib/payer'
 
@@ -109,7 +111,10 @@ async function getOrCreatePaymentIntent(
     try {
       const { retrievePaymentIntent } = await import('@/lib/stripe/server')
       const existingIntent = await retrievePaymentIntent(bookingRecord.stripe_payment_intent_id)
-      return { clientSecret: existingIntent.client_secret }
+      // A canceled intent can never be paid; fall through and create a fresh one.
+      if (existingIntent.status !== 'canceled') {
+        return { clientSecret: existingIntent.client_secret }
+      }
     } catch {
       // Fall through to create a new payment intent
     }
@@ -210,6 +215,17 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
     const group = await getGroupForPayment(bookingNumber, payer)
     if (!group) notFound()
     if (group.paymentStatus === 'completed') redirect(buildConfirmationUrl(group.groupNumber))
+    if (isCheckoutClosed(group.checkoutState, await getUnpaidExpirySettings())) {
+      return (
+        <PickupPassedScreen
+          reason="closed"
+          reference={group.groupNumber}
+          user={user}
+          profile={profile}
+          currency={{ initialCurrency: currentCurrency, exchangeRates: rates, featuredCurrencies, allCurrencies }}
+        />
+      )
+    }
     if (firstPickupHasPassed(group.pickupTimes)) {
       return (
         <PickupPassedScreen
@@ -270,7 +286,26 @@ export default async function PaymentRoutePage({ params }: PaymentRoutePageProps
     redirect(buildConfirmationUrl(booking.booking_number))
   }
 
-  // An unpaid booking never expires, so its pickup can be gone by the time it is opened here.
+  // Cancelled, expired, or left unpaid past the admin's limit: no card form.
+  const checkoutState = {
+    bookingStatus: booking.booking_status,
+    paymentStatus: booking.payment_status,
+    paymentExpiredAt: booking.payment_expired_at,
+    createdAt: booking.created_at,
+  }
+  if (isCheckoutClosed(checkoutState, await getUnpaidExpirySettings())) {
+    return (
+      <PickupPassedScreen
+        reason="closed"
+        reference={booking.trip_number || booking.booking_number}
+        user={user}
+        profile={profile}
+        currency={{ initialCurrency: currentCurrency, exchangeRates: rates, featuredCurrencies, allCurrencies }}
+      />
+    )
+  }
+
+  // An unpaid booking's pickup can be gone by the time it is opened here.
   if (firstPickupHasPassed([booking.pickup_datetime])) {
     return (
       <PickupPassedScreen

@@ -51,6 +51,16 @@ import { TripGroupCard } from './trip-group-card'
 import { GuestCustomerInfo } from './guest-customer-info'
 import { RefundBusinessBookingDialog } from '../../components/refund-business-booking-dialog'
 import { businessStatusChangeBlockedReason } from '@/lib/business/booking-guards'
+import { customerPaymentLabel, vendorAssignBlockedReason } from '@/lib/bookings/unpaid-expiry'
+import {
+  EXPIRED_BOOKING_NOTE,
+  customerActionsClosed,
+  customerPaymentBlockedReason,
+  customerStatusBlockedReason,
+  customerTripPaidBlockedReason,
+  type AdminPaymentTarget,
+  type AdminStatusTarget,
+} from '@/lib/bookings/admin-booking-rules'
 
 interface BookingDetailProps {
   booking: any // We'll define proper types later
@@ -66,6 +76,28 @@ const actionButtonClass = (isCurrent: boolean): string =>
 
 export function BookingDetail({ booking }: BookingDetailProps) {
   const isBusinessBooking = booking.bookingType === 'business'
+  // Unpaid customer bookings cannot be offered to a vendor; the server enforces it too.
+  const assignBlockedReason = vendorAssignBlockedReason(booking.bookingType, booking.payment_status)
+  // Customer bookings follow lib/bookings/admin-booking-rules (the server checks the same);
+  // business bookings keep their existing guards below.
+  const customerState = {
+    booking_status: booking.booking_status,
+    payment_status: booking.payment_status,
+    payment_expired_at: booking.payment_expired_at,
+  }
+  const statusBlockedReason = (to: AdminStatusTarget): string | null =>
+    isBusinessBooking ? null : customerStatusBlockedReason(customerState, to)
+  const paymentBlockedReason = (to: AdminPaymentTarget): string | null => {
+    if (isBusinessBooking) return null
+    const own = customerPaymentBlockedReason(customerState, to)
+    // "Paid" on a trip journey covers the whole trip (the server checks the same).
+    if (own === null && to === 'completed' && booking.trip_group) {
+      return customerTripPaidBlockedReason(booking.trip_group.legs)
+    }
+    return own
+  }
+  const customerClosed = !isBusinessBooking && customerActionsClosed(customerState)
+  const closedNote = booking.payment_expired_at ? EXPIRED_BOOKING_NOTE : 'This booking was refunded. No further changes apply.'
   // Same rule the server applies: a business cancellation is final, a completed trip stays completed.
   const businessStatusLocked = (to: string) =>
     isBusinessBooking && businessStatusChangeBlockedReason(booking.booking_status, to) !== null
@@ -112,13 +144,45 @@ export function BookingDetail({ booking }: BookingDetailProps) {
     
     const config = variants[status] || variants.pending
     const Icon = config.icon
-    
+    // Customer bookings read "Awaiting payment" / "Expired (unpaid)"; business keeps its label.
+    const label = isBusinessBooking
+      ? status.charAt(0).toUpperCase() + status.slice(1)
+      : customerPaymentLabel({
+          bookingStatus: booking.booking_status,
+          paymentStatus: status,
+          paymentExpiredAt: booking.payment_expired_at,
+        })
+
     return (
       <Badge variant={config.variant} className="gap-1">
         <Icon className={`h-3 w-3 ${config.color}`} />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {label}
       </Badge>
     )
+  }
+
+  const statusDialogText = (): string => {
+    if (!statusToUpdate) return ''
+    const label = { confirmed: 'Confirmed', completed: 'Completed', cancelled: 'Cancelled' }[statusToUpdate]
+    if (statusToUpdate === 'cancelled' && !isBusinessBooking && booking.payment_status === 'completed') {
+      return `The customer paid ${formatCurrency(booking.total_price)}. Cancelling does not refund it; mark the payment Refunded once it has been refunded.`
+    }
+    if (statusToUpdate === 'cancelled') {
+      return 'Cancel this booking? Any vendor assigned to it is released.'
+    }
+    return `Change this booking's status to ${label}?`
+  }
+
+  const paymentDialogText = (): string => {
+    if (paymentStatusToUpdate === 'refunded') {
+      return 'Marks the payment as refunded. No money is moved by the system.'
+    }
+    if (paymentStatusToUpdate === 'completed' && !isBusinessBooking) {
+      return booking.booking_group_id
+        ? 'Use this when the customer paid outside the website (cash or bank transfer). Every journey of this trip is marked paid and confirmed, the same as an online payment.'
+        : 'Use this when the customer paid outside the website (cash or bank transfer). The booking is confirmed, the same as an online payment.'
+    }
+    return paymentStatusToUpdate === 'failed' ? 'Mark the payment as failed?' : 'Mark the payment as paid?'
   }
 
   const handleStatusUpdate = async () => {
@@ -344,9 +408,14 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                       size="sm"
                       className="mt-3"
                       onClick={() => setShowAssignVendorModal(true)}
+                      disabled={assignBlockedReason !== null}
+                      title={assignBlockedReason ?? undefined}
                     >
                       Assign Vendor
                     </Button>
+                    {assignBlockedReason && (
+                      <p className="mt-2 text-xs text-muted-foreground">{assignBlockedReason}</p>
+                    )}
                   </div>
                 )
               }
@@ -470,6 +539,8 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                             variant="outline"
                             size="sm"
                             onClick={() => setShowAssignVendorModal(true)}
+                      disabled={assignBlockedReason !== null}
+                      title={assignBlockedReason ?? undefined}
                           >
                             {currentAssignment.status === 'accepted' && currentAssignment.driver_id ? (
                               <AlertTriangle className="mr-2 h-4 w-4 text-amber-500" />
@@ -489,9 +560,14 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                         variant="outline"
                         size="sm"
                         onClick={() => setShowAssignVendorModal(true)}
+                      disabled={assignBlockedReason !== null}
+                      title={assignBlockedReason ?? undefined}
                       >
                         Assign Vendor
                       </Button>
+                      {assignBlockedReason && (
+                        <p className="mt-2 text-xs text-muted-foreground">{assignBlockedReason}</p>
+                      )}
                     </div>
                   )}
 
@@ -711,6 +787,10 @@ export function BookingDetail({ booking }: BookingDetailProps) {
             <CardTitle>Actions{scopeBadge}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
+            {customerClosed ? (
+              <p className="text-sm text-muted-foreground">{closedNote}</p>
+            ) : (
+            <>
             <div className="space-y-2">
               <p className="text-sm font-medium">Update Booking Status</p>
               <div className="flex flex-wrap gap-2">
@@ -720,7 +800,13 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   onClick={() => setStatusToUpdate('confirmed')}
                   className={actionButtonClass(booking.booking_status === 'confirmed')}
                   aria-pressed={booking.booking_status === 'confirmed'}
-                  disabled={booking.booking_status === 'confirmed' || isUpdating || businessStatusLocked('confirmed')}
+                  disabled={
+                    booking.booking_status === 'confirmed' ||
+                    isUpdating ||
+                    businessStatusLocked('confirmed') ||
+                    statusBlockedReason('confirmed') !== null
+                  }
+                  title={booking.booking_status === 'confirmed' ? undefined : statusBlockedReason('confirmed') ?? undefined}
                 >
                   Confirm
                 </Button>
@@ -730,7 +816,13 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   onClick={() => setStatusToUpdate('completed')}
                   className={actionButtonClass(booking.booking_status === 'completed')}
                   aria-pressed={booking.booking_status === 'completed'}
-                  disabled={booking.booking_status === 'completed' || isUpdating || businessStatusLocked('completed')}
+                  disabled={
+                    booking.booking_status === 'completed' ||
+                    isUpdating ||
+                    businessStatusLocked('completed') ||
+                    statusBlockedReason('completed') !== null
+                  }
+                  title={booking.booking_status === 'completed' ? undefined : statusBlockedReason('completed') ?? undefined}
                 >
                   Complete
                 </Button>
@@ -740,7 +832,13 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   onClick={() => setStatusToUpdate('cancelled')}
                   className={actionButtonClass(booking.booking_status === 'cancelled')}
                   aria-pressed={booking.booking_status === 'cancelled'}
-                  disabled={booking.booking_status === 'cancelled' || isUpdating || businessStatusLocked('cancelled')}
+                  disabled={
+                    booking.booking_status === 'cancelled' ||
+                    isUpdating ||
+                    businessStatusLocked('cancelled') ||
+                    statusBlockedReason('cancelled') !== null
+                  }
+                  title={booking.booking_status === 'cancelled' ? undefined : statusBlockedReason('cancelled') ?? undefined}
                 >
                   Cancel
                 </Button>
@@ -761,11 +859,16 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   disabled={
                     booking.payment_status === 'completed' ||
                     isUpdating ||
-                    (isBusinessBooking && booking.payment_status === 'refunded')
+                    (isBusinessBooking && booking.payment_status === 'refunded') ||
+                    paymentBlockedReason('completed') !== null
                   }
+                  title={booking.payment_status === 'completed' ? undefined : paymentBlockedReason('completed') ?? undefined}
                 >
                   Paid
                 </Button>
+                {/* Customer card payments report their own failures and the customer can retry,
+                    so "Failed" is kept for business bookings only. */}
+                {isBusinessBooking && (
                 <Button
                   size="sm"
                   variant="outline"
@@ -780,9 +883,10 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                 >
                   Failed
                 </Button>
+                )}
                 {/* A business booking's refund moves real money back to its wallet, so it goes
                     through the refund dialog and only once the booking is cancelled. Customer
-                    bookings keep the status-only action (refunded by hand in Stripe). */}
+                    bookings keep the status-only action: no money is moved by the system. */}
                 {isBusinessBooking ? (
                   <Button
                     size="sm"
@@ -804,13 +908,16 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                     onClick={() => setPaymentStatusToUpdate('refunded')}
                     className={actionButtonClass(booking.payment_status === 'refunded')}
                     aria-pressed={booking.payment_status === 'refunded'}
-                    disabled={booking.payment_status === 'refunded' || isUpdating}
+                    disabled={booking.payment_status === 'refunded' || isUpdating || paymentBlockedReason('refunded') !== null}
+                    title={booking.payment_status === 'refunded' ? undefined : paymentBlockedReason('refunded') ?? undefined}
                   >
                     Refund
                   </Button>
                 )}
               </div>
             </div>
+            </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -821,8 +928,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Update Booking Status</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to update this booking status to &quot;{statusToUpdate}&quot;?
-              This action cannot be undone.
+              {statusDialogText()}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -840,8 +946,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Update Payment Status</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to update the payment status to &quot;{paymentStatusToUpdate}&quot;?
-              This action cannot be undone.
+              {paymentDialogText()}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

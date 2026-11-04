@@ -29,6 +29,8 @@ import { CurrencyProvider } from '@/lib/currency/context'
 import { verifyBookingSignature } from '@/lib/security/booking-hmac'
 import { PickupPassedScreen } from './components/pickup-passed-screen'
 import { firstPickupHasPassed } from '@/lib/trips/pickup-passed'
+import { isCheckoutClosed } from '@/lib/bookings/unpaid-expiry'
+import { getUnpaidExpirySettings } from '@/lib/bookings/unpaid-expiry-settings'
 
 export const metadata: Metadata = {
   title: 'Secure Payment',
@@ -103,8 +105,11 @@ async function getOrCreatePaymentIntent(
     try {
       const { retrievePaymentIntent } = await import('@/lib/stripe/server')
       const existingIntent = await retrievePaymentIntent(booking.stripe_payment_intent_id)
-      return {
-        clientSecret: existingIntent.client_secret
+      // A canceled intent can never be paid; fall through and create a fresh one.
+      if (existingIntent.status !== 'canceled') {
+        return {
+          clientSecret: existingIntent.client_secret
+        }
       }
     } catch (error) {
       console.log('Could not retrieve existing payment intent, creating new one')
@@ -230,7 +235,26 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
     redirect(`/booking/confirmation/${booking.booking_number}`)
   }
 
-  // An unpaid booking never expires, so its pickup can be gone by the time it is opened here.
+  // Cancelled, expired, or left unpaid past the admin's limit: no card form.
+  const checkoutState = {
+    bookingStatus: booking.booking_status,
+    paymentStatus: booking.payment_status,
+    paymentExpiredAt: booking.payment_expired_at,
+    createdAt: booking.created_at,
+  }
+  if (isCheckoutClosed(checkoutState, await getUnpaidExpirySettings())) {
+    return (
+      <PickupPassedScreen
+        reason="closed"
+        reference={booking.trip_number || booking.booking_number}
+        user={user}
+        profile={profile}
+        currency={{ initialCurrency: currentCurrency, exchangeRates: rates, featuredCurrencies, allCurrencies }}
+      />
+    )
+  }
+
+  // An unpaid booking's pickup can be gone by the time it is opened here.
   if (firstPickupHasPassed([booking.pickup_datetime])) {
     return (
       <PickupPassedScreen

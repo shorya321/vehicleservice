@@ -27,6 +27,7 @@ jest.mock('@/lib/stripe/server', () => ({
 // Mutable state the mocked admin client reads from, reset per test.
 let currentBookingRow: Record<string, unknown> | null = null
 let currentUpdatedRow: Record<string, unknown> | null = null
+let lastUpdatePayload: Record<string, unknown> | null = null
 
 jest.mock('@/lib/supabase/admin', () => ({
   createAdminClient: () => ({
@@ -34,8 +35,9 @@ jest.mock('@/lib/supabase/admin', () => ({
       const state = { isUpdate: false }
       const builder: Record<string, unknown> = {
         select: () => builder,
-        update: () => {
+        update: (payload: Record<string, unknown>) => {
           state.isUpdate = true
+          if (table === 'bookings') lastUpdatePayload = payload
           return builder
         },
         eq: () => builder,
@@ -129,6 +131,7 @@ function buildPaymentIntent(overrides: Record<string, unknown> = {}): Record<str
 beforeEach(() => {
   currentBookingRow = null
   currentUpdatedRow = null
+  lastUpdatePayload = null
   mockRetrievePI.mockReset()
   mockCustomerEmail.mockClear()
   mockAdminEmail.mockClear()
@@ -137,6 +140,42 @@ beforeEach(() => {
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('finalizeBookingPayment', () => {
+  it('a normal payment leaves cancellation fields alone', async () => {
+    currentBookingRow = buildSignedBooking({ payment_expired_at: null })
+    currentUpdatedRow = buildSignedBooking({ payment_status: 'completed', booking_status: 'confirmed' })
+    mockRetrievePI.mockResolvedValue(buildPaymentIntent())
+
+    const result = await finalizeBookingPayment({ paymentIntentId: 'pi_test_1', bookingId: BOOKING_ID, userCurrency: 'AED' })
+
+    expect(result.ok).toBe(true)
+    expect(lastUpdatePayload).toMatchObject({ payment_status: 'completed', booking_status: 'confirmed' })
+    expect(lastUpdatePayload).not.toHaveProperty('payment_expired_at')
+    expect(lastUpdatePayload).not.toHaveProperty('cancelled_at')
+    expect(lastUpdatePayload).not.toHaveProperty('cancellation_reason')
+  })
+
+  it('a payment after unpaid expiry reconfirms the booking and clears the expiry', async () => {
+    currentBookingRow = buildSignedBooking({
+      booking_status: 'cancelled',
+      payment_expired_at: '2026-11-04T10:00:00Z',
+      cancelled_at: '2026-11-04T10:00:00Z',
+      cancellation_reason: 'Payment not completed in time',
+    })
+    currentUpdatedRow = buildSignedBooking({ payment_status: 'completed', booking_status: 'confirmed' })
+    mockRetrievePI.mockResolvedValue(buildPaymentIntent())
+
+    const result = await finalizeBookingPayment({ paymentIntentId: 'pi_test_1', bookingId: BOOKING_ID, userCurrency: 'AED' })
+
+    expect(result.ok).toBe(true)
+    expect(lastUpdatePayload).toMatchObject({
+      payment_status: 'completed',
+      booking_status: 'confirmed',
+      payment_expired_at: null,
+      cancelled_at: null,
+      cancellation_reason: null,
+    })
+  })
+
   it('happy path: confirms booking and returns the updated row', async () => {
     currentBookingRow = buildSignedBooking()
     currentUpdatedRow = buildSignedBooking({ payment_status: 'completed', booking_status: 'confirmed' })

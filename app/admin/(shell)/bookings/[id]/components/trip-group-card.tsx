@@ -10,6 +10,7 @@ import { formatCurrency } from '@/lib/utils'
 import { toBookingTz } from '@/lib/utils/timezone'
 import { legLabel, tripTypeLabel } from '@/lib/trips/display'
 import type { AdminTripGroup } from '@/lib/trips/admin-types'
+import { customerPaymentLabel } from '@/lib/bookings/unpaid-expiry'
 
 interface TripGroupCardProps {
   group: AdminTripGroup
@@ -42,7 +43,15 @@ export function TripGroupCard({ group, currentBookingId }: TripGroupCardProps) {
               </CardDescription>
             </div>
           </div>
-          <Badge variant="outline">{group.payment_status}</Badge>
+          <Badge variant="outline">
+            {isWallet
+              ? group.payment_status
+              : customerPaymentLabel({
+                  bookingStatus: group.booking_status,
+                  paymentStatus: group.payment_status,
+                  paymentExpiredAt: group.payment_expired_at,
+                })}
+          </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

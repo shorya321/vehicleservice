@@ -19,6 +19,7 @@ import { cn, formatCurrency } from '@/lib/utils'
 import { toBookingTz } from '@/lib/utils/timezone'
 import { tripTypeLabel } from '@/lib/trips/display'
 import type { BookingWithCustomer } from '../actions'
+import type { PaymentBadgeRow } from '@/lib/bookings/unpaid-expiry'
 
 const ACTIVE_ASSIGNMENT = ['pending', 'accepted', 'completed']
 
@@ -44,7 +45,7 @@ interface TripGroupRowProps {
   onSelect: (checked: boolean) => void
   onOpen: () => void
   statusBadge: (status: string) => ReactNode
-  paymentBadge: (status: string) => ReactNode
+  paymentBadge: (status: string, row?: PaymentBadgeRow) => ReactNode
 }
 
 function VendorSummary({ legs }: { legs: BookingWithCustomer[] }) {
@@ -163,7 +164,7 @@ export function TripGroupRow({
       <TableCell>
         {statuses.size === 1 ? statusBadge(first.booking_status) : <StatusPill tone="neutral">Mixed</StatusPill>}
       </TableCell>
-      <TableCell>{paymentBadge(first.payment_status)}</TableCell>
+      <TableCell>{paymentBadge(first.payment_status, first)}</TableCell>
       <TableCell className="whitespace-nowrap text-right font-semibold">{formatCurrency(total)}</TableCell>
       <TableCell className="text-right no-row-click">
         <div className="inline-flex items-center gap-0.5">
@@ -190,7 +191,7 @@ export function TripGroupRow({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                Assign, reassign, status, payment and delete are per journey
+                Assign, payment and delete are per journey
               </DropdownMenuLabel>
             </DropdownMenuContent>
           </DropdownMenu>

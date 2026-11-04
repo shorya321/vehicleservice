@@ -10,7 +10,7 @@ import { createClient } from '@/lib/supabase/server'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
-import { Palette, Bell, ChevronRight, Coins, Globe } from 'lucide-react'
+import { Palette, Bell, ChevronRight, Coins, Globe, Timer } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Settings | Admin Portal',
@@ -35,6 +35,12 @@ const settingsCards = [
     description: 'Configure enabled currencies, default currency, and exchange rates',
     href: '/admin/settings/currencies',
     icon: Coins,
+  },
+  {
+    title: 'Booking automation',
+    description: 'Automatically close customer bookings that were never paid',
+    href: '/admin/settings/booking-automation',
+    icon: Timer,
   },
   {
     title: 'Notifications',

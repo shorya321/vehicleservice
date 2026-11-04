@@ -11,9 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { X, CheckCircle, XCircle, FileDown, Trash2, ChevronDown, Loader2 } from 'lucide-react'
+import { X, FileDown, Trash2, ChevronDown, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { bulkUpdateBookingStatus, bulkDeleteBookings, exportBookingsToCSV } from '../actions'
+import { bulkDeleteBookings, exportBookingsToCSV } from '../actions'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,35 +38,7 @@ export function BulkActionsBar({
 }: BulkActionsBarProps) {
   const router = useRouter()
   const [isUpdating, setIsUpdating] = useState(false)
-  const [confirmAction, setConfirmAction] = useState<'confirm' | 'cancel' | 'delete' | null>(null)
-
-  const handleBulkStatusUpdate = async (status: 'confirmed' | 'cancelled') => {
-    setIsUpdating(true)
-    try {
-      const result = await bulkUpdateBookingStatus(selectedBookingIds, status)
-      if (result.error) {
-        toast.error(result.error)
-        return
-      }
-      const skipped = result.skipped ?? 0
-      const changed = selectedCount - skipped
-      if (changed > 0) {
-        toast.success(`${changed} bookings ${status === 'confirmed' ? 'confirmed' : 'cancelled'}`)
-      }
-      if (skipped > 0) {
-        toast.warning(
-          `${skipped} business booking${skipped === 1 ? ' was' : 's were'} left unchanged: cancelled bookings stay cancelled and completed ones cannot be cancelled.`
-        )
-      }
-      onClearSelection()
-      router.refresh()
-    } catch (error) {
-      toast.error(`Failed to update booking status`)
-    } finally {
-      setIsUpdating(false)
-      setConfirmAction(null)
-    }
-  }
+  const [confirmAction, setConfirmAction] = useState<'delete' | null>(null)
 
   const handleExport = async () => {
     try {
@@ -150,15 +122,6 @@ export function BulkActionsBar({
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setConfirmAction('confirm')}>
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Confirm Selected
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setConfirmAction('cancel')}>
-              <XCircle className="mr-2 h-4 w-4" />
-              Cancel Selected
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleExport}>
               <FileDown className="mr-2 h-4 w-4" />
               Export to CSV
@@ -184,43 +147,25 @@ export function BulkActionsBar({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {confirmAction === 'confirm' ? 'Confirm Bookings' : confirmAction === 'delete' ? 'Delete Bookings' : 'Cancel Bookings'}
-            </AlertDialogTitle>
+            <AlertDialogTitle>Delete Bookings</AlertDialogTitle>
             <AlertDialogDescription>
-              {confirmAction === 'delete' ? (
-                <>Move {selectedCount} selected booking{selectedCount !== 1 ? 's' : ''} to the trash? Whole trips move together. You can restore them from Bookings, Trash for 30 days.</>
-              ) : (
-                <>Are you sure you want to {confirmAction === 'confirm' ? 'confirm' : 'cancel'}{' '}
-                {selectedCount} selected booking{selectedCount !== 1 ? 's' : ''}?
-                {confirmAction === 'cancel' && ' This action cannot be undone.'}</>
-              )}
+              Move {selectedCount} selected booking{selectedCount !== 1 ? 's' : ''} to the trash? Whole trips move together. You can restore them from Bookings, Trash for 30 days.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isUpdating}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                if (confirmAction === 'delete') {
-                  handleBulkDelete()
-                } else {
-                  handleBulkStatusUpdate(confirmAction === 'confirm' ? 'confirmed' : 'cancelled')
-                }
-              }}
+              onClick={() => handleBulkDelete()}
               disabled={isUpdating}
-              className={confirmAction === 'cancel' || confirmAction === 'delete' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isUpdating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {confirmAction === 'delete' ? 'Deleting...' : 'Processing...'}
+                  Deleting...
                 </>
-              ) : confirmAction === 'confirm' ? (
-                'Confirm All'
-              ) : confirmAction === 'delete' ? (
-                'Delete All'
               ) : (
-                'Cancel All'
+                'Delete All'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

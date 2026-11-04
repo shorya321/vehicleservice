@@ -42,8 +42,6 @@ import {
   MoreHorizontal, 
   Eye, 
   FileText, 
-  CheckCircle,
-  XCircle,
   MapPin,
   Car,
   CreditCard,
@@ -60,19 +58,26 @@ import { formatCurrency } from '@/lib/utils'
 import { format } from 'date-fns'
 import { toBookingTz } from '@/lib/utils/timezone'
 import { toast } from 'sonner'
-import { BookingWithCustomer, updateBookingStatus, updatePaymentStatus, deleteBooking } from '../actions'
+import { BookingWithCustomer, updatePaymentStatus, deleteBooking } from '../actions'
 import { RefundBusinessBookingDialog } from './refund-business-booking-dialog'
-import { businessStatusChangeBlockedReason } from '@/lib/business/booking-guards'
+import { customerPaymentBlockedReason } from '@/lib/bookings/admin-booking-rules'
 
-/** Same rule the server applies: a business cancellation is final, a completed trip stays completed. */
-function canMoveTo(booking: { bookingType?: string; booking_status?: string | null }, to: string): boolean {
-  return booking.bookingType !== 'business' || businessStatusChangeBlockedReason(booking.booking_status, to) === null
+/**
+ * "Mark Paid" in the row menu. Customer bookings follow the admin booking rules (only a
+ * booking still waiting for payment); business bookings keep their existing rule.
+ */
+function canMarkPaid(booking: BookingWithCustomer): boolean {
+  if (booking.bookingType === 'business') {
+    return booking.payment_status !== 'completed' && booking.payment_status !== 'refunded'
+  }
+  return customerPaymentBlockedReason(booking, 'completed') === null
 }
 import { BulkActionsBar } from './bulk-actions-bar'
 import { AssignVendorModal } from './assign-vendor-modal'
 import { TripGroupRow, activeAssignmentOf, unassignedOtherLegIds } from './trip-group-row'
 import { TripJourneysPanel } from './trip-journeys-panel'
 import { EmptyState } from '@/components/ui/empty-state'
+import { customerPaymentLabel, vendorAssignBlockedReason, type PaymentBadgeRow } from '@/lib/bookings/unpaid-expiry'
 import { hourlySummary, isHourlyBooking, legLabel, tripTypeLabel, tripTypeOf } from '@/lib/trips/display'
 
 interface BookingsTableProps {
@@ -82,10 +87,6 @@ interface BookingsTableProps {
 export function BookingsTable({ bookings }: BookingsTableProps) {
   const router = useRouter()
   const [selectedBookings, setSelectedBookings] = useState<Set<string>>(new Set())
-  const [statusUpdateId, setStatusUpdateId] = useState<string | null>(null)
-  const [newStatus, setNewStatus] = useState<'confirmed' | 'completed' | 'cancelled' | null>(null)
-  const [statusUpdateBookingType, setStatusUpdateBookingType] = useState<'customer' | 'business' | null>(null)
-  const [isUpdating, setIsUpdating] = useState(false)
   const [assignModalBookingId, setAssignModalBookingId] = useState<string | null>(null)
   const [deleteBookingId, setDeleteBookingId] = useState<string | null>(null)
   const [deleteBookingType, setDeleteBookingType] = useState<'customer' | 'business'>('customer')
@@ -97,11 +98,22 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
     <StatusPill tone={bookingStatusTone(status)}>{statusLabel(status)}</StatusPill>
   )
 
-  const getPaymentStatusBadge = (status: string) => (
-    <StatusPill tone={paymentStatusTone(status || 'pending')}>
-      {status === 'completed' ? 'Paid' : status ? statusLabel(status) : 'Pending'}
-    </StatusPill>
-  )
+  // Customer rows read "Awaiting payment" / "Expired (unpaid)"; business rows keep their labels.
+  const getPaymentStatusBadge = (status: string, row?: PaymentBadgeRow) => {
+    if (row?.bookingType === 'customer' && status) {
+      const state = { bookingStatus: row.booking_status, paymentStatus: status, paymentExpiredAt: row.payment_expired_at }
+      return (
+        <StatusPill tone={state.paymentExpiredAt ? 'neutral' : paymentStatusTone(status)}>
+          {customerPaymentLabel(state)}
+        </StatusPill>
+      )
+    }
+    return (
+      <StatusPill tone={paymentStatusTone(status || 'pending')}>
+        {status === 'completed' ? 'Paid' : status ? statusLabel(status) : 'Pending'}
+      </StatusPill>
+    )
+  }
 
   const getBookingTypeBadge = (type?: 'customer' | 'business') => (
     <StatusPill tone="neutral">
@@ -177,7 +189,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           legCount={row.booking_group?.leg_count ?? legs.length}
           expanded={expanded}
           colSpan={10}
-          canNavigate={() => !statusUpdateId && !deleteBookingId}
+          canNavigate={() => !deleteBookingId}
           onOpenJourney={(bookingId) => router.push(`/admin/bookings/${bookingId}`)}
           renderMenu={renderBookingMenu}
           statusBadge={getStatusBadge}
@@ -185,38 +197,6 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
         />
       </Fragment>
     )
-  }
-
-  const handleUpdateStatus = async () => {
-    if (!statusUpdateId || !newStatus) return
-
-    setIsUpdating(true)
-    try {
-      let cancellationReason = undefined
-      if (newStatus === 'cancelled') {
-        cancellationReason = 'Cancelled by admin'
-      }
-
-      const result = await updateBookingStatus(
-        statusUpdateId,
-        newStatus,
-        statusUpdateBookingType || 'customer',
-        cancellationReason
-      )
-      if ('error' in result && result.error) {
-        toast.error(result.error)
-        return
-      }
-      toast.success(`Booking status updated to ${newStatus}`)
-      router.refresh()
-    } catch (error) {
-      toast.error('Failed to update booking status')
-    } finally {
-      setIsUpdating(false)
-      setStatusUpdateId(null)
-      setNewStatus(null)
-      setStatusUpdateBookingType(null)
-    }
   }
 
   const handleUpdatePaymentStatus = async (
@@ -281,6 +261,8 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
         <DropdownMenuSeparator />
         
         <DropdownMenuItem
+          disabled={vendorAssignBlockedReason(booking.bookingType, booking.payment_status) !== null}
+          title={vendorAssignBlockedReason(booking.bookingType, booking.payment_status) ?? undefined}
           onClick={(e) => {
             e.stopPropagation()
             setAssignModalBookingId(booking.id)
@@ -290,57 +272,15 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           {booking.booking_assignments && booking.booking_assignments.length > 0 ? 'Reassign Vendor' : 'Assign Vendor'}
         </DropdownMenuItem>
         
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel className="text-xs">Update Status</DropdownMenuLabel>
-        
-        {booking.booking_status !== 'confirmed' && canMoveTo(booking, 'confirmed') && (
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation()
-              setStatusUpdateId(booking.id)
-              setNewStatus('confirmed')
-              setStatusUpdateBookingType(booking.bookingType || 'customer')
-            }}
-          >
-            <CheckCircle className="mr-2 h-4 w-4" />
-            Mark Confirmed
-          </DropdownMenuItem>
+        {(canMarkPaid(booking) ||
+          (booking.bookingType === 'business' && booking.booking_status === 'cancelled' && booking.payment_status !== 'refunded')) && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs">Payment</DropdownMenuLabel>
+          </>
         )}
-        
-        {booking.booking_status !== 'completed' && canMoveTo(booking, 'completed') && (
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation()
-              setStatusUpdateId(booking.id)
-              setNewStatus('completed')
-              setStatusUpdateBookingType(booking.bookingType || 'customer')
-            }}
-          >
-            <CheckCircle className="mr-2 h-4 w-4" />
-            Mark Completed
-          </DropdownMenuItem>
-        )}
-        
-        {booking.booking_status !== 'cancelled' && canMoveTo(booking, 'cancelled') && (
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation()
-              setStatusUpdateId(booking.id)
-              setNewStatus('cancelled')
-              setStatusUpdateBookingType(booking.bookingType || 'customer')
-            }}
-            className="text-destructive"
-          >
-            <XCircle className="mr-2 h-4 w-4" />
-            Cancel Booking
-          </DropdownMenuItem>
-        )}
-        
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel className="text-xs">Payment</DropdownMenuLabel>
-        
-        {booking.payment_status !== 'completed' &&
-          !(booking.bookingType === 'business' && booking.payment_status === 'refunded') && (
+
+        {canMarkPaid(booking) && (
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation()
@@ -353,8 +293,8 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
         )}
         
         {/* Business bookings are paid from the wallet, so a refund moves real money back through
-            the refund dialog, and only once the booking is cancelled. Customer bookings keep the
-            status-only action: their refunds are issued by hand in Stripe. */}
+            the refund dialog, and only once the booking is cancelled. A customer refund is a
+            status change on the booking page only. */}
         {booking.bookingType === 'business'
           ? booking.booking_status === 'cancelled' && booking.payment_status !== 'refunded' && (
               <DropdownMenuItem
@@ -367,17 +307,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                 Refund to Wallet
               </DropdownMenuItem>
             )
-          : booking.payment_status === 'completed' && (
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleUpdatePaymentStatus(booking.id, 'refunded', booking.bookingType || 'customer')
-                }}
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Process Refund
-              </DropdownMenuItem>
-            )}
+          : null}
         
         <DropdownMenuSeparator />
         
@@ -423,7 +353,6 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
             el.closest('.no-row-click') ||
             el.closest('[role="menuitem"]') ||
             el.closest('[role="alertdialog"]') ||
-            statusUpdateId ||
             deleteBookingId
           ) {
             return
@@ -520,7 +449,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           {getStatusBadge(booking.booking_status)}
         </TableCell>
         <TableCell>
-          {getPaymentStatusBadge(booking.payment_status)}
+          {getPaymentStatusBadge(booking.payment_status, booking)}
         </TableCell>
         <TableCell className="whitespace-nowrap text-right font-semibold">
           {formatCurrency(booking.total_price)}
@@ -591,35 +520,6 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
           </Table>
         </div>
       </div>
-
-      <AlertDialog open={!!statusUpdateId} onOpenChange={() => setStatusUpdateId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Update Booking Status</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to change the booking status to {newStatus}?
-              {newStatus === 'cancelled' && ' This action cannot be undone.'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isUpdating}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleUpdateStatus}
-              disabled={isUpdating}
-              className={newStatus === 'cancelled' ? 'bg-destructive text-destructive-foreground' : ''}
-            >
-              {isUpdating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Updating...
-                </>
-              ) : (
-                'Update Status'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <AlertDialog
         open={!!deleteBookingId}

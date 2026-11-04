@@ -313,7 +313,7 @@ export function BookingFiltersComponent({ filters, onFiltersChange }: BookingFil
                     <SelectContent>
                       <SelectItem value="all">All</SelectItem>
                       <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="processing">Processing</SelectItem>
+                      <SelectItem value="processing">Awaiting payment</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>
                       <SelectItem value="failed">Failed</SelectItem>
                       <SelectItem value="refunded">Refunded</SelectItem>

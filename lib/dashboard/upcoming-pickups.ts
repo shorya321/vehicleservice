@@ -46,3 +46,30 @@ export function summarizePickups(rows: PickupRow[], limit: number = PICKUPS_SHOW
     withoutVendor: all.filter((item) => item.vendor === 'none').length,
   }
 }
+
+export interface PickupPassenger {
+  first_name: string | null
+  last_name: string | null
+  is_primary: boolean | null
+}
+
+/**
+ * Who a customer pickup is for. Guest bookings have no profile, so the lead
+ * passenger names them, then the email they booked with.
+ */
+export function customerPickupName(
+  profileName: string | null | undefined,
+  passengers: PickupPassenger[] | null | undefined,
+  guestEmail: string | null | undefined
+): string {
+  if (profileName?.trim()) return profileName.trim()
+  const list = passengers ?? []
+  const lead = list.find((p) => p.is_primary) ?? list[0]
+  const leadName = [lead?.first_name, lead?.last_name]
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .join(' ')
+  if (leadName) return leadName
+  if (guestEmail?.trim()) return guestEmail.trim()
+  return 'Guest'
+}

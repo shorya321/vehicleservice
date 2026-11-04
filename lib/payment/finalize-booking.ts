@@ -149,6 +149,12 @@ export async function finalizeBookingPayment(
         currency: paymentIntent.currency,
       },
       updated_at: new Date().toISOString(),
+      // A payment that lands after the unpaid-expiry job closed the booking still
+      // wins: the card was charged and no vehicle was held. Undo only that expiry;
+      // a customer or admin cancel is left exactly as before.
+      ...(booking.payment_expired_at
+        ? { payment_expired_at: null, cancelled_at: null, cancellation_reason: null }
+        : {}),
     })
     .eq('id', bookingId)
   if (expectedCustomerId) {

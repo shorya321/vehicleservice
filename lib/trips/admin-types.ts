@@ -35,6 +35,8 @@ export interface AdminTripGroup {
   booking_status: string
   paid_at: string | null
   stripe_payment_intent_id: string | null
+  /** Customer trips only: set when the unpaid-expiry job closed the trip. */
+  payment_expired_at?: string | null
   /**
    * 'wallet' for a business trip (business_booking_groups), charged once from the business
    * wallet. Absent for a customer trip, paid by card through Stripe.
