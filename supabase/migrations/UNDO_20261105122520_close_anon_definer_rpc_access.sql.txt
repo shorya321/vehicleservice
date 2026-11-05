@@ -1,0 +1,48 @@
+-- UNDO for phase A (close_anon_definer_rpc_access).
+-- Restores the exact grants that existed before (PUBLIC, anon, authenticated,
+-- service_role on every function) and removes the membership guard line.
+
+DO $do$
+DECLARE r record; v_def text;
+BEGIN
+  FOR r IN
+    SELECT p.oid FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public'
+      AND p.proname IN ('export_transactions', 'get_transaction_statistics',
+                        'search_transactions', 'generate_monthly_statement_data',
+                        'get_business_payment_methods')
+  LOOP
+    v_def := pg_get_functiondef(r.oid);
+    v_def := regexp_replace(v_def,
+      E'\n  IF NOT public\\.can_access_business_account\\([a-z_]+\\) THEN\n    RETURN[^\n]*\n  END IF;', '');
+    EXECUTE v_def;
+  END LOOP;
+END
+$do$;
+
+DROP FUNCTION IF EXISTS public.can_access_business_account(uuid);
+
+GRANT EXECUTE ON FUNCTION
+  public.export_transactions(uuid, timestamptz, timestamptz, text[], varchar, integer),
+  public.get_transaction_statistics(uuid, timestamptz, timestamptz, text[], numeric, numeric, varchar),
+  public.search_transactions(uuid, text, integer),
+  public.generate_monthly_statement_data(uuid, integer, integer),
+  public.get_business_payment_methods(uuid),
+  public.create_admin_notification(notification_category, text, text, text, jsonb, text),
+  public.create_business_notification(uuid, notification_category, text, text, text, jsonb, text),
+  public.create_customer_notification(uuid, notification_category, text, text, text, jsonb, text),
+  public.create_vendor_notification(uuid, notification_category, text, text, text, jsonb, text),
+  public.get_business_booking_counts(),
+  public.generate_quotation_number(uuid),
+  public.log_user_activity(uuid, text, jsonb, inet, text),
+  public.record_wallet_notification(uuid, varchar, varchar, varchar, text, text, jsonb),
+  public.check_low_balance_alert(uuid),
+  public.update_last_low_balance_alert(uuid),
+  public.update_notification_status(uuid, varchar, text),
+  public.get_business_user_by_email(text),
+  public.get_admin_user_ids(),
+  public.decrypt_stripe_access_token(uuid),
+  public.decrypt_stripe_refresh_token(uuid),
+  public.encrypt_and_store_stripe_tokens(uuid, text, text, varchar),
+  public.disconnect_stripe_account(uuid)
+TO PUBLIC, anon, authenticated, service_role;

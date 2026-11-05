@@ -6,6 +6,7 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { apiSuccess, apiError, withErrorHandling } from '@/lib/business/api-utils';
 import { logBusinessActivity } from '@/lib/business/activity/log';
 import { maskEmail } from '@/lib/business/activity/mask';
@@ -26,13 +27,15 @@ const loginSchema = z.object({
  */
 async function logFailedAttempt(
   request: NextRequest,
-  supabase: Awaited<ReturnType<typeof createClient>>,
   email: string,
   action: BusinessActivityAction,
   reasonCode: string
 ): Promise<void> {
   try {
-    const { data } = await supabase.rpc('get_business_user_by_email', { p_email: email });
+    // get_business_user_by_email is server only (no anon or authenticated
+    // EXECUTE), so the lookup runs with the service role.
+    const admin = createAdminClient();
+    const { data } = await admin.rpc('get_business_user_by_email', { p_email: email });
     const match = Array.isArray(data) ? data[0] : null;
     if (!match?.business_account_id) return;
 
@@ -73,7 +76,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   });
 
   if (authError || !authData.user) {
-    await logFailedAttempt(request, supabase, email, 'security.login_failed', 'invalid_credentials');
+    await logFailedAttempt(request, email, 'security.login_failed', 'invalid_credentials');
     return apiError('Invalid email or password', 401);
   }
 
