@@ -36,6 +36,7 @@ import { legLabel, tripAssignmentLabel, tripTypeLabel } from '@/lib/trips/displa
 import type { AdminTripGroup } from '@/lib/trips/admin-types'
 import { vendorAssignBlockedReason } from '@/lib/bookings/unpaid-expiry'
 import { customerPaymentBlockedReason, customerStatusBlockedReason, customerTripPaidBlockedReason } from '@/lib/bookings/admin-booking-rules'
+import { resolveCustomerDisplayName } from '@/lib/bookings/customer-display-name'
 import { syncGroupAfterCancellation } from '@/app/account/lib/cancellation'
 
 export interface BookingFilters {
@@ -1761,14 +1762,24 @@ async function getBookingDetailsForEmail(bookingId: string, bookingType: Booking
     dropoffAddress = booking.dropoff_address || 'TBD'
     pickupDatetimeStr = booking.pickup_datetime
     vehicleTypeId = booking.vehicle_type_id
+    // Guest checkout leaves customer_id NULL, so the primary passenger is the only
+    // name a guest booking has. Every leg of a trip gets its own passenger row.
+    const { data: passenger } = await adminClient
+      .from('booking_passengers')
+      .select('first_name, last_name')
+      .eq('booking_id', bookingId)
+      .eq('is_primary', true)
+      .maybeSingle()
+    let profileName: string | null = null
     if (booking.customer_id) {
       const { data: profile } = await adminClient
         .from('profiles')
         .select('full_name')
         .eq('id', booking.customer_id)
         .single()
-      customerName = profile?.full_name || 'Customer'
+      profileName = profile?.full_name ?? null
     }
+    customerName = resolveCustomerDisplayName(passenger, profileName)
   }
 
   const { data: vehicleType } = await adminClient
