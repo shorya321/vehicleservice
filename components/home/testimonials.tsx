@@ -1,17 +1,14 @@
 import { getApprovedReviews, getFeaturedReviews, getReviewStats } from "@/app/reviews/actions"
-import {
-  buildRatingRows,
-  formatQuoteAttribution,
-  pickHomeQuote,
-  type HomeReview,
-} from "@/lib/reviews/home-record"
+import { buildHomeCards, HOME_CARD_LIMIT, pickHomeReviews, type HomeReview } from "@/lib/reviews/home-record"
 import { applyDevPreview } from "@/lib/reviews/home-record-preview"
+import { loadReviewerNames } from "@/lib/reviews/reviewer-names"
+import { isAdminEntered } from "@/lib/reviews/sources"
 import { TestimonialsAnimator } from "./testimonials-animator"
 import { TestimonialsRecord } from "./testimonials-record"
 import type { HomeContent } from "@/lib/cms/templates/home/schema"
 
-// Fallback when admin has approved reviews but featured none, so the home
-// section fills from the same reviews /reviews already lists.
+// Fills the grid when admin has featured fewer than three reviews, from the
+// same approved reviews /reviews already lists.
 const FALLBACK_MIN_RATING = 4
 const FALLBACK_LIMIT = 6
 
@@ -26,17 +23,26 @@ async function loadFallbackReviews(): Promise<HomeReview[]> {
 }
 
 export async function Testimonials({ content }: { content: HomeContent["testimonials"] }) {
-  // Both actions log and return a safe empty value on failure, so an outage
-  // renders the empty record rather than breaking the home page.
+  // Every loader logs and returns a safe empty value on failure, so an outage
+  // renders fewer cards rather than breaking the home page.
   const [featuredResult, statsResult] = await Promise.all([getFeaturedReviews(), getReviewStats()])
   const featured: HomeReview[] = featuredResult.data ?? []
-  const realQuote =
-    pickHomeQuote(featured, []) ?? pickHomeQuote([], await loadFallbackReviews())
-  // Sample copy fills the empty record on the local dev server only. Real
-  // visitors (any production build) always get real reviews or the empty state.
-  const { quote, stats, isPreview } = applyDevPreview(
-    { quote: realQuote, stats: statsResult.data },
+  const fromFeatured = pickHomeReviews(featured, [])
+  const realReviews =
+    fromFeatured.length >= HOME_CARD_LIMIT ? fromFeatured : pickHomeReviews(featured, await loadFallbackReviews())
+
+  // Sample copy fills the grid on the local dev server only. Real visitors
+  // (any production build) always get real reviews.
+  const { reviews, stats, isPreview } = applyDevPreview(
+    { reviews: realReviews, stats: statsResult.data },
     process.env.NODE_ENV
+  )
+
+  const names = await loadReviewerNames(
+    reviews
+      .filter((review) => !isAdminEntered(review.source))
+      .map((review) => review.customer_id)
+      .filter((id): id is string => Boolean(id))
   )
 
   return (
@@ -47,13 +53,16 @@ export async function Testimonials({ content }: { content: HomeContent["testimon
     >
       <TestimonialsAnimator>
         <div className="luxury-container">
-          <TestimonialsRecord
-            quote={quote}
-            attribution={quote ? formatQuoteAttribution(quote) : null}
-            stats={stats}
-            rows={buildRatingRows(stats)}
-            content={content}
-          />
+          {isPreview && (
+            // Development only (applyDevPreview never sets isPreview in a production
+            // build). Says plainly that these cards are not in the database, so the
+            // empty /reviews page behind "Read every review" is not a surprise.
+            <p role="note" className="record-preview-note">
+              Local preview only: sample reviews, not real customers. There are no approved reviews yet, so the live
+              site hides this section and /reviews is empty.
+            </p>
+          )}
+          <TestimonialsRecord cards={buildHomeCards(reviews, names)} stats={stats} content={content} />
         </div>
       </TestimonialsAnimator>
     </section>

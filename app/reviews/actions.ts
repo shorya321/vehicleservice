@@ -2,6 +2,32 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { reviewFiltersSchema, type ReviewFilters } from '@/lib/reviews/validation'
+import { reviewerDisplayName } from '@/lib/reviews/home-record'
+import { loadReviewerNames } from '@/lib/reviews/reviewer-names'
+import { isAdminEntered } from '@/lib/reviews/sources'
+
+/**
+ * Public reviewer details: "First L." for every visitor alike, no email and
+ * no photo. A customer review takes the name from the profile, looked up with
+ * the service role so signed-in and anonymous visitors see the same card; an
+ * admin-entered review uses the name the admin typed.
+ */
+async function withReviewerNames<T extends { customer_id: string | null; source: string; reviewer_name: string | null }>(
+  reviews: T[]
+): Promise<Array<T & { customer: { full_name: string; avatar_url: null } }>> {
+  const names = await loadReviewerNames(
+    reviews.filter((r) => !isAdminEntered(r.source) && r.customer_id).map((r) => r.customer_id as string)
+  )
+  return reviews.map((review) => ({
+    ...review,
+    customer: {
+      full_name: reviewerDisplayName(
+        isAdminEntered(review.source) ? review.reviewer_name : review.customer_id ? names.get(review.customer_id) : null
+      ),
+      avatar_url: null,
+    },
+  }))
+}
 
 // Get all approved reviews with filters
 export async function getApprovedReviews(filters: ReviewFilters = {}) {
@@ -13,13 +39,9 @@ export async function getApprovedReviews(filters: ReviewFilters = {}) {
 
     let query = supabase
       .from('reviews')
-      .select(
-        `
-        *,
-        customer:profiles!reviews_customer_id_fkey(full_name, email, avatar_url)
-      `,
-        { count: 'exact' }
-      )
+      // No profiles join: a session read of profiles differs by viewer (signed-in
+      // visitors could read reviewers' emails). Names are attached below.
+      .select('*', { count: 'exact' })
       .eq('status', 'approved')
 
     // Apply rating filter
@@ -28,9 +50,12 @@ export async function getApprovedReviews(filters: ReviewFilters = {}) {
     }
 
     // Apply search
-    if (validatedFilters.search) {
+    // Characters that carry meaning inside a PostgREST or() filter are dropped,
+    // so a search can only ever match text, never add or change a condition.
+    const search = validatedFilters.search?.replace(/[,()*%\\:"]/g, ' ').trim()
+    if (search) {
       query = query.or(
-        `review_text.ilike.%${validatedFilters.search}%,route_from.ilike.%${validatedFilters.search}%,route_to.ilike.%${validatedFilters.search}%`
+        `review_text.ilike.%${search}%,route_from.ilike.%${search}%,route_to.ilike.%${search}%`
       )
     }
 
@@ -68,7 +93,7 @@ export async function getApprovedReviews(filters: ReviewFilters = {}) {
     const totalPages = Math.ceil((count || 0) / limit)
 
     return {
-      data: reviews,
+      data: await withReviewerNames(reviews ?? []),
       error: null,
       total: count || 0,
       totalPages,
@@ -87,12 +112,7 @@ export async function getFeaturedReviews() {
 
     const { data: reviews, error } = await supabase
       .from('reviews')
-      .select(
-        `
-        *,
-        customer:profiles!reviews_customer_id_fkey(full_name, email, avatar_url)
-      `
-      )
+      .select('*')
       .eq('status', 'approved')
       .eq('is_featured', true)
       .order('created_at', { ascending: false })
@@ -103,7 +123,7 @@ export async function getFeaturedReviews() {
       return { data: null, error: 'Failed to fetch featured reviews' }
     }
 
-    return { data: reviews, error: null }
+    return { data: await withReviewerNames(reviews ?? []), error: null }
   } catch (error) {
     console.error('Get featured reviews exception:', error)
     return { data: null, error: 'An unexpected error occurred' }

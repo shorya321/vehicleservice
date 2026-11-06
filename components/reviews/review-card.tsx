@@ -20,6 +20,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { isAdminEntered, reviewSourceLabel } from '@/lib/reviews/sources'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,10 +50,13 @@ export interface Review {
   photos: string[] | null
   status: 'pending' | 'approved' | 'rejected'
   is_featured: boolean
+  /** 'customer', or the channel an admin-entered review came from. */
+  source?: string | null
   customer: {
     full_name: string | null
     avatar_url: string | null
-    email: string
+    /** Only the reviewer's own account view carries it; public pages never do. */
+    email?: string | null
   }
 }
 
@@ -257,7 +261,14 @@ export function ReviewCard({
                 >
                   {customerName}
                 </h3>
-                <CheckCircle className="w-4 h-4 text-[var(--gold-text)]" aria-label="Verified Purchase" />
+                {isAdminEntered(review.source) ? (
+                  // Feedback an admin entered: say where it came from, never "verified".
+                  <span className="text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                    {reviewSourceLabel(review.source)}
+                  </span>
+                ) : (
+                  <CheckCircle className="w-4 h-4 text-[var(--gold-text)]" aria-label="Verified Purchase" />
+                )}
               </div>
               <StarRating rating={review.rating} size={variant === 'featured' ? 'md' : 'sm'} />
               <div className="flex items-center gap-3 text-[0.75rem] text-[var(--text-muted)]">

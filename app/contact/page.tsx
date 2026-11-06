@@ -32,7 +32,7 @@ export default async function ContactPage() {
       >
         <div className="luxury-container">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:items-start">
-            <ContactForm />
+            <ContactForm replyEmail={details.email} />
             <ContactInfo content={content.details} details={details} />
           </div>
         </div>

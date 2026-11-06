@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StatusPill, type StatusTone } from '@/components/admin/ui/status-pill'
+import { adminReviewerLabel } from '@/lib/reviews/admin-display'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
@@ -64,11 +65,14 @@ interface Review {
   admin_response_at: string | null
   status: 'pending' | 'approved' | 'rejected'
   is_featured: boolean
+  source?: string | null
+  reviewer_name?: string | null
+  /** Null for an admin-entered review, which has no customer account. */
   customer: {
     full_name: string | null
     avatar_url: string | null
     email: string
-  }
+  } | null
 }
 
 interface ReviewsTableProps {
@@ -221,13 +225,9 @@ export function ReviewsTable({ reviews, selectedReviews, onSelectionChange }: Re
           </TableHeader>
           <TableBody>
             {reviews.map((review) => {
-              const customerName = review.customer.full_name || review.customer.email.split('@')[0]
-              const initials = customerName
-                .split(' ')
-                .map((n) => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2)
+              const who = adminReviewerLabel(review)
+              const customerName = who.name
+              const initials = who.initials
 
               return (
                 <TableRow
@@ -244,14 +244,14 @@ export function ReviewsTable({ reviews, selectedReviews, onSelectionChange }: Re
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={review.customer.avatar_url || undefined} />
+                        <AvatarImage src={who.avatarUrl || undefined} />
                         <AvatarFallback>
                           {initials}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col space-y-1">
                         <span className="font-medium">{customerName}</span>
-                        <span className="text-xs text-muted-foreground">{review.customer.email}</span>
+                        <span className="text-xs text-muted-foreground">{who.detail}</span>
                       </div>
                     </div>
                   </TableCell>

@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { StarRating } from '@/components/reviews/star-rating'
 import { ArrowLeft, CheckCircle, XCircle, MapPin, Calendar, Car, Star, MessageSquare } from 'lucide-react'
 import { getReviewById } from '../actions'
+import { adminReviewerLabel } from '@/lib/reviews/admin-display'
 import { format } from 'date-fns'
 import { toBookingTz } from '@/lib/utils/timezone'
 import { ApproveRejectButtons } from './components/approve-reject-buttons'
@@ -38,13 +39,9 @@ export default async function AdminReviewDetailPage({ params }: PageProps) {
     redirect('/admin/reviews')
   }
 
-  const customerName = review.customer.full_name || review.customer.email.split('@')[0]
-  const initials = customerName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+  const who = adminReviewerLabel(review)
+  const customerName = who.name
+  const initials = who.initials
 
   const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
@@ -92,7 +89,7 @@ export default async function AdminReviewDetailPage({ params }: PageProps) {
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
                     <Avatar className="h-14 w-14">
-                      <AvatarImage src={review.customer.avatar_url || undefined} />
+                      <AvatarImage src={who.avatarUrl || undefined} />
                       <AvatarFallback className="bg-luxury-gold/20 text-primary text-lg">
                         {initials}
                       </AvatarFallback>
@@ -100,7 +97,7 @@ export default async function AdminReviewDetailPage({ params }: PageProps) {
                     <div className="space-y-2">
                       <div className="space-y-2">
                         <h3 className="text-xl font-medium">{customerName}</h3>
-                        <p className="text-sm text-muted-foreground">{review.customer.email}</p>
+                        <p className="text-sm text-muted-foreground">{who.detail}</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <StarRating rating={review.rating} size="md" />

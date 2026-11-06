@@ -2932,55 +2932,64 @@ export type Database = {
       }
       reviews: {
         Row: {
+          added_by: string | null
           admin_responder_id: string | null
           admin_response: string | null
           admin_response_at: string | null
-          booking_id: string
+          booking_id: string | null
           created_at: string
-          customer_id: string
+          customer_id: string | null
           id: string
           is_featured: boolean
           photos: string[] | null
           rating: number
           review_text: string | null
+          reviewer_name: string | null
           route_from: string | null
           route_to: string | null
+          source: string
           status: Database["public"]["Enums"]["review_status"]
           updated_at: string
           vehicle_class: string | null
         }
         Insert: {
+          added_by?: string | null
           admin_responder_id?: string | null
           admin_response?: string | null
           admin_response_at?: string | null
-          booking_id: string
+          booking_id?: string | null
           created_at?: string
-          customer_id: string
+          customer_id?: string | null
           id?: string
           is_featured?: boolean
           photos?: string[] | null
           rating: number
           review_text?: string | null
+          reviewer_name?: string | null
           route_from?: string | null
           route_to?: string | null
+          source?: string
           status?: Database["public"]["Enums"]["review_status"]
           updated_at?: string
           vehicle_class?: string | null
         }
         Update: {
+          added_by?: string | null
           admin_responder_id?: string | null
           admin_response?: string | null
           admin_response_at?: string | null
-          booking_id?: string
+          booking_id?: string | null
           created_at?: string
-          customer_id?: string
+          customer_id?: string | null
           id?: string
           is_featured?: boolean
           photos?: string[] | null
           rating?: number
           review_text?: string | null
+          reviewer_name?: string | null
           route_from?: string | null
           route_to?: string | null
+          source?: string
           status?: Database["public"]["Enums"]["review_status"]
           updated_at?: string
           vehicle_class?: string | null
@@ -2998,6 +3007,13 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: true
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {

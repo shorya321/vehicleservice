@@ -4,16 +4,10 @@ import { Metadata } from 'next'
 import { ReviewCard } from '@/components/reviews/review-card'
 import { ReviewStats } from '@/components/reviews/review-stats'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Search, SlidersHorizontal } from 'lucide-react'
+import { SlidersHorizontal, Star } from 'lucide-react'
+import { ReviewFilters } from '@/components/reviews/review-filters'
+import { SORT_VALUES, type ReviewSortValue } from '@/lib/reviews/filter-options'
 import { getApprovedReviews, getReviewStats } from './actions'
 import { buildEntityMetadata } from '@/lib/seo/page-metadata'
 import { listCanonical } from '@/lib/seo/list-canonical'
@@ -39,10 +33,16 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 export default async function PublicReviewsPage({ searchParams }: PageProps) {
   const params = await searchParams
 
-  const page = parseInt(params.page || '1')
-  const sortBy = (params.sortBy as any) || 'newest'
-  const rating = params.rating ? parseInt(params.rating) : undefined
-  const search = params.search || ''
+  // Anything unexpected in the address falls back to the default instead of
+  // failing validation and showing an empty list.
+  const parsedPage = parseInt(params.page || '1', 10)
+  const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1
+  const sortBy = params.sortBy && SORT_VALUES.includes(params.sortBy) ? (params.sortBy as ReviewSortValue) : 'newest'
+  const parsedRating = params.rating ? parseInt(params.rating, 10) : NaN
+  const rating = parsedRating >= 1 && parsedRating <= 5 ? parsedRating : undefined
+  const search = (params.search || '').slice(0, 100)
+  // Only a rating or a search narrows the list; sorting never hides a review.
+  const hasFilters = Boolean(rating) || search.trim() !== ''
 
   // Get reviews
   const { data: reviews, total, totalPages } = await getApprovedReviews({
@@ -61,7 +61,6 @@ export default async function PublicReviewsPage({ searchParams }: PageProps) {
       <div className="luxury-container">
         {/* Header */}
         <div className="mb-8">
-          <div className="w-10 h-px bg-[var(--gold)] mb-5" aria-hidden="true" />
           <p className="text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-[var(--gold-text)] mb-4">
             What Our Customers Say
           </p>
@@ -69,81 +68,26 @@ export default async function PublicReviewsPage({ searchParams }: PageProps) {
             Customer Reviews
           </h1>
           <p className="mt-4 text-[0.9375rem] leading-relaxed text-[var(--text-secondary)] max-w-xl [text-wrap:pretty]">
-            Real experiences from our valued customers
+            Reviews from travellers who booked a transfer with us.
           </p>
         </div>
 
-        {/* Review Stats */}
-        <div className="mb-12">
-          <ReviewStats stats={stats} layout="horizontal" />
-        </div>
-
-        {/* Filters */}
-        <Card className="p-6 bg-[rgba(var(--charcoal-rgb),0.5)] backdrop-blur-md border-[var(--graphite)] mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Search */}
-            <div className="md:col-span-2">
-              <form method="GET" className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-muted)]" />
-                <Input
-                  type="text"
-                  name="search"
-                  placeholder="Search reviews..."
-                  defaultValue={search}
-                  className="pl-10 bg-[rgba(var(--void-rgb),0.3)] border-[var(--graphite)] focus:border-[var(--gold)] text-[var(--text-primary)]"
-                />
-                <input type="hidden" name="page" value="1" />
-                <input type="hidden" name="sortBy" value={sortBy} />
-                {rating && <input type="hidden" name="rating" value={rating} />}
-              </form>
-            </div>
-
-            {/* Rating Filter */}
-            <div>
-              <form method="GET">
-                <Select name="rating" defaultValue={rating?.toString() || 'all'}>
-                  <SelectTrigger className="bg-[rgba(var(--void-rgb),0.3)] border-[var(--graphite)]">
-                    <SelectValue placeholder="All Ratings" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Ratings</SelectItem>
-                    <SelectItem value="5">5 Stars</SelectItem>
-                    <SelectItem value="4">4+ Stars</SelectItem>
-                    <SelectItem value="3">3+ Stars</SelectItem>
-                    <SelectItem value="2">2+ Stars</SelectItem>
-                    <SelectItem value="1">1+ Stars</SelectItem>
-                  </SelectContent>
-                </Select>
-                <input type="hidden" name="page" value="1" />
-                <input type="hidden" name="sortBy" value={sortBy} />
-                {search && <input type="hidden" name="search" value={search} />}
-              </form>
-            </div>
-
-            {/* Sort */}
-            <div>
-              <form method="GET">
-                <Select name="sortBy" defaultValue={sortBy}>
-                  <SelectTrigger className="bg-[rgba(var(--void-rgb),0.3)] border-[var(--graphite)]">
-                    <SelectValue placeholder="Sort By" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Newest First</SelectItem>
-                    <SelectItem value="oldest">Oldest First</SelectItem>
-                    <SelectItem value="highest">Highest Rated</SelectItem>
-                    <SelectItem value="lowest">Lowest Rated</SelectItem>
-                    <SelectItem value="helpful">Most Helpful</SelectItem>
-                  </SelectContent>
-                </Select>
-                <input type="hidden" name="page" value="1" />
-                {rating && <input type="hidden" name="rating" value={rating} />}
-                {search && <input type="hidden" name="search" value={search} />}
-              </form>
-            </div>
+        {/* Review Stats: a "0.0" with empty bars reads as a broken page. */}
+        {stats && stats.totalReviews > 0 && (
+          <div className="mb-12">
+            <ReviewStats stats={stats} layout="horizontal" />
           </div>
-        </Card>
+        )}
 
-        {/* Results Info */}
+        {/* Filters: nothing to narrow until there is a review, unless one is already set. */}
+        {(total > 0 || hasFilters) && (
+          <Card className="p-6 bg-[rgba(var(--charcoal-rgb),0.5)] backdrop-blur-md border-[var(--graphite)] mb-8">
+            <ReviewFilters key={`${search}|${rating ?? ''}|${sortBy}`} search={search} rating={rating} sortBy={sortBy} />
+          </Card>
+        )}
+
+        {/* Results Info. Hidden with nothing to count, which would read "Page 1 of 0". */}
+        {total > 0 && (
         <div className="mb-6 flex items-center justify-between">
           <p className="text-[0.875rem] text-[var(--text-secondary)]">
             Showing {reviews?.length || 0} of {total} reviews
@@ -152,15 +96,31 @@ export default async function PublicReviewsPage({ searchParams }: PageProps) {
             Page {page} of {totalPages}
           </p>
         </div>
+        )}
 
         {/* Reviews Grid */}
         {!reviews || reviews.length === 0 ? (
           <Card className="p-12 bg-[rgba(var(--charcoal-rgb),0.5)] backdrop-blur-md border-[var(--graphite)] text-center">
-            <SlidersHorizontal className="w-16 h-16 text-[rgba(var(--gold-rgb),0.3)] mx-auto mb-4" />
-            <h3 className="t-title mb-2">No reviews found</h3>
-            <p className="text-[0.9375rem] text-[var(--text-secondary)] mb-6">
-              Try adjusting your filters to see more results
-            </p>
+            {hasFilters ? (
+              <SlidersHorizontal className="w-16 h-16 text-[rgba(var(--gold-rgb),0.3)] mx-auto mb-4" />
+            ) : (
+              <Star className="w-16 h-16 text-[rgba(var(--gold-rgb),0.3)] mx-auto mb-4" />
+            )}
+            {hasFilters ? (
+              <>
+                <h3 className="t-title mb-2">No reviews found</h3>
+                <p className="mx-auto max-w-md text-[0.9375rem] text-[var(--text-secondary)] mb-6">
+                  Try adjusting your filters to see more results
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className="t-title mb-2">No reviews yet</h3>
+                <p className="mx-auto max-w-md text-[0.9375rem] text-[var(--text-secondary)] mb-6">
+                  Reviews from travellers appear here after their trip.
+                </p>
+              </>
+            )}
           </Card>
         ) : (
           <div className="space-y-6 mb-12">

@@ -55,7 +55,7 @@ export const DEFAULT_FAQ_CONTENT: FaqContent = {
         {
           question: 'How do I pay?',
           answer:
-            'By credit or debit card at checkout, through our secure payment provider. The full amount is taken when you book.',
+            'By credit or debit card at checkout. Payments are processed securely by Stripe, and we never see or store your full card number. The full amount is taken when you book.',
         },
         {
           question: 'Can the price change after I book?',

@@ -87,9 +87,9 @@ describe('eyebrow marker across the frontend', () => {
     expect(block('.checkout-section-title.editorial-eyebrow--pill')).toContain('flex: none')
   })
 
-  it('leads the testimonial attribution with the dot, not a rule', () => {
-    const attr = block('  .record-attr::before')
-    expect(attr).toContain('border-radius: 50%')
-    expect(attr).not.toMatch(/height:\s*1px/)
+  it('gives the review cards no gold dash device', () => {
+    // The old attribution led with a gold rule that was removed site-wide;
+    // the card layout must not bring one back through a pseudo element.
+    expect(css).not.toMatch(/\.record-card[\w-]*::(before|after)/)
   })
 })

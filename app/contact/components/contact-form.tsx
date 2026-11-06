@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { Loader2, CheckCircle2, ChevronDown } from 'lucide-react'
+import Link from 'next/link'
 import { submitContactForm } from '../actions'
 
 const contactFormSchema = z.object({
@@ -34,7 +35,12 @@ const labelClass = 'checkout-field-label block mb-2'
 
 const cardClass = 'checkout-summary-card p-8 md:p-10'
 
-export function ContactForm() {
+interface ContactFormProps {
+  /** The address replies come from: Settings > General, as the rest of the page shows. */
+  replyEmail: string
+}
+
+export function ContactForm({ replyEmail }: ContactFormProps) {
   const [isSuccess, setIsSuccess] = useState(false)
 
   const {
@@ -237,7 +243,12 @@ export function ContactForm() {
         </button>
 
         <p className="mt-3.5 text-[0.75rem] leading-relaxed text-[var(--text-muted)] [text-wrap:pretty]">
-          We reply from info@infiniatransfers.com. Your details are never passed to a third party.
+          {replyEmail ? <>We reply from {replyEmail}. </> : null}
+          We use your details only to answer your message. See our{' '}
+          <Link href="/privacy" className="underline underline-offset-2 hover:text-[var(--text-secondary)]">
+            Privacy Policy
+          </Link>
+          .
         </p>
       </div>
     </form>

@@ -16,11 +16,14 @@ interface Review {
   admin_response_at: string | null
   status: 'pending' | 'approved' | 'rejected'
   is_featured: boolean
+  source?: string | null
+  reviewer_name?: string | null
+  /** Null for an admin-entered review, which has no customer account. */
   customer: {
     full_name: string | null
     avatar_url: string | null
     email: string
-  }
+  } | null
 }
 
 interface ReviewsTableWrapperProps {

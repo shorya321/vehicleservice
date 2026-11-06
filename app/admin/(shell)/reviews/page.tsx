@@ -9,6 +9,8 @@ import { getReviews, getAdminReviewStats } from './actions'
 import { ReviewsTable } from './components/reviews-table'
 import { ReviewFilters } from './components/review-filters'
 import { ReviewsTableWrapper } from './components/reviews-table-wrapper'
+import { AddReviewDialog } from './components/add-review-dialog'
+import { bookingToday } from '@/lib/utils/timezone'
 import { PagePagination } from '@/components/admin/ui/page-pagination'
 import { FilterToggle } from '@/components/admin/ui/filter-toggle'
 
@@ -100,6 +102,7 @@ export default async function AdminReviewsPage({ searchParams }: PageProps) {
             </h1>
             <p className="text-muted-foreground">Moderate and manage customer reviews</p>
           </div>
+          <AddReviewDialog today={bookingToday()} />
         </div>
 
         {/* Stats */}

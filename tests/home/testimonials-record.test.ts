@@ -1,18 +1,17 @@
 /**
- * The home review section renders from the `reviews` table only. These pin
- * both states as markup: the empty record must read as empty, and the filled
- * one must carry the review's own words, not sample copy from the design
- * reference ("4.9", "1,284 completed transfers", "Rania K.").
+ * The home review section renders from the `reviews` table only: the overall
+ * score and up to three review cards. These pin the markup.
  */
 import { jsx } from 'react/jsx-runtime'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { TestimonialsRecord, type TestimonialsRecordProps } from '@/components/home/testimonials-record'
 import {
-  buildRatingRows,
-  formatQuoteAttribution,
+  ANONYMOUS_REVIEWER,
+  buildHomeCards,
   type HomeReview,
   type ReviewStatsSummary,
 } from '@/lib/reviews/home-record'
+import { DEFAULT_HOME_CONTENT } from '@/lib/cms/templates/home/defaults'
 
 const EMPTY_STATS: ReviewStatsSummary = {
   totalReviews: 0,
@@ -26,89 +25,76 @@ const FILLED_STATS: ReviewStatsSummary = {
   distribution: { 5: 2, 4: 1, 3: 0, 2: 0, 1: 0 },
 }
 
-const QUOTE: HomeReview = {
+const REVIEW: HomeReview = {
   id: 'r1',
   rating: 5,
   review_text: 'The driver was waiting at arrivals.',
   route_from: 'Dubai Intl (DXB)',
   route_to: 'Palm Jumeirah',
+  vehicle_class: 'Business Class',
+  customer_id: 'c1',
   created_at: '2026-03-10T08:00:00.000Z',
 }
 
-import { DEFAULT_HOME_CONTENT } from '@/lib/cms/templates/home/defaults'
-
 const render = (props: Omit<TestimonialsRecordProps, 'content'>): string =>
-  renderToStaticMarkup(
-    jsx(TestimonialsRecord, { ...props, content: DEFAULT_HOME_CONTENT.testimonials })
-  )
+  renderToStaticMarkup(jsx(TestimonialsRecord, { ...props, content: DEFAULT_HOME_CONTENT.testimonials }))
 
-const SAMPLE_COPY = ['Rania', '1,284', 'completed transfers', '4.9']
+const SAMPLE_COPY = ['Rania', '1,284', 'completed transfers', '4.9', '[Sample]']
 
 /** Icon path data carries arbitrary decimals ("...294.904..."), so drop it first. */
 const withoutSvg = (html: string): string => html.replace(/<svg[\s\S]*?<\/svg>/g, '')
 
-describe('TestimonialsRecord, empty record', () => {
-  const html = render({
-    quote: null,
-    attribution: null,
-    stats: EMPTY_STATS,
-    rows: buildRatingRows(EMPTY_STATS),
+describe('TestimonialsRecord with reviews', () => {
+  const cards = buildHomeCards([REVIEW], new Map([['c1', 'Sara Ahmed Khan']]))
+  const html = render({ cards, stats: FILLED_STATS })
+
+  it('prints the real average and count', () => {
+    expect(html).toContain('4.7')
+    expect(html).toContain('Average from 3 reviews')
   })
 
-  it('says there are no ratings instead of printing a score', () => {
-    expect(html).toContain('No ratings yet')
-    expect(html).not.toContain('record-score__avg')
+  it('renders one card per review with its rating and words, in straight quotes', () => {
+    expect(html.match(/class="record-card"/g)).toHaveLength(1)
+    expect(html).toContain('5 / 5')
+    expect(html).toContain('&quot;The driver was waiting at arrivals.&quot;')
+    expect(html).not.toMatch(/[\u201C\u201D\u2014\u2013]/)
   })
 
-  it('shows the open ledger line and no blockquote', () => {
-    expect(html).toContain('Awaiting first entry.')
-    expect(html).not.toContain('<blockquote')
+  it('names the reviewer by first name and last initial only', () => {
+    expect(html).toContain('Sara K.')
+    expect(html).not.toContain('Ahmed')
+    expect(html).not.toContain('Khan')
+    expect(html).toContain('>SK<')
   })
 
-  it('draws five empty bars', () => {
-    expect(html.match(/class="record-bar"/g)).toHaveLength(5)
-    expect(html.match(/width:0%/g)).toHaveLength(5)
+  it('shows vehicle, route and month', () => {
+    expect(html).toContain('Business Class · Dubai Intl (DXB) to Palm Jumeirah · March 2026')
   })
 
-  it('still links to the reviews page', () => {
+  it('labels the card as a verified trip and links to every review', () => {
+    expect(html).toContain('Verified trip')
     expect(html).toContain('href="/reviews"')
   })
 
   it('carries none of the design reference sample copy', () => {
     SAMPLE_COPY.forEach((sample) => expect(withoutSvg(html)).not.toContain(sample))
   })
-})
-
-describe('TestimonialsRecord, filled record', () => {
-  const html = render({
-    quote: QUOTE,
-    attribution: formatQuoteAttribution(QUOTE),
-    stats: FILLED_STATS,
-    rows: buildRatingRows(FILLED_STATS),
-  })
-
-  it('prints the real average and count', () => {
-    expect(html).toContain('4.7')
-    expect(html).toContain('from 3 reviews')
-  })
-
-  it('quotes the review in straight quotes', () => {
-    expect(html).toContain('&quot;The driver was waiting at arrivals.&quot;')
-    expect(html).not.toMatch(/[\u201C\u201D\u2014\u2013]/)
-  })
-
-  it('attributes by route and month', () => {
-    expect(html).toContain('Dubai Intl (DXB) to Palm Jumeirah · March 2026')
-  })
-
-  it('sizes the bars from the distribution', () => {
-    expect(html).toContain('width:67%')
-    expect(html).toContain('width:33%')
-  })
 
   it('says "review" for a single review', () => {
     const one: ReviewStatsSummary = { ...FILLED_STATS, totalReviews: 1, distribution: { 5: 1, 4: 0, 3: 0, 2: 0, 1: 0 } }
-    const single = render({ quote: QUOTE, attribution: null, stats: one, rows: buildRatingRows(one) })
-    expect(single).toContain('from 1 review<')
+    expect(render({ cards, stats: one })).toContain('Average from 1 review<')
+  })
+})
+
+describe('TestimonialsRecord edge cases', () => {
+  it('shows a neutral label when no name is on record', () => {
+    const html = render({ cards: buildHomeCards([{ ...REVIEW, customer_id: null }], new Map()), stats: FILLED_STATS })
+    expect(html).toContain(ANONYMOUS_REVIEWER)
+  })
+
+  it('prints no score box and no cards with nothing to show', () => {
+    const html = render({ cards: [], stats: EMPTY_STATS })
+    expect(html).not.toContain('record-score')
+    expect(html).not.toContain('record-card')
   })
 })

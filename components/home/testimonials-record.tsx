@@ -3,9 +3,7 @@ import { ArrowRight, Star } from "lucide-react"
 import {
   formatAverage,
   hasRatings,
-  quoteText,
-  type HomeReview,
-  type RatingRow,
+  type HomeReviewCard,
   type ReviewStatsSummary,
 } from "@/lib/reviews/home-record"
 import { CmsLink } from "@/components/cms/cms-link"
@@ -17,112 +15,95 @@ import type { HomeContent } from "@/lib/cms/templates/home/schema"
 const STAR_COUNT = 5
 
 export interface TestimonialsRecordProps {
-  quote: HomeReview | null
-  attribution: string | null
+  cards: readonly HomeReviewCard[]
   stats: ReviewStatsSummary
-  rows: readonly RatingRow[]
   content: HomeContent["testimonials"]
 }
 
-function RecordStars({ filled }: { filled: number }) {
-  return (
-    <div className="record-stars" aria-hidden="true">
-      {Array.from({ length: STAR_COUNT }, (_, i) => (
-        <Star key={i} className={i < filled ? "record-star record-star--lit" : "record-star"} />
-      ))}
-    </div>
-  )
-}
-
-function ScoreCard({ stats, rows }: Pick<TestimonialsRecordProps, "stats" | "rows">) {
-  const rated = hasRatings(stats)
+function ScoreBox({ stats }: { stats: ReviewStatsSummary }) {
+  if (!hasRatings(stats)) return null
   const average = formatAverage(stats.averageRating)
   const total = stats.totalReviews.toLocaleString("en-US")
+  const lit = Math.round(Number(stats.averageRating))
 
   return (
     <div className="record-score">
-      {rated ? (
-        <>
-          <p className="record-score__avg numeric">
-            {average}
-            <span className="sr-only"> out of 5</span>
-          </p>
-          <RecordStars filled={Math.round(Number(stats.averageRating))} />
-          <p className="record-score__of numeric">
-            from {total} {stats.totalReviews === 1 ? "review" : "reviews"}
-          </p>
-        </>
-      ) : (
-        <>
-          <p className="record-score__empty">No ratings yet</p>
-          <RecordStars filled={0} />
-          <p className="record-score__of">Ratings appear here as travellers leave them.</p>
-        </>
-      )}
-      <ul className="record-bars" aria-label="Rating distribution">
-        {rows.map((row) => (
-          <li key={row.stars} className="record-bar">
-            <span className="numeric">{row.stars} star</span>
-            <span className="record-bar__track" aria-hidden="true">
-              <span className="record-bar__fill" style={{ width: `${row.percent}%` }} />
-            </span>
-            <span className="numeric">{row.percent}%</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-function QuoteColumn({
-  quote,
-  attribution,
-  cta,
-}: Pick<TestimonialsRecordProps, "quote" | "attribution"> & { cta: HomeContent["testimonials"]["cta"] }) {
-  return (
-    <div>
-      {quote ? (
-        <figure className="m-0">
-          <blockquote className="record-quote">&quot;{quoteText(quote)}&quot;</blockquote>
-          {attribution && <figcaption className="record-attr numeric">{attribution}</figcaption>}
-        </figure>
-      ) : (
-        <div>
-          <p className="record-quote record-quote--empty">Awaiting first entry.</p>
-          <p className="editorial-body mt-4">Be the first to share your experience.</p>
+      <p className="record-score__avg numeric">
+        {average}
+        <span className="sr-only"> out of 5</span>
+      </p>
+      <div>
+        <div className="record-stars" aria-hidden="true">
+          {Array.from({ length: STAR_COUNT }, (_, i) => (
+            <Star key={i} className={i < lit ? "record-star record-star--lit" : "record-star"} />
+          ))}
         </div>
-      )}
-      <div className="mt-8">
-        <CmsLink href={cta.href} className="btn btn-secondary">
-          {cta.label}
-          <ArrowRight className="w-4 h-4" aria-hidden="true" />
-        </CmsLink>
+        <p className="record-score__of numeric">
+          Average from {total} {stats.totalReviews === 1 ? "review" : "reviews"}
+        </p>
       </div>
     </div>
   )
 }
 
+function ReviewCard({ card }: { card: HomeReviewCard }) {
+  return (
+    <figure className="record-card">
+      <div className="record-card__top">
+        <p className="record-card__rating numeric">
+          <Star className="record-star record-star--lit" aria-hidden="true" />
+          {card.rating} / 5
+          <span className="sr-only"> stars</span>
+        </p>
+        <span className="record-card__source">{card.sourceLabel}</span>
+      </div>
+      <blockquote className="record-card__quote">&quot;{card.text}&quot;</blockquote>
+      <figcaption className="record-card__by">
+        <span className="record-card__avatar" aria-hidden="true">
+          {card.initials || <Star className="record-card__avatar-icon" />}
+        </span>
+        <span className="record-card__who">
+          <span className="record-card__name">{card.name}</span>
+          {card.meta && <span className="record-card__meta numeric">{card.meta}</span>}
+        </span>
+      </figcaption>
+    </figure>
+  )
+}
+
 /**
- * Markup only, so both states render under test. Data loading lives in
- * ./testimonials.tsx. Every figure is from the `reviews` table; the empty
- * record is shown as empty rather than filled with sample copy.
+ * Markup only, so it renders under test. Data loading lives in
+ * ./testimonials.tsx. Every figure and quote comes from the `reviews` table;
+ * the home page hides this section entirely while there are none.
  */
-export function TestimonialsRecord({ quote, attribution, stats, rows, content }: TestimonialsRecordProps) {
+export function TestimonialsRecord({ cards, stats, content }: TestimonialsRecordProps) {
   return (
     <>
-      <header className="max-w-2xl">
-        <div className="editorial-eyebrow editorial-eyebrow--pill">
-          <i aria-hidden="true" />
-          {content.eyebrow}
+      <div className="record-head">
+        <header className="max-w-2xl">
+          <div className="editorial-eyebrow editorial-eyebrow--pill">
+            <i aria-hidden="true" />
+            {content.eyebrow}
+          </div>
+          <h2 id="testimonials-heading" className="editorial-section-title mt-5">
+            {content.title}
+          </h2>
+          {content.body && <p className="editorial-body mt-6">{content.body}</p>}
+        </header>
+        <ScoreBox stats={stats} />
+      </div>
+      {cards.length > 0 && (
+        <div className="record-cards">
+          {cards.map((card) => (
+            <ReviewCard key={card.id} card={card} />
+          ))}
         </div>
-        <h2 id="testimonials-heading" className="editorial-section-title mt-5">
-          {content.title}
-        </h2>
-        {content.body && <p className="editorial-body mt-6">{content.body}</p>}
-      </header>
-      <div className="record-grid">
-        <ScoreCard stats={stats} rows={rows} />
-        <QuoteColumn quote={quote} attribution={attribution} cta={content.cta} />
+      )}
+      <div className="mt-10">
+        <CmsLink href={content.cta.href} className="btn btn-secondary">
+          {content.cta.label}
+          <ArrowRight className="w-4 h-4" aria-hidden="true" />
+        </CmsLink>
       </div>
     </>
   )

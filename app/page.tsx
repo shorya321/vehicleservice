@@ -156,8 +156,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </div>
       )}
       {/* Testimonials reads uncached review data far below the fold, so it
-          streams in rather than holding back the hero's HTML. */}
-      {content.testimonials.visible && (
+          streams in rather than holding back the hero's HTML. Hidden until the
+          first review is approved: an empty record tells a visitor nobody has
+          reviewed us. The dev server still shows it, with sample copy (see
+          lib/reviews/home-record-preview.ts), so the layout can be worked on. */}
+      {content.testimonials.visible && (reviewCount > 0 || process.env.NODE_ENV === 'development') && (
         <div>
           <Suspense fallback={null}>
             <Testimonials content={content.testimonials} />

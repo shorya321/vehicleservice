@@ -228,25 +228,38 @@ export const getBlogCategories = unstable_cache(
     try {
       const supabase = createAdminClient()
 
-      const { data, error } = await supabase
-        .from('blog_categories')
-        .select('id, name, slug, description, image_url, image_alt')
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true })
+      const [{ data, error }, { data: published, error: publishedError }] = await Promise.all([
+        supabase
+          .from('blog_categories')
+          .select('id, name, slug, description, image_url, image_alt')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true }),
+        // Same "published" rule as getPublishedPosts, so a tab never leads to an empty list.
+        supabase.from('blog_posts').select('category_id').eq('status', 'published').not('category_id', 'is', null),
+      ])
 
       if (error) {
         console.error('[Blog] Error fetching categories:', error)
         return []
       }
 
-      return data || []
+      // If the post lookup fails, show every category rather than none.
+      if (publishedError) {
+        console.error('[Blog] Error fetching category post counts:', publishedError)
+        return data || []
+      }
+
+      const withPosts = new Set((published ?? []).map((post) => post.category_id))
+      return (data || []).filter((category) => withPosts.has(category.id))
     } catch (error) {
       console.error('[Blog] Error in getBlogCategories:', error)
       return []
     }
   },
-  ['blog-categories-public'],
-  { revalidate: 3600, tags: [CACHE_TAGS.categories] }
+  // v2: now filtered to categories with a published post. Tagged with posts as well,
+  // so publishing or unpublishing an article updates the tabs straight away.
+  ['blog-categories-public', 'v2'],
+  { revalidate: 3600, tags: [CACHE_TAGS.categories, CACHE_TAGS.posts] }
 )
 
 export const getFeaturedPosts = unstable_cache(

@@ -1,4 +1,4 @@
-import { applyDevPreview, PREVIEW_QUOTE, PREVIEW_STATS } from '@/lib/reviews/home-record-preview'
+import { applyDevPreview, PREVIEW_REVIEWS, PREVIEW_STATS } from '@/lib/reviews/home-record-preview'
 import type { HomeReview, ReviewStatsSummary } from '@/lib/reviews/home-record'
 
 const EMPTY: ReviewStatsSummary = {
@@ -7,7 +7,7 @@ const EMPTY: ReviewStatsSummary = {
   distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
 }
 
-const REAL_QUOTE: HomeReview = {
+const REAL: HomeReview = {
   id: 'real',
   rating: 4,
   review_text: 'Real words.',
@@ -24,31 +24,32 @@ const REAL_STATS: ReviewStatsSummary = {
 
 describe('applyDevPreview', () => {
   it('never shows the sample in production', () => {
-    const out = applyDevPreview({ quote: null, stats: EMPTY }, 'production')
-    expect(out.quote).toBeNull()
+    const out = applyDevPreview({ reviews: [], stats: EMPTY }, 'production')
+    expect(out.reviews).toEqual([])
     expect(out.stats).toBe(EMPTY)
     expect(out.isPreview).toBe(false)
   })
 
   it('never shows the sample under test', () => {
-    expect(applyDevPreview({ quote: null, stats: EMPTY }, 'test').isPreview).toBe(false)
+    expect(applyDevPreview({ reviews: [], stats: EMPTY }, 'test').isPreview).toBe(false)
   })
 
-  it('shows the sample in development when the record is empty', () => {
-    const out = applyDevPreview({ quote: null, stats: EMPTY }, 'development')
+  it('shows three sample reviews in development when there are none', () => {
+    const out = applyDevPreview({ reviews: [], stats: EMPTY }, 'development')
     expect(out.isPreview).toBe(true)
-    expect(out.quote).toBe(PREVIEW_QUOTE)
+    expect(out.reviews).toBe(PREVIEW_REVIEWS)
+    expect(out.reviews).toHaveLength(3)
     expect(out.stats).toBe(PREVIEW_STATS)
   })
 
   it('lets real reviews win in development', () => {
-    const out = applyDevPreview({ quote: REAL_QUOTE, stats: REAL_STATS }, 'development')
+    const out = applyDevPreview({ reviews: [REAL], stats: REAL_STATS }, 'development')
     expect(out.isPreview).toBe(false)
-    expect(out.quote).toBe(REAL_QUOTE)
+    expect(out.reviews).toEqual([REAL])
   })
 
   it('keeps real ratings even with no quotable text', () => {
-    const out = applyDevPreview({ quote: null, stats: REAL_STATS }, 'development')
+    const out = applyDevPreview({ reviews: [], stats: REAL_STATS }, 'development')
     expect(out.isPreview).toBe(false)
     expect(out.stats).toBe(REAL_STATS)
   })
@@ -61,5 +62,9 @@ describe('applyDevPreview', () => {
       0
     )
     expect((weighted / sum).toFixed(1)).toBe(PREVIEW_STATS.averageRating.toFixed(1))
+  })
+
+  it('gives sample reviews no profile, so no real name can attach to them', () => {
+    PREVIEW_REVIEWS.forEach((review) => expect(review.customer_id).toBeUndefined())
   })
 })
