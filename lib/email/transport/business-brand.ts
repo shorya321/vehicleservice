@@ -126,8 +126,9 @@ export function buildBusinessBrand(row: BusinessBrandRow): EmailBrand {
 
   return {
     name,
-    // Falls back to the platform's postal address only because a physical address is a
-    // CAN-SPAM requirement and an empty footer would be worse than a generic one.
+    // Empty when the tenant has none. The sender (withPlatformDetails in
+    // lib/email/utils/send-email.ts) then fills in the platform's office address from
+    // Settings, because a physical address is a CAN-SPAM requirement.
     address: row.address?.trim() || platform.address,
     url: brandUrl(row),
     logoUrl: row.logo_url,

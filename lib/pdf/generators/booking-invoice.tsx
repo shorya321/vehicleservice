@@ -36,6 +36,8 @@ export interface BookingInvoiceData {
   companyEmail?: string;
   companyPhone?: string;
   companyAddress?: string;
+  /** Registered company line from Settings > General. Absent prints nothing. */
+  companyLegalLine?: string;
   /** Admin logo for the header chip. Absent or null prints companyName as text. */
   logo?: PdfImageBytes | null;
 
@@ -101,7 +103,7 @@ export const BookingInvoicePDF = (data: BookingInvoiceData) => {
         issuerName={data.companyName}
         logo={data.logo ? toDataUri(data.logo) : undefined}
         logoSize={data.logo ? (imagePixelSize(data.logo) ?? undefined) : undefined}
-        contactLines={[data.companyEmail, data.companyPhone, data.companyAddress]}
+        contactLines={[data.companyLegalLine, data.companyEmail, data.companyPhone, data.companyAddress]}
         title="INVOICE"
         reference={data.invoiceNumber}
       />

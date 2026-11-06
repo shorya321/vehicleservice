@@ -1,14 +1,42 @@
+// `import * as React` is for jest: ts-jest compiles JSX with the classic runtime.
+import * as React from 'react'
 import { TableOfContents } from '@/components/legal/table-of-contents'
 import { sanitizeRichText } from '@/lib/cms/sanitize'
 import type { LegalContent } from '@/lib/cms/templates/legal/schema'
+
+/** Registered company shown under the text. Built from Settings > General. */
+export interface LegalCompanyBlock {
+  legalName: string
+  licence: string
+  address: string
+}
+
+const COMPANY_SECTION_ID = 'company-details'
 
 /**
  * Terms and Privacy share one shape: a hero with the last-updated line, then
  * a sticky contents list beside the sections. Markup and classes are the ones
  * the two pages used before they became editable.
  */
-export function LegalDocument({ content }: { content: LegalContent }) {
-  const toc = content.sections.map((section) => ({ id: section.id, title: section.toc_label }))
+export function LegalDocument({
+  content,
+  company = null,
+}: {
+  content: LegalContent
+  /** Null, or no legal name and no licence, renders the page exactly as before. */
+  company?: LegalCompanyBlock | null
+}): React.JSX.Element {
+  // Skipped if an editor already used the id, so the page never has two.
+  const companyBlock =
+    company &&
+    (company.legalName || company.licence) &&
+    !content.sections.some((section) => section.id === COMPANY_SECTION_ID)
+      ? company
+      : null
+  const toc = [
+    ...content.sections.map((section) => ({ id: section.id, title: section.toc_label })),
+    ...(companyBlock ? [{ id: COMPANY_SECTION_ID, title: 'Company details' }] : []),
+  ]
 
   return (
     <>
@@ -45,6 +73,22 @@ export function LegalDocument({ content }: { content: LegalContent }) {
                   <div dangerouslySetInnerHTML={{ __html: sanitizeRichText(section.body) }} />
                 </section>
               ))}
+              {companyBlock && (
+                <section id={COMPANY_SECTION_ID} className="scroll-mt-28">
+                  <h2>Company details</h2>
+                  <ul>
+                    {companyBlock.legalName && (
+                      <li><strong>Legal name:</strong> {companyBlock.legalName}</li>
+                    )}
+                    {companyBlock.licence && (
+                      <li><strong>Trade licence:</strong> {companyBlock.licence}</li>
+                    )}
+                    {companyBlock.address && (
+                      <li><strong>Registered office:</strong> {companyBlock.address}</li>
+                    )}
+                  </ul>
+                </section>
+              )}
             </div>
           </div>
         </div>

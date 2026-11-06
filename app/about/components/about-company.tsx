@@ -3,6 +3,7 @@ import { CmsLink } from '@/components/cms/cms-link'
 import type { AboutContent } from '@/lib/cms/templates/about/schema'
 import type { SiteSettingsConfig } from '@/lib/site-settings/types'
 import { BoardHead } from './board-head'
+import { resolveAboutCompany } from '../company-facts'
 
 interface Fact {
   label: string
@@ -12,7 +13,10 @@ interface Fact {
 
 interface AboutCompanyProps {
   content: AboutContent['company']
-  site: Pick<SiteSettingsConfig, 'support_phone' | 'support_email' | 'office_address'>
+  site: Pick<
+    SiteSettingsConfig,
+    'support_phone' | 'support_email' | 'office_address' | 'legal_name' | 'trade_licence_number' | 'licence_issuer'
+  >
 }
 
 function FactList({ facts }: { facts: Fact[] }) {
@@ -33,15 +37,14 @@ const filled = (facts: Fact[]): Fact[] => facts.filter((fact) => fact.value.trim
 
 /**
  * The company behind the desk. Contact details come from site settings, the
- * same values the footer shows; legal facts come from this page's content.
+ * same values the footer shows; legal facts come from this page's content,
+ * falling back to Settings > General when the page leaves them empty.
  */
 export function AboutCompany({ content, site }: AboutCompanyProps) {
-  const licence = content.licence && content.licenceIssuer
-    ? `${content.licence}, issued by ${content.licenceIssuer}`
-    : content.licence
+  const { legalName, licence } = resolveAboutCompany(content, site)
 
   const company = filled([
-    { label: 'Legal name', value: content.legalName },
+    { label: 'Legal name', value: legalName },
     { label: 'Trade licence', value: licence },
     { label: 'Office', value: site.office_address },
     { label: 'Founded', value: content.founded },

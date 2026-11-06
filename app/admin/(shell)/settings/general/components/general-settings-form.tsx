@@ -21,6 +21,7 @@ import {
   EyeOff,
   Globe,
   CalendarX,
+  Building2,
 } from 'lucide-react'
 import {
   Select,
@@ -104,6 +105,9 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
       support_phone: currentSettings.support_phone,
       secondary_phone: currentSettings.secondary_phone,
       office_address: currentSettings.office_address,
+      legal_name: currentSettings.legal_name,
+      trade_licence_number: currentSettings.trade_licence_number,
+      licence_issuer: currentSettings.licence_issuer,
       social_links: currentSettings.social_links,
       maintenance_mode: currentSettings.maintenance_mode,
       block_search_indexing: currentSettings.block_search_indexing,
@@ -501,6 +505,67 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input aria-label="Secondary phone" className="pl-9" placeholder="+971 4 123 4567" {...field} />
                       </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Company Details Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Building2 className="h-5 w-5" />
+              </div>
+              <div className="space-y-1.5">
+                <CardTitle>Company Details</CardTitle>
+                <CardDescription>
+                  Registered company shown in the footer, About, Terms, Privacy, customer emails and invoices.
+                  Leave a field empty to hide it.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="legal_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Legal Company Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="As written on the trade licence" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="trade_licence_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Trade Licence Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Licence number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="licence_issuer"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Licence Issuer</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Issuing authority" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

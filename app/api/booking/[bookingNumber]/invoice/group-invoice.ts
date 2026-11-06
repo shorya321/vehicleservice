@@ -5,7 +5,8 @@ import { generatePDFBuffer, getPDFDownloadHeaders } from '@/lib/pdf/utils/pdf-ge
 import { loadPlatformPdfLogo } from '@/lib/pdf/platform-logo'
 import { formatAmount } from '@/lib/currency/format'
 import { formatChildAges } from '@/lib/utils/child-ages'
-import { BRAND_ADDRESS, BRAND_NAME } from '@/lib/email/config'
+import { BRAND_NAME } from '@/lib/email/config'
+import { loadPlatformPdfCompany } from '@/lib/pdf/platform-company'
 import { GROUP_NUMBER_PREFIX } from '@/lib/trips/constants'
 import { legLabel } from '@/lib/trips/display'
 import { jsx } from 'react/jsx-runtime'
@@ -114,7 +115,7 @@ export async function groupInvoiceResponse(
       : undefined,
     companyName: BRAND_NAME,
     logo: await loadPlatformPdfLogo(),
-    companyAddress: BRAND_ADDRESS,
+    ...(await loadPlatformPdfCompany()),
     companyEmail: process.env.RESEND_REPLY_TO_EMAIL || process.env.RESEND_FROM_EMAIL,
     customerName: primary ? `${primary.first_name} ${primary.last_name}` : 'Customer',
     customerEmail: primary?.email ?? undefined,

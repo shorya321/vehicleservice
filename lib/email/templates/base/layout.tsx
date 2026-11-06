@@ -140,7 +140,8 @@ export const EmailLayout = ({
             <Text style={footerText}>
               © {currentYear} {brand.name}. All rights reserved.
             </Text>
-            <Text style={footerText}>{brand.address}</Text>
+            {brand.legalLine ? <Text style={footerText}>{brand.legalLine}</Text> : null}
+            {brand.address ? <Text style={footerText}>{brand.address}</Text> : null}
             <Text style={footerText}>
               This email was sent to you as part of your account activity.
             </Text>

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { BrandLogo } from '@/components/layout/brand-logo'
 import { resolveSiteLogo } from '@/lib/site-settings/logo'
 import type { SiteSettingsConfig } from '@/lib/site-settings/types'
+import { asSentence, companyLegalLine } from '@/lib/site-settings/company'
 import {
   FOOTER_BLURB,
   FOOTER_GUARANTEES,
@@ -73,6 +74,8 @@ function Socials({ links }: { links: SiteSettingsConfig['social_links'] }): Reac
  */
 export function FooterPanel({ settings }: FooterPanelProps): React.JSX.Element {
   const logo = resolveSiteLogo(settings, 'footer')
+  // Empty until the company details are filled in, so the line reads as before.
+  const legalLine = companyLegalLine(settings)
   return (
     <>
       {/* Outline anchor, so the column heads and guarantee labels below sit
@@ -140,7 +143,10 @@ export function FooterPanel({ settings }: FooterPanelProps): React.JSX.Element {
 
       <div className="site-footer__bottom">
         <p className="site-footer__meta numeric" suppressHydrationWarning>
-          &copy; {new Date().getFullYear()} {settings.copyright_text}
+          &copy; {new Date().getFullYear()}{' '}
+          {legalLine
+            ? `${asSentence(settings.copyright_text)} ${asSentence(legalLine)}`
+            : settings.copyright_text}
         </p>
         <div className="site-footer__end">
           <nav aria-label="Legal" className="site-footer__legal">

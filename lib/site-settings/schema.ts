@@ -19,6 +19,10 @@ export const siteSettingsSchema = z.object({
   support_phone: z.string().min(1, 'Phone number is required').max(30),
   secondary_phone: z.string().max(30),
   office_address: z.string().max(300),
+  // Optional company details. Trimmed so a stray space cannot render an empty line.
+  legal_name: z.string().trim().max(150),
+  trade_licence_number: z.string().trim().max(60),
+  licence_issuer: z.string().trim().max(100),
   social_links: z.object({
     instagram: z.string().url('Invalid URL').or(z.literal('')),
     facebook: z.string().url('Invalid URL').or(z.literal('')),

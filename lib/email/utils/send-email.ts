@@ -4,6 +4,7 @@ import type React from 'react';
 import { getResendClient, getEmailConfig } from '../config';
 import { runWithBrand } from '../brand/brand-store.server';
 import { getPlatformEmailLogo } from '../brand/platform-logo.server';
+import { getPlatformEmailDetails } from '../brand/platform-details.server';
 import {
   deliver,
   formatAddress,
@@ -341,6 +342,30 @@ async function withPlatformLogo(config: ResolvedMailConfig): Promise<ResolvedMai
 }
 
 /**
+ * Adds the office address and company line from Settings > General.
+ *
+ * Platform mail gets both. Tenant mail keeps its own address and never gets the
+ * platform's company line; only a tenant with no address of its own borrows the
+ * platform's postal address, which is what the footer did before (a physical address
+ * is a CAN-SPAM requirement). getPlatformEmailDetails never throws, and empty values
+ * just hide the line.
+ */
+async function withPlatformDetails(config: ResolvedMailConfig): Promise<ResolvedMailConfig> {
+  const isPlatform = config.businessAccountId === null;
+  if (!isPlatform && config.brand.address.trim()) return config;
+
+  const details = await getPlatformEmailDetails();
+  return {
+    ...config,
+    brand: {
+      ...config.brand,
+      address: config.brand.address.trim() || details.address,
+      ...(isPlatform ? { legalLine: details.legalLine } : {}),
+    },
+  };
+}
+
+/**
  * The single place an email is rendered and handed to a transport.
  *
  * Never throws. A failed send returns { success: false } so that a caller mid-booking
@@ -367,11 +392,13 @@ export async function sendEmailWithConfig(
   let config: ResolvedMailConfig | null = resolved;
 
   try {
-    config = await withPlatformLogo(
-      resolved ??
-        (await resolveMailConfig(params.businessAccountId ?? null, {
-          forcePlatformTransport: params.forcePlatformTransport,
-        }))
+    config = await withPlatformDetails(
+      await withPlatformLogo(
+        resolved ??
+          (await resolveMailConfig(params.businessAccountId ?? null, {
+            forcePlatformTransport: params.forcePlatformTransport,
+          }))
+      )
     );
 
     if (config.provider === 'platform_smtp' && platformTransportMode() === 'resend') {

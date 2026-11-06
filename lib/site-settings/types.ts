@@ -47,6 +47,14 @@ export interface SiteSettingsConfig {
   support_phone: string
   secondary_phone: string
   office_address: string
+  /**
+   * Registered company details. Optional: an empty value hides its line
+   * everywhere it is shown (footer, About, Terms, Privacy, platform emails and
+   * invoices). See `lib/site-settings/company.ts`.
+   */
+  legal_name: string
+  trade_licence_number: string
+  licence_issuer: string
   social_links: SocialLinks
   maintenance_mode: boolean
   block_search_indexing: boolean
@@ -99,6 +107,9 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsConfig = {
   support_phone: '+971 50 123 4567',
   secondary_phone: '+971 4 123 4567',
   office_address: 'Business Bay, Dubai, United Arab Emirates',
+  legal_name: '',
+  trade_licence_number: '',
+  licence_issuer: '',
   social_links: DEFAULT_SOCIAL_LINKS,
   maintenance_mode: false,
   block_search_indexing: true,
@@ -153,6 +164,9 @@ export function parseSiteSettings(raw: unknown): SiteSettingsConfig {
     support_phone: typeof obj.support_phone === 'string' ? obj.support_phone : DEFAULT_SITE_SETTINGS.support_phone,
     secondary_phone: typeof obj.secondary_phone === 'string' ? obj.secondary_phone : DEFAULT_SITE_SETTINGS.secondary_phone,
     office_address: typeof obj.office_address === 'string' ? obj.office_address : DEFAULT_SITE_SETTINGS.office_address,
+    legal_name: typeof obj.legal_name === 'string' ? obj.legal_name : '',
+    trade_licence_number: typeof obj.trade_licence_number === 'string' ? obj.trade_licence_number : '',
+    licence_issuer: typeof obj.licence_issuer === 'string' ? obj.licence_issuer : '',
     social_links: social,
     maintenance_mode: typeof obj.maintenance_mode === 'boolean' ? obj.maintenance_mode : false,
     // Missing key = blocked. Safe pre-launch default so demo content is never crawled.

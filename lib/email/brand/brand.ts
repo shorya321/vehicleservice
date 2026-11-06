@@ -20,7 +20,6 @@ import type { EmailBrand, EmailBrandColors } from '../transport/types';
 export type { EmailBrand };
 
 export const PLATFORM_BRAND_NAME = 'Infinia Transfers';
-export const PLATFORM_BRAND_ADDRESS = '123 Business Bay, Dubai, UAE';
 
 /**
  * The platform palette, taken from the site's light theme tokens in app/globals.css:
@@ -54,7 +53,10 @@ function platformUrl(): string {
 export function getPlatformBrand(): EmailBrand {
   return {
     name: PLATFORM_BRAND_NAME,
-    address: PLATFORM_BRAND_ADDRESS,
+    // Empty here on purpose: the real office address lives in Settings > General and
+    // is added at send time (lib/email/brand/platform-details.server.ts). Anything
+    // rendered without it, such as a browser preview, simply shows no address line.
+    address: '',
     url: platformUrl(),
     logoUrl: null,
     supportEmail: null,

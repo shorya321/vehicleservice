@@ -24,7 +24,7 @@ import {
 import { templateComponents } from '@/lib/email/utils/template-components';
 import { render } from '@react-email/render';
 import { getPlatformBrand, registerBrandResolver } from '@/lib/email/brand/brand';
-import type { PlatformEmailLogo } from '@/lib/email/transport/types';
+import type { PlatformEmailDetails, PlatformEmailLogo } from '@/lib/email/transport/types';
 import { Mail, Monitor, Smartphone } from 'lucide-react';
 import { sendTestEmail } from '../actions';
 import { toast } from 'sonner';
@@ -35,9 +35,11 @@ type PreviewMode = 'desktop' | 'mobile';
 interface EmailManagementClientProps {
   /** The admin logo, resolved on the server exactly as the sender resolves it. */
   platformLogo: PlatformEmailLogo;
+  /** Office address and company line, as the sender adds them to platform mail. */
+  platformDetails: PlatformEmailDetails;
 }
 
-export function EmailManagementClient({ platformLogo }: EmailManagementClientProps) {
+export function EmailManagementClient({ platformLogo, platformDetails }: EmailManagementClientProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplateType>('welcome');
   const [emailHtml, setEmailHtml] = useState('');
   const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
@@ -64,7 +66,12 @@ export function EmailManagementClient({ platformLogo }: EmailManagementClientPro
       const previewData = getTemplatePreviewData(selectedTemplate);
       // The browser has no send scope, so give the preview the platform brand plus the
       // logo the sender adds. Business templates ignore platformLogo, as when mailed.
-      registerBrandResolver(() => ({ ...getPlatformBrand(), platformLogo }));
+      registerBrandResolver(() => ({
+        ...getPlatformBrand(),
+        platformLogo,
+        address: platformDetails.address,
+        legalLine: platformDetails.legalLine,
+      }));
       // createElement rather than calling the component directly: a template wrapped
       // in memo or forwardRef has no call signature, and the sender renders it the
       // same way, so the preview cannot diverge from what actually gets mailed.
@@ -73,7 +80,7 @@ export function EmailManagementClient({ platformLogo }: EmailManagementClientPro
     };
 
     generateEmailHtml();
-  }, [selectedTemplate, platformLogo]);
+  }, [selectedTemplate, platformLogo, platformDetails]);
 
   const handleTemplateChange = async (value: EmailTemplateType) => {
     setSelectedTemplate(value);

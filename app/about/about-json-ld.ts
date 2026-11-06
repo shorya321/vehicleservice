@@ -3,6 +3,7 @@ import type { SiteSettingsConfig } from '@/lib/site-settings/types'
 import type { SeoSettings } from '@/lib/seo/types'
 import { breadcrumbJsonLd, faqPageJsonLd, organizationJsonLd, type JsonLdObject } from '@/lib/seo/json-ld'
 import { absoluteUrl, getSiteUrl } from '@/lib/seo/site-url'
+import { resolveAboutCompany } from './company-facts'
 
 const PATH = '/about'
 
@@ -12,7 +13,9 @@ const PATH = '/about'
  * has filled them in, so the markup never claims a fact the page hides.
  */
 export function aboutJsonLd(content: AboutContent, site: SiteSettingsConfig, seo: SeoSettings): JsonLdObject[] {
-  const { legalName, founded } = content.company
+  const { founded } = content.company
+  // Same resolution as the visible Company block, so markup and page agree.
+  const { legalName } = resolveAboutCompany(content.company, site)
   const organization: JsonLdObject = {
     ...organizationJsonLd(site, seo),
     ...(legalName ? { legalName } : {}),

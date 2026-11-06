@@ -16,7 +16,8 @@ import { getEnabledCurrencies, getExchangeRates } from '@/lib/currency/server';
 import { formatPrice, formatAmount } from '@/lib/currency/format';
 // The customer copy, never lib/business/format-child-ages.ts, which the business module owns.
 import { formatChildAges } from '@/lib/utils/child-ages';
-import { BRAND_NAME, BRAND_ADDRESS } from '@/lib/email/config';
+import { BRAND_NAME } from '@/lib/email/config';
+import { loadPlatformPdfCompany } from '@/lib/pdf/platform-company';
 import { getBookingTimezone } from '@/lib/utils/timezone';
 import { jsx } from 'react/jsx-runtime';
 import { hourlyPackageLabel, isHourlyBooking } from '@/lib/trips/display'
@@ -182,7 +183,7 @@ export async function GET(
 
       companyName: BRAND_NAME,
       logo: await loadPlatformPdfLogo(),
-      companyAddress: BRAND_ADDRESS,
+      ...(await loadPlatformPdfCompany()),
       companyEmail: process.env.RESEND_REPLY_TO_EMAIL || process.env.RESEND_FROM_EMAIL,
 
       customerName: primaryPassenger

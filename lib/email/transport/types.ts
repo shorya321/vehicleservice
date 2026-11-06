@@ -81,6 +81,14 @@ export interface PlatformEmailLogo {
  * The brand a template renders under. Resolved per tenant, so a white-label
  * business's customers never see the platform's name.
  */
+/** Office address and company line from Settings > General, for platform email footers. */
+export interface PlatformEmailDetails {
+  /** Empty when unset or unreadable. */
+  readonly address: string;
+  /** Registered company line, or empty when no legal details are set. */
+  readonly legalLine: string;
+}
+
 export interface EmailBrand {
   readonly name: string;
   readonly address: string;
@@ -96,6 +104,12 @@ export interface EmailBrand {
   readonly colors: EmailBrandColors;
   /** Set by the sender for platform-scoped mail only. Tenants never carry one. */
   readonly platformLogo?: PlatformEmailLogo | null;
+  /**
+   * "Operated by <legal name>, trade licence <no.>" from Settings > General. Set by the
+   * sender for platform-scoped mail only, so a tenant's mail never names the platform's
+   * company. Absent or empty renders no line.
+   */
+  readonly legalLine?: string | null;
 }
 
 export interface ResolvedMailConfig {

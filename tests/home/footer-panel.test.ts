@@ -39,6 +39,23 @@ describe('FooterPanel', () => {
     expect(render({ office_address: 'Business Bay, Dubai' })).toContain('Business Bay, Dubai')
   })
 
+  it('shows the copyright exactly as before while no company details are set', () => {
+    const html = render({ copyright_text: 'Infinia Transfers' })
+    expect(html).toMatch(/&copy; \d{4} Infinia Transfers<\/p>|© \d{4} Infinia Transfers<\/p>/)
+    expect(html).not.toContain('Operated by')
+  })
+
+  it('adds the company line after the copyright once details are set', () => {
+    const html = render({
+      copyright_text: 'Infinia Transfers.',
+      legal_name: 'Example LLC',
+      trade_licence_number: '123',
+      licence_issuer: 'DET',
+    })
+    expect(html).toContain('Infinia Transfers. Operated by Example LLC, trade licence 123, issued by DET.')
+    expect(html).not.toContain('..')
+  })
+
   it('links Privacy and Terms', () => {
     const html = render()
     expect(html).toContain('href="/privacy"')
