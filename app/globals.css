@@ -8013,17 +8013,6 @@
      rather than Tailwind arbitrary values because rgba-over-a-var and
      arbitrary ease both compile to no rule at all.
      ------------------------------------------------------------------ */
-  /* Dev server only: flags the sample cards (components/home/testimonials.tsx). */
-  .record-preview-note {
-    margin: 0 0 2rem;
-    padding: 0.75rem 1rem;
-    border: 1px dashed var(--gold);
-    border-radius: 6px;
-    font-size: 0.8125rem;
-    line-height: 1.5;
-    color: var(--text-primary);
-  }
-
   /* Heading left, overall score right; stacks below 960px. */
   .record-head {
     display: flex;

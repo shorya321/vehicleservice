@@ -1,6 +1,5 @@
 import { getApprovedReviews, getFeaturedReviews, getReviewStats } from "@/app/reviews/actions"
 import { buildHomeCards, HOME_CARD_LIMIT, pickHomeReviews, type HomeReview } from "@/lib/reviews/home-record"
-import { applyDevPreview } from "@/lib/reviews/home-record-preview"
 import { loadReviewerNames } from "@/lib/reviews/reviewer-names"
 import { isAdminEntered } from "@/lib/reviews/sources"
 import { TestimonialsAnimator } from "./testimonials-animator"
@@ -28,15 +27,9 @@ export async function Testimonials({ content }: { content: HomeContent["testimon
   const [featuredResult, statsResult] = await Promise.all([getFeaturedReviews(), getReviewStats()])
   const featured: HomeReview[] = featuredResult.data ?? []
   const fromFeatured = pickHomeReviews(featured, [])
-  const realReviews =
+  const reviews =
     fromFeatured.length >= HOME_CARD_LIMIT ? fromFeatured : pickHomeReviews(featured, await loadFallbackReviews())
-
-  // Sample copy fills the grid on the local dev server only. Real visitors
-  // (any production build) always get real reviews.
-  const { reviews, stats, isPreview } = applyDevPreview(
-    { reviews: realReviews, stats: statsResult.data },
-    process.env.NODE_ENV
-  )
+  const stats = statsResult.data
 
   const names = await loadReviewerNames(
     reviews
@@ -49,19 +42,9 @@ export async function Testimonials({ content }: { content: HomeContent["testimon
     <section
       aria-labelledby="testimonials-heading"
       className="editorial-section editorial-section--raised"
-      data-preview={isPreview ? "dev-sample" : undefined}
     >
       <TestimonialsAnimator>
         <div className="luxury-container">
-          {isPreview && (
-            // Development only (applyDevPreview never sets isPreview in a production
-            // build). Says plainly that these cards are not in the database, so the
-            // empty /reviews page behind "Read every review" is not a surprise.
-            <p role="note" className="record-preview-note">
-              Local preview only: sample reviews, not real customers. There are no approved reviews yet, so the live
-              site hides this section and /reviews is empty.
-            </p>
-          )}
           <TestimonialsRecord cards={buildHomeCards(reviews, names)} stats={stats} content={content} />
         </div>
       </TestimonialsAnimator>
