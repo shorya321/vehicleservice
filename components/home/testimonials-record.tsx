@@ -99,7 +99,7 @@ export function TestimonialsRecord({ cards, stats, content }: TestimonialsRecord
           ))}
         </div>
       )}
-      <div className="mt-10">
+      <div className="record-cta mt-10">
         <CmsLink href={content.cta.href} className="btn btn-secondary">
           {content.cta.label}
           <ArrowRight className="w-4 h-4" aria-hidden="true" />

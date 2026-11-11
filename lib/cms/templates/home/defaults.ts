@@ -135,7 +135,7 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
     eyebrow: 'Spoken for',
     title: 'Travellers on record.',
     body: '',
-    cta: { label: 'Read every review', href: '/reviews' },
+    cta: { label: 'All reviews', href: '/reviews' },
   },
   account: {
     visible: true,
