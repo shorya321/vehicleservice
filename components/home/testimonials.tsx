@@ -1,5 +1,6 @@
 import { getApprovedReviews, getFeaturedReviews, getReviewStats } from "@/app/reviews/actions"
 import { buildHomeCards, HOME_CARD_LIMIT, pickHomeReviews, type HomeReview } from "@/lib/reviews/home-record"
+import { applyDevPreview } from "@/lib/reviews/dev-sample-preview"
 import { loadReviewerNames } from "@/lib/reviews/reviewer-names"
 import { isAdminEntered } from "@/lib/reviews/sources"
 import { TestimonialsAnimator } from "./testimonials-animator"
@@ -27,9 +28,12 @@ export async function Testimonials({ content }: { content: HomeContent["testimon
   const [featuredResult, statsResult] = await Promise.all([getFeaturedReviews(), getReviewStats()])
   const featured: HomeReview[] = featuredResult.data ?? []
   const fromFeatured = pickHomeReviews(featured, [])
-  const reviews =
+  const realReviews =
     fromFeatured.length >= HOME_CARD_LIMIT ? fromFeatured : pickHomeReviews(featured, await loadFallbackReviews())
-  const stats = statsResult.data
+
+  // Sample copy fills the grid on the local dev server only, while the
+  // database is empty. Production builds always get real reviews.
+  const { reviews, stats } = applyDevPreview({ reviews: realReviews, stats: statsResult.data }, process.env.NODE_ENV)
 
   const names = await loadReviewerNames(
     reviews

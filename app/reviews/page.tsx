@@ -11,6 +11,9 @@ import { SORT_VALUES, type ReviewSortValue } from '@/lib/reviews/filter-options'
 import { getApprovedReviews, getReviewStats } from './actions'
 import { buildEntityMetadata } from '@/lib/seo/page-metadata'
 import { listCanonical } from '@/lib/seo/list-canonical'
+import { devSampleReviewsPage } from '@/lib/reviews/dev-sample-preview'
+
+const PAGE_SIZE = 12
 
 interface PageProps {
   searchParams: Promise<{
@@ -44,17 +47,16 @@ export default async function PublicReviewsPage({ searchParams }: PageProps) {
   // Only a rating or a search narrows the list; sorting never hides a review.
   const hasFilters = Boolean(rating) || search.trim() !== ''
 
-  // Get reviews
-  const { data: reviews, total, totalPages } = await getApprovedReviews({
-    page,
-    sortBy,
-    rating,
-    search,
-    limit: 12,
-  })
+  const filters = { page, sortBy, rating, search, limit: PAGE_SIZE }
+  const [realPage, { data: realStats }] = await Promise.all([getApprovedReviews(filters), getReviewStats()])
 
-  // Get stats
-  const { data: stats } = await getReviewStats()
+  // Dev server only, while the database holds no review: sample copy, matching
+  // the home record. Production builds always read the database.
+  const sample = devSampleReviewsPage(filters, realStats, process.env.NODE_ENV)
+  const reviews = sample ? sample.data : realPage.data
+  const total = sample ? sample.total : realPage.total
+  const totalPages = sample ? sample.totalPages : realPage.totalPages
+  const stats = sample ? sample.stats : realStats
 
   return (
     <div className="min-h-screen bg-[var(--black-void)] py-12">
