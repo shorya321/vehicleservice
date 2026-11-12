@@ -33,7 +33,7 @@ export async function Testimonials({ content }: { content: HomeContent["testimon
 
   // Sample copy fills the grid on the local dev server only, while the
   // database is empty. Production builds always get real reviews.
-  const { reviews, stats } = applyDevPreview({ reviews: realReviews, stats: statsResult.data }, process.env.NODE_ENV)
+  const { reviews } = applyDevPreview({ reviews: realReviews, stats: statsResult.data }, process.env.NODE_ENV)
 
   const names = await loadReviewerNames(
     reviews
@@ -49,7 +49,7 @@ export async function Testimonials({ content }: { content: HomeContent["testimon
     >
       <TestimonialsAnimator>
         <div className="luxury-container">
-          <TestimonialsRecord cards={buildHomeCards(reviews, names)} stats={stats} content={content} />
+          <TestimonialsRecord cards={buildHomeCards(reviews, names)} content={content} />
         </div>
       </TestimonialsAnimator>
     </section>

@@ -8005,15 +8005,14 @@
 
   /* ------------------------------------------------------------------
      Travellers on record: the home review section
-     (components/home/testimonials-record.tsx). Heading with the overall
-     score, then three review cards.
+     (components/home/testimonials-record.tsx). Heading, then three
+     review cards.
 
-     The score box and cards sit on the same --stub-* ground as .promise-card
+     The cards sit on the same --stub-* ground as .promise-card
      above and .fleet-card below, so the page keeps one card physics. Plain CSS
      rather than Tailwind arbitrary values because rgba-over-a-var and
      arbitrary ease both compile to no rule at all.
      ------------------------------------------------------------------ */
-  /* Heading left, overall score right; stacks below 960px. */
   .record-head {
     display: flex;
     flex-direction: column;
@@ -8029,46 +8028,6 @@
     }
   }
 
-  .record-score {
-    display: flex;
-    align-items: center;
-    gap: 0.875rem;
-    align-self: flex-start;
-    padding: 0.75rem 1.125rem;
-    background-color: var(--stub-bot);
-    background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
-    border: 1px solid var(--stub-line);
-    border-radius: 8px;
-    box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
-  }
-
-  @media (min-width: 960px) {
-    .record-score {
-      align-self: auto;
-      flex: none;
-    }
-  }
-
-  .record-score__avg {
-    font-family: var(--font-body);
-    font-size: 1.75rem;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.04em;
-    color: var(--text-primary);
-  }
-
-  .record-stars {
-    display: flex;
-    gap: 0.1875rem;
-    margin-bottom: 0.25rem;
-  }
-
-  .record-score .record-star {
-    width: 0.8125rem;
-    height: 0.8125rem;
-  }
-
   /* Unlit stars tint from --text-primary rather than --graphite: in dark,
      graphite sits a few steps above the card ground and all but disappears. */
   .record-star {
@@ -8080,11 +8039,6 @@
   .record-star--lit {
     color: var(--gold);
     fill: var(--gold);
-  }
-
-  .record-score__of {
-    font-size: 0.75rem;
-    color: var(--text-muted);
   }
 
   /* Three review cards on the same --stub-* ground as .promise-card. */
@@ -8110,20 +8064,28 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding: 2rem;
+    padding: 1.75rem;
     background-color: var(--stub-bot);
     background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
     border: 1px solid var(--stub-line);
     border-radius: 8px;
     box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
+    transition: border-color 200ms var(--ease-luxury);
+  }
+
+  /* Same hover and tap feedback as .promise-card. */
+  .record-card:hover {
+    border-color: rgba(var(--gold-rgb), 0.4);
+  }
+
+  .record-card:active {
+    border-color: rgba(var(--gold-rgb), 0.55);
   }
 
   .record-card__top {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
+    margin-bottom: 1.25rem;
   }
 
   .record-card__rating {
@@ -8141,33 +8103,31 @@
     height: 0.875rem;
   }
 
-  .record-card__source {
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-
   .record-card__quote {
     flex-grow: 1;
-    margin: 0;
+    margin: 0 0 1.5rem;
     font-family: var(--font-body);
-    font-size: 1.0625rem;
-    font-weight: 500;
-    line-height: 1.65;
-    letter-spacing: -0.01em;
-    color: var(--text-primary);
+    font-size: 0.9375rem;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--text-secondary);
     text-wrap: pretty;
   }
 
-  /* Short rule above the reviewer, drawn as a border so it needs no extra node. */
+  /* Short hairline above the reviewer. A real element, not a pseudo: the
+     gold dash device stays banned on .record-card (eyebrow-pill.test.ts). */
+  .record-card__rule {
+    display: block;
+    width: 2.5rem;
+    height: 1px;
+    margin-bottom: 1.25rem;
+    background-color: var(--stub-line);
+  }
+
   .record-card__by {
     display: flex;
     align-items: center;
     gap: 0.875rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--stub-line);
   }
 
   .record-card__avatar {

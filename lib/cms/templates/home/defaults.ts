@@ -133,7 +133,7 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
   testimonials: {
     visible: true,
     eyebrow: 'Spoken for',
-    title: 'Travellers on record.',
+    title: 'What Our Clients Say',
     body: '',
     cta: { label: 'All reviews', href: '/reviews' },
   },
