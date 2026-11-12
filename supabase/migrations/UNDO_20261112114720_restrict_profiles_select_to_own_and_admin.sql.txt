@@ -1,0 +1,10 @@
+-- Undo for 20261112114720_restrict_profiles_select_to_own_and_admin.
+-- Restores the open read policy (every signed-in user reads every profile).
+-- Apply through Supabase MCP apply_migration only if something breaks.
+DROP POLICY IF EXISTS "Admins can view all profiles" ON public.profiles;
+
+CREATE POLICY "Users can view any profile when authenticated"
+  ON public.profiles
+  FOR SELECT
+  TO public
+  USING (auth.role() = 'authenticated'::text);

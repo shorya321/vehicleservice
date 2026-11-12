@@ -69,7 +69,6 @@ export interface VendorApplicationRow {
   reviewed_at?: string | null
   admin_notes?: string | null
   review_history?: VendorApplicationReviewEntry[] | null
-  reviewer?: { full_name?: string | null; email?: string | null } | null
 }
 
 /**
@@ -280,12 +279,8 @@ export function ApplicationDossier({
         <DossierCard id="review" heading="Review" delay={0.3} reduceMotion={reduceMotion}>
           <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
             <Field label="Reviewed on" value={formatBookingDate(application.reviewed_at)} numeric />
-            {application.reviewer && (
-              <Field
-                label="Reviewed by"
-                value={application.reviewer.full_name || application.reviewer.email || 'Our team'}
-              />
-            )}
+            {/* Never the reviewing admin's identity: the applicant sees the team. */}
+            <Field label="Reviewed by" value="Our team" />
             {application.admin_notes && (
               <Field label="Notes" value={application.admin_notes} className="sm:col-span-2" />
             )}

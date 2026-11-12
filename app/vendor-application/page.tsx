@@ -23,7 +23,9 @@ export default async function VendorApplicationPage() {
 
   const { data: application, error } = await supabase
     .from("vendor_applications")
-    .select(`*, reviewer:profiles!vendor_applications_reviewed_by_fkey(full_name, email)`)
+    // No reviewer embed: applicants may only read their own profile (RLS), and the
+    // reviewing admin's name and email are not theirs to see.
+    .select("*")
     .eq("user_id", user.id)
     .single()
 
