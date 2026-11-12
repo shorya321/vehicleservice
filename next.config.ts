@@ -29,6 +29,16 @@ const nextConfig: NextConfig = {
         destination: '/search/:routeSlug',
         permanent: true,
       },
+      // Common URL guesses that 404'd in the Nov 2026 audit, sent to the page that
+      // already holds the content. A redirect wins over a page: remove the alias
+      // here before creating an admin page at the same URL.
+      { source: '/fleet', destination: '/#fleet', permanent: true },
+      { source: '/partner', destination: '/become-vendor', permanent: true },
+      { source: '/terms-and-conditions', destination: '/terms', permanent: true },
+      { source: '/privacy-policy', destination: '/privacy', permanent: true },
+      { source: '/cookie-policy', destination: '/privacy#cookies-and-tracking', permanent: true },
+      { source: '/refund-policy', destination: '/terms#cancellation-and-refund', permanent: true },
+      { source: '/cancellation-policy', destination: '/terms#cancellation-and-refund', permanent: true },
     ]
   },
   typescript: {
