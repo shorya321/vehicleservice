@@ -6,6 +6,7 @@ import { getPublishedPage } from '@/lib/cms/server'
 import { parseLegalContent } from '@/lib/cms/templates/legal/parse'
 import { DEFAULT_VENDOR_AGREEMENT_CONTENT } from '@/lib/cms/templates/legal/vendor-agreement-defaults'
 import { LegalDocument } from '@/components/legal/legal-document'
+import { getSiteSettings } from '@/lib/site-settings/server'
 
 const SLUG = '/vendor-agreement'
 
@@ -19,9 +20,14 @@ export async function generateMetadata(): Promise<Metadata> {
  * starting point for legal review, not something to show before that.
  */
 export default async function VendorAgreementPage() {
-  const page = await getPublishedPage(SLUG)
+  const [page, site] = await Promise.all([getPublishedPage(SLUG), getSiteSettings()])
   if (!page) {
     notFound()
   }
-  return <LegalDocument content={parseLegalContent(page.content, DEFAULT_VENDOR_AGREEMENT_CONTENT)} />
+  return (
+    <LegalDocument
+      content={parseLegalContent(page.content, DEFAULT_VENDOR_AGREEMENT_CONTENT)}
+      supportEmail={site.support_email}
+    />
+  )
 }

@@ -47,7 +47,7 @@ export const DEFAULT_PRIVACY_CONTENT: LegalContent = {
       "id": "your-rights",
       "title": "Your Rights",
       "toc_label": "Your rights",
-      "body": "<p>You have the following rights over your personal information, regardless of where you are located:</p><ul><li><strong>Access:</strong> request a copy of the personal data we hold about you</li><li><strong>Correction:</strong> ask us to update or correct inaccurate information</li><li><strong>Deletion:</strong> request that we delete your personal data, subject to legal retention requirements</li><li><strong>Data portability:</strong> receive your data in a structured, machine-readable format so you can transfer it to another service</li><li><strong>Withdraw consent:</strong> revoke any consent you have previously given, such as marketing communications</li><li><strong>Complain:</strong> lodge a complaint with a supervisory authority in your jurisdiction if you believe we have not handled your data properly</li></ul><p>To exercise any of these rights, email us at <a href=\"mailto:support@infiniatransfers.com\">support@infiniatransfers.com</a>. We will respond within 30 days. We may ask you to verify your identity before processing your request.</p>"
+      "body": "<p>You have the following rights over your personal information, regardless of where you are located:</p><ul><li><strong>Access:</strong> request a copy of the personal data we hold about you</li><li><strong>Correction:</strong> ask us to update or correct inaccurate information</li><li><strong>Deletion:</strong> request that we delete your personal data, subject to legal retention requirements</li><li><strong>Data portability:</strong> receive your data in a structured, machine-readable format so you can transfer it to another service</li><li><strong>Withdraw consent:</strong> revoke any consent you have previously given, such as marketing communications</li><li><strong>Complain:</strong> lodge a complaint with a supervisory authority in your jurisdiction if you believe we have not handled your data properly</li></ul><p>To exercise any of these rights, email us at <a href=\"mailto:{{support_email}}\">{{support_email}}</a>. We will respond within 30 days. We may ask you to verify your identity before processing your request.</p>"
     },
     {
       "id": "cookies-and-tracking",
@@ -83,7 +83,7 @@ export const DEFAULT_PRIVACY_CONTENT: LegalContent = {
       "id": "contact-us",
       "title": "Contact Us",
       "toc_label": "Contact us",
-      "body": "<p>If you have questions about this Privacy Policy or want to exercise any of your rights, reach out to us:</p><ul><li>Email: <a href=\"mailto:support@infiniatransfers.com\">support@infiniatransfers.com</a></li><li>Contact form: <a href=\"/contact\">infiniatransfers.com/contact</a></li></ul><p>Our team typically responds within 24 hours. For data-related requests, we will acknowledge your inquiry within 48 hours and resolve it within 30 days.</p>"
+      "body": "<p>If you have questions about this Privacy Policy or want to exercise any of your rights, reach out to us:</p><ul><li>Email: <a href=\"mailto:{{support_email}}\">{{support_email}}</a></li><li>Contact form: <a href=\"/contact\">infiniatransfers.com/contact</a></li></ul><p>Our team typically responds within 24 hours. For data-related requests, we will acknowledge your inquiry within 48 hours and resolve it within 30 days.</p>"
     }
   ]
 }

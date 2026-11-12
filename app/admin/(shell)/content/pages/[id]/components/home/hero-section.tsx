@@ -47,7 +47,7 @@ export function HeroSection({ control }: { control: HomeControl }) {
                 control={control}
                 name={path(`hero.stats.${i}.is_rating`)}
                 label="Star rating"
-                description="Adds a star. Hidden until the site has approved reviews."
+                description="Adds a star and shows the live average of approved reviews in place of Value. Hidden until there are any."
               />
             </ItemCard>
           ))}

@@ -25,7 +25,7 @@ import { getSiteSettings } from '@/lib/site-settings/server'
 import { HEADER_PROFILE_COLUMNS, type HeaderProfile } from '@/components/layout/header-profile'
 import type { Metadata } from 'next'
 import { getHomeContent } from '@/lib/cms/server'
-import { getApprovedReviewCount } from '@/lib/reviews/review-count'
+import { getApprovedReviewSummary } from '@/lib/reviews/review-count'
 import { buildPageMetadata } from '@/lib/seo/page-metadata'
 import { getSeoSettings } from '@/lib/seo/server'
 import { faqPageJsonLd, organizationJsonLd, websiteJsonLd, type JsonLdObject } from '@/lib/seo/json-ld'
@@ -71,7 +71,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     exchangeRates,
     siteSettings,
     { content },
-    reviewCount,
+    reviewSummary,
     seoSettings,
   ] = await Promise.all([
     loadHeaderUser(),
@@ -81,7 +81,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     getExchangeRatesObject(),
     getSiteSettings(),
     getHomeContent(),
-    getApprovedReviewCount(),
+    getApprovedReviewSummary(),
     getSeoSettings(),
   ])
 
@@ -124,7 +124,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         tripSettings={siteSettings.trip_types}
         initialTrip={initialTrip}
         content={content.hero}
-        hasReviews={reviewCount > 0}
+        reviews={reviewSummary}
       />
       {content.after_you_book.visible && <AfterYouBook content={content.after_you_book} />}
       {/* empty:hidden: DeparturePoints renders nothing when no route is
@@ -160,7 +160,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           first review is approved: an empty record tells a visitor nobody has
           reviewed us. The dev server still shows it, with sample copy (see
           lib/reviews/dev-sample-reviews.ts), so the layout can be worked on. */}
-      {content.testimonials.visible && (reviewCount > 0 || process.env.NODE_ENV === 'development') && (
+      {content.testimonials.visible && (reviewSummary.count > 0 || process.env.NODE_ENV === 'development') && (
         <div>
           <Suspense fallback={null}>
             <Testimonials content={content.testimonials} />

@@ -59,7 +59,7 @@ export const DEFAULT_CONTACT_CONTENT: ContactContent = {
       {
         question: 'What is your cancellation policy?',
         answer:
-          'We offer free cancellation up to 24 hours before your scheduled pickup. Cancellations made within 24 hours may be subject to a cancellation fee. For airport transfers, we recommend booking at least 48 hours in advance.',
+          'Cancel more than 24 hours before pickup for a full refund. Between 12 and 24 hours you receive 50%, and under 12 hours there is no refund. Booking 24 hours ahead is comfortable, and bookings under 3 hours are accepted on most routes.',
       },
       {
         question: 'Do you offer corporate accounts?',

@@ -29,7 +29,7 @@ export const DEFAULT_TERMS_CONTENT: LegalContent = {
       "id": "account-registration",
       "title": "Account Registration",
       "toc_label": "Account registration",
-      "body": "<p>You may browse routes and vehicle options without an account. To place a booking, you will need to create an account or provide your details at checkout.</p><p>When you register, you agree to provide accurate and complete information. You are responsible for keeping your login credentials secure and for all activity that occurs under your account. If you suspect unauthorised access, contact us immediately at <a href=\"mailto:support@infiniatransfers.com\">support@infiniatransfers.com</a>.</p><p>We reserve the right to suspend or close accounts that contain false information, are used for fraudulent purposes, or violate these terms.</p>"
+      "body": "<p>You may browse routes and vehicle options without an account. To place a booking, you will need to create an account or provide your details at checkout.</p><p>When you register, you agree to provide accurate and complete information. You are responsible for keeping your login credentials secure and for all activity that occurs under your account. If you suspect unauthorised access, contact us immediately at <a href=\"mailto:{{support_email}}\">{{support_email}}</a>.</p><p>We reserve the right to suspend or close accounts that contain false information, are used for fraudulent purposes, or violate these terms.</p>"
     },
     {
       "id": "booking-and-payment",
@@ -95,7 +95,7 @@ export const DEFAULT_TERMS_CONTENT: LegalContent = {
       "id": "contact-information",
       "title": "Contact Information",
       "toc_label": "Contact information",
-      "body": "<p>For questions about these terms, billing disputes, or service complaints, reach out to us:</p><ul><li>Email: <a href=\"mailto:support@infiniatransfers.com\">support@infiniatransfers.com</a></li><li>Contact form: <a href=\"/contact\">infiniatransfers.com/contact</a></li></ul><p>Our support team is available around the clock and typically responds within 24 hours.</p>"
+      "body": "<p>For questions about these terms, billing disputes, or service complaints, reach out to us:</p><ul><li>Email: <a href=\"mailto:{{support_email}}\">{{support_email}}</a></li><li>Contact form: <a href=\"/contact\">infiniatransfers.com/contact</a></li></ul><p>Our support team is available around the clock and typically responds within 24 hours.</p>"
     }
   ]
 }

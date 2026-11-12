@@ -2,7 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/actions'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
+import { HOME_CATALOG_TAG } from '@/lib/home/catalog'
 import { VehicleType, VehicleTypeWithCategory } from '@/lib/types/vehicle'
 import { uploadVehicleTypeImage } from './actions/upload'
 import { deleteAdminImageByUrl } from '@/lib/storage/admin-image'
@@ -147,6 +148,8 @@ export async function createVehicleType(data: VehicleTypeFormData) {
   }
 
   revalidatePath('/admin/vehicle-types')
+  // The home fleet section caches vehicle types; a stale entry would point at a deleted image.
+  updateTag(HOME_CATALOG_TAG)
 }
 
 export async function updateVehicleType(id: string, data: VehicleTypeFormData) {
@@ -209,6 +212,8 @@ export async function updateVehicleType(id: string, data: VehicleTypeFormData) {
   }
 
   revalidatePath('/admin/vehicle-types')
+  // The home fleet section caches vehicle types; a stale entry would point at a deleted image.
+  updateTag(HOME_CATALOG_TAG)
   revalidatePath(`/admin/vehicle-types/${id}/edit`)
 }
 
@@ -236,6 +241,8 @@ export async function deleteVehicleType(id: string) {
   }
 
   revalidatePath('/admin/vehicle-types')
+  // The home fleet section caches vehicle types; a stale entry would point at a deleted image.
+  updateTag(HOME_CATALOG_TAG)
 }
 
 export async function toggleVehicleTypeStatus(id: string, isActive: boolean) {
@@ -255,6 +262,8 @@ export async function toggleVehicleTypeStatus(id: string, isActive: boolean) {
   }
 
   revalidatePath('/admin/vehicle-types')
+  // The home fleet section caches vehicle types; a stale entry would point at a deleted image.
+  updateTag(HOME_CATALOG_TAG)
 }
 
 export async function bulkDeleteVehicleTypes(ids: string[]) {
@@ -271,6 +280,8 @@ export async function bulkDeleteVehicleTypes(ids: string[]) {
   }
 
   revalidatePath('/admin/vehicle-types')
+  // The home fleet section caches vehicle types; a stale entry would point at a deleted image.
+  updateTag(HOME_CATALOG_TAG)
   return { count: ids.length }
 }
 
@@ -288,6 +299,8 @@ export async function bulkToggleVehicleTypeStatus(ids: string[], isActive: boole
   }
 
   revalidatePath('/admin/vehicle-types')
+  // The home fleet section caches vehicle types; a stale entry would point at a deleted image.
+  updateTag(HOME_CATALOG_TAG)
   return { count: ids.length }
 }
 

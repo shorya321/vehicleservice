@@ -98,6 +98,9 @@ export function LegalSectionItem({ control, index, total, onMove, onRemove }: Le
               <FormControl>
                 <TiptapEditor value={field.value} onChange={field.onChange} />
               </FormControl>
+              <p className="text-sm text-muted-foreground">
+                Write {'{{support_email}}'} for the support email. The page fills it in from Settings &gt; General.
+              </p>
               <FormMessage />
             </FormItem>
           )}

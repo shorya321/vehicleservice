@@ -1,6 +1,6 @@
 import { HeroMap } from './hero-map'
 import { HeroTraffic } from './hero-traffic'
-import { HeroStats } from './hero-stats'
+import { HeroStats, resolveHeroStats, type ReviewSummary } from './hero-stats'
 import { SearchForm } from './search-form'
 import type { TripSettings } from '@/lib/trips/settings'
 import type { TripType } from '@/lib/trips/types'
@@ -14,14 +14,14 @@ interface HeroProps {
   initialTrip?: TripType
   content: HeroContent
   /**
-   * False while there are no approved reviews. A rating stat then reads as a
-   * claim the testimonials further down contradict, so it is left out.
+   * Approved-review count and average. A rating stat shows the average, and is
+   * left out while the count is 0 (see resolveHeroStats).
    */
-  hasReviews: boolean
+  reviews: ReviewSummary
 }
 
-export function Hero({ todayDate, tripSettings, initialTrip, content, hasReviews }: HeroProps) {
-  const stats = content.stats.filter((stat) => hasReviews || !stat.is_rating)
+export function Hero({ todayDate, tripSettings, initialTrip, content, reviews }: HeroProps) {
+  const stats = resolveHeroStats(content.stats, reviews)
 
   return (
     <section

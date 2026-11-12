@@ -2,6 +2,7 @@
 import * as React from 'react'
 import { TableOfContents } from '@/components/legal/table-of-contents'
 import { sanitizeRichText } from '@/lib/cms/sanitize'
+import { fillSettingsPlaceholders } from '@/lib/cms/placeholders'
 import type { LegalContent } from '@/lib/cms/templates/legal/schema'
 
 /** Registered company shown under the text. Built from Settings > General. */
@@ -21,10 +22,13 @@ const COMPANY_SECTION_ID = 'company-details'
 export function LegalDocument({
   content,
   company = null,
+  supportEmail = '',
 }: {
   content: LegalContent
   /** Null, or no legal name and no licence, renders the page exactly as before. */
   company?: LegalCompanyBlock | null
+  /** Settings > General support email, filled into `{{support_email}}` in the text. */
+  supportEmail?: string
 }): React.JSX.Element {
   // Skipped if an editor already used the id, so the page never has two.
   const companyBlock =
@@ -70,7 +74,7 @@ export function LegalDocument({
               {content.sections.map((section) => (
                 <section key={section.id} id={section.id} className="scroll-mt-28">
                   <h2>{section.title}</h2>
-                  <div dangerouslySetInnerHTML={{ __html: sanitizeRichText(section.body) }} />
+                  <div dangerouslySetInnerHTML={{ __html: sanitizeRichText(fillSettingsPlaceholders(section.body, { supportEmail })) }} />
                 </section>
               ))}
               {companyBlock && (

@@ -17,6 +17,26 @@ export function statIconKind(stat: HeroStat): StatIconKind {
   return 'pin'
 }
 
+/** Approved-review figures, from `get_review_stats()`. */
+export interface ReviewSummary {
+  count: number
+  average: number
+}
+
+/**
+ * The stats the hero shows. A "Star rating" stat takes the live average of
+ * approved reviews, never the value typed in the CMS, and is left out while
+ * there are none: a rating the reviews below contradict reads as invented.
+ */
+export function resolveHeroStats(stats: HeroStat[], reviews: ReviewSummary): HeroStat[] {
+  const average = Number(reviews.average)
+  const showRating = reviews.count > 0 && Number.isFinite(average) && average > 0
+  return stats.flatMap((stat) => {
+    if (!stat.is_rating) return [stat]
+    return showRating ? [{ ...stat, value: average.toFixed(1) }] : []
+  })
+}
+
 interface HeroStatsProps {
   stats: HeroStat[]
 }

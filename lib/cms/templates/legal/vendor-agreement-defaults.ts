@@ -84,7 +84,7 @@ export const DEFAULT_VENDOR_AGREEMENT_CONTENT: LegalContent = {
       id: 'contact',
       title: 'Contact',
       toc_label: 'Contact',
-      body: '<p>For questions about this agreement or your vendor account, contact our partner team at <a href="mailto:support@infiniatransfers.com">support@infiniatransfers.com</a>.</p>',
+      body: '<p>For questions about this agreement or your vendor account, contact our partner team at <a href="mailto:{{support_email}}">{{support_email}}</a>.</p>',
     },
   ],
 }

@@ -9,7 +9,8 @@ type Client = SupabaseClient<Database>
 
 /** Home catalog data changes when an admin edits routes or vehicle types. */
 const CATALOG_REVALIDATE_SECONDS = 300
-const HOME_CATALOG_TAG = 'home-catalog'
+/** Purged when an admin changes what the home catalog shows (vehicle types). */
+export const HOME_CATALOG_TAG = 'home-catalog'
 
 export async function fetchPopularRoutes(supabase: Client): Promise<PopularRoute[]> {
   // Use RPC function to get popular routes with all data

@@ -22,6 +22,7 @@ export default async function PrivacyPage() {
     <LegalDocument
       content={content}
       company={{ legalName, licence, address: site.office_address.trim() }}
+      supportEmail={site.support_email}
     />
   )
 }
