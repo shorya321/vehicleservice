@@ -16,8 +16,11 @@ const STATIC_PATHS: { path: string; changeFrequency: Entry['changeFrequency']; p
   { path: '/blog', changeFrequency: 'weekly', priority: 0.7 },
 ]
 
-/** System pages behind a sign-in; a crawler only ever sees the login redirect. */
-const UNLISTED_PAGES = new Set(['/become-vendor'])
+/**
+ * System pages kept out of the sitemap, e.g. one behind a sign-in where a crawler only
+ * ever sees the login redirect. /become-vendor left this list once guests could see it.
+ */
+const UNLISTED_PAGES = new Set<string>([])
 
 function entry(path: string, lastModified: string | null, changeFrequency: Entry['changeFrequency'], priority: number): Entry {
   return {

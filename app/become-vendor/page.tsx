@@ -15,6 +15,7 @@ import { HeroMap } from "@/components/home/hero/hero-map"
 import { ApplicationIndex } from "./components/application-index"
 import { AfterSubmit } from "./components/after-submit"
 import { PartnerBenefits, PartnerRequirements } from "./components/partner-rail"
+import { GuestApplyPanel } from "./components/guest-apply-panel"
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata('/become-vendor', PAGE_FALLBACKS['/become-vendor'])
@@ -25,8 +26,9 @@ export default async function BecomeVendorPage() {
 
   const { data: { user } } = await supabase.auth.getUser()
 
+  // A guest gets the programme page with sign-in links, never the form.
   if (!user) {
-    redirect("/login?redirect=/become-vendor")
+    return <BecomeVendorLayout guest />
   }
 
   // Check user role - only customers can access this page
@@ -59,6 +61,27 @@ export default async function BecomeVendorPage() {
     : { href: "/privacy", label: "Privacy Policy" }
 
   return (
+    <BecomeVendorLayout
+      guest={false}
+      secondDocument={secondDocument}
+      defaultValues={{
+        businessEmail: profile?.email || "",
+        businessPhone: profile?.phone || "",
+      }}
+    />
+  )
+}
+
+type BecomeVendorLayoutProps =
+  | { guest: true }
+  | {
+      guest: false
+      secondDocument: { href: string; label: string }
+      defaultValues: { businessEmail: string; businessPhone: string }
+    }
+
+function BecomeVendorLayout(props: BecomeVendorLayoutProps) {
+  return (
     <PublicLayout>
       <div className="relative bg-[var(--black-void)] min-h-screen">
         {/* The home hero's street map, faded out behind the title so the page opens the
@@ -72,11 +95,11 @@ export default async function BecomeVendorPage() {
         <div className="relative luxury-container py-8 md:py-12 lg:py-16">
           {/* Back Link */}
           <Link
-            href="/account"
+            href={props.guest ? "/" : "/account"}
             className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--gold-text)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] transition-colors mb-8 lg:mb-12 py-3 -my-3 motion-safe:animate-in fade-in-0 duration-300"
           >
             <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-            Back to Account
+            {props.guest ? "Back to Home" : "Back to Account"}
           </Link>
 
           {/* Two-column grid on desktop, single column on mobile/tablet */}
@@ -108,7 +131,8 @@ export default async function BecomeVendorPage() {
 
                 {/* Fills what was ~950px of empty column beside the form. Desktop only:
                     it tracks a rail that does not exist below `lg`. */}
-                <ApplicationIndex />
+                {/* The index tracks the form's sections, which a guest has none of. */}
+                {!props.guest && <ApplicationIndex />}
                 <AfterSubmit className="mt-10 max-lg:hidden" />
               </div>
 
@@ -119,6 +143,15 @@ export default async function BecomeVendorPage() {
                   docked mobile action inside it, so the bar would sit against the column
                   rather than the viewport for the length of the entrance. */}
               <div className="motion-safe:animate-in fade-in-0 duration-500 [animation-delay:150ms] [animation-fill-mode:backwards]">
+                {props.guest ? (
+                  <>
+                    <GuestApplyPanel />
+                    {/* No docked bar for a guest, so the rail's desktop-only blocks show here on a phone. */}
+                    <AfterSubmit className="mt-10 lg:hidden" />
+                    <PartnerBenefits className="mt-10 lg:hidden" />
+                  </>
+                ) : (
+                <>
                 {/* The checkout stub plate: the order summary's gradient, edge and shadow,
                     with its cap in place of the eyebrow-and-subhead that doubled the rail's
                     own "Application" label. */}
@@ -134,10 +167,7 @@ export default async function BecomeVendorPage() {
 
                   <div className="p-6 md:p-8 pt-4 md:pt-5">
                     <VendorApplicationForm
-                      defaultValues={{
-                        businessEmail: profile?.email || "",
-                        businessPhone: profile?.phone || "",
-                      }}
+                      defaultValues={props.defaultValues}
                     />
                   </div>
                 </div>
@@ -150,8 +180,8 @@ export default async function BecomeVendorPage() {
                     Terms of Service
                   </Link>{" "}
                   and{" "}
-                  <Link href={secondDocument.href} className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] transition-colors">
-                    {secondDocument.label}
+                  <Link href={props.secondDocument.href} className="text-[var(--gold-text)] hover:text-[var(--gold-text-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)] transition-colors">
+                    {props.secondDocument.label}
                   </Link>
                 </p>
 
@@ -162,6 +192,8 @@ export default async function BecomeVendorPage() {
                 {/* Clears the docked action, which is out of flow below lg. Last thing on
                     the page, so nothing after the card can end up underneath it either. */}
                 <div aria-hidden="true" className="h-[152px] sm:h-[116px] lg:hidden" />
+                </>
+                )}
               </div>
             </div>
           </ApplicationProgressProvider>

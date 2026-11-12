@@ -320,7 +320,12 @@ export async function proxy(request: NextRequest) {
     // resolve, and the caller is left waiting on a response that never comes. The actions
     // on these paths reject unauthenticated callers themselves, so the form gets a real
     // error to show instead.
-    if (!user && !isSelfAuthenticatingActionPost) {
+    // A guest on /become-vendor gets the partner programme page with sign-in links in
+    // place of the form, so they see what they are signing up for before the login
+    // wall. Exact path only. The page renders no form for a guest, and the submit
+    // action rejects an unauthenticated caller itself.
+    const isPublicPartnerPage = request.nextUrl.pathname === '/become-vendor'
+    if (!user && !isSelfAuthenticatingActionPost && !isPublicPartnerPage) {
       const redirectUrl = new URL('/login', request.url)
       redirectUrl.searchParams.set('redirect', request.nextUrl.pathname)
       return redirectWith(redirectUrl)
