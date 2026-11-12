@@ -138,6 +138,7 @@ export async function proxy(request: NextRequest) {
     '/auth',            // auth callbacks (email confirm, etc.)
     '/unauthorized',
     '/robots.txt',   // crawl directives must stay reachable during maintenance
+    '/.well-known',  // security.txt: the security contact must stay reachable too
     '/sitemap.xml',  // sitemap must stay reachable during maintenance
   ]
 

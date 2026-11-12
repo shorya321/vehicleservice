@@ -1,8 +1,24 @@
 import type { NextConfig } from 'next'
+import { buildSecurityHeaders } from './lib/security/headers'
+import { getSiteUrl } from './lib/seo/site-url'
 
 const nextConfig: NextConfig = {
   output: 'standalone',
   reactStrictMode: true,
+  // The framework banner only helps someone fingerprint the stack.
+  poweredByHeader: false,
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: buildSecurityHeaders({
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+          siteUrl: getSiteUrl(),
+          isDev: process.env.NODE_ENV !== 'production',
+        }),
+      },
+    ]
+  },
   // nodemailer resolves its transport modules with dynamic require(), which bundlers
   // cannot trace statically. Bundling it produces confusing "cannot find module"
   // errors at runtime rather than at build time.
