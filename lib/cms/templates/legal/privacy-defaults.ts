@@ -11,13 +11,13 @@ export const DEFAULT_PRIVACY_CONTENT: LegalContent = {
     "title": "Privacy Policy",
     "intro": "How we collect, use, and safeguard your personal information when you book with us."
   },
-  "last_updated": "1 July 2026",
+  "last_updated": "12 November 2026",
   "sections": [
     {
       "id": "introduction",
       "title": "Introduction",
       "toc_label": "Introduction",
-      "body": "<p>Infinia Transfers operates a private airport and city transfer service in Dubai. When you search for a route, book a vehicle, or contact our concierge team, we handle certain personal information to deliver the service you expect from us.</p><p>This Privacy Policy explains what data we collect, why we collect it, who we share it with, and the choices available to you. It applies to our website, booking platform, and any communication between you and our team, whether by email, phone, or live chat.</p><p>Our approach to privacy is straightforward: collect only what we need and protect it properly.</p>"
+      "body": "<p>Infinia Transfers operates a private airport and city transfer service in Dubai. When you search for a route, book a vehicle, or contact our concierge team, we handle certain personal information to deliver the service you expect from us.</p><p>This Privacy Policy explains what data we collect, why we collect it, who we share it with, and the choices available to you. It applies to our website, booking platform, and any communication between you and our team, whether by email, phone, or live chat.</p><p>Infinia Transfers is the data controller for the personal data described in this policy. We process it in line with UAE Federal Decree-Law No. 45 of 2021 on the Protection of Personal Data. For any question about how your data is handled, email <a href=\"mailto:{{support_email}}\">{{support_email}}</a>.</p><p>Our approach to privacy is straightforward: collect only what we need and protect it properly.</p>"
     },
     {
       "id": "information-we-collect",

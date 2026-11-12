@@ -1,0 +1,7 @@
+-- Undo for 20261112113442_close_authenticated_notification_rpc_access.
+-- Restores logged-in users' direct EXECUTE on the four notification writers.
+-- Apply through Supabase MCP apply_migration only if something breaks.
+GRANT EXECUTE ON FUNCTION public.create_admin_notification(notification_category, text, text, text, jsonb, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.create_business_notification(uuid, notification_category, text, text, text, jsonb, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.create_customer_notification(uuid, notification_category, text, text, text, jsonb, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.create_vendor_notification(uuid, notification_category, text, text, text, jsonb, text) TO authenticated;
