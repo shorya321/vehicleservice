@@ -118,6 +118,12 @@ export interface VendorBookingDetail {
   dropoffAddress: string
   fromLocationName: string | null
   toLocationName: string | null
+  /** Google Maps link to the exact pickup pin, when the location has coordinates. */
+  pickupMapUrl: string | null
+  /** Google Maps link to the exact drop-off pin; null for hourly hire. */
+  dropoffMapUrl: string | null
+  /** Customer-entered flight number, when given. */
+  flightNumber: string | null
   /**
    * Hourly hire or leg of a trip, e.g. "Hourly hire: Half day, 5 hours, as directed" or
    * "Round trip, return journey". Null for a plain transfer.

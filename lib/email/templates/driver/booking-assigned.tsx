@@ -21,6 +21,9 @@ interface DriverBookingAssignedEmailProps {
   pickupTime: string;
   vendorName: string;
   tripLabel?: string;
+  pickupMapUrl?: string | null;
+  dropoffMapUrl?: string | null;
+  flightNumber?: string | null;
 }
 
 export const DriverBookingAssignedEmail = ({
@@ -36,6 +39,9 @@ export const DriverBookingAssignedEmail = ({
   pickupTime,
   vendorName,
   tripLabel,
+  pickupMapUrl,
+  dropoffMapUrl,
+  flightNumber,
 }: DriverBookingAssignedEmailProps) => {
   return (
     <EmailLayout
@@ -66,6 +72,17 @@ export const DriverBookingAssignedEmail = ({
         <DetailRow label="Vehicle Category">{vehicleCategory}</DetailRow>
         <DetailRow label="Vehicle Type">{vehicleType}</DetailRow>
         {tripLabel && <DetailRow label="Service">{tripLabel}</DetailRow>}
+        {flightNumber && <DetailRow label="Flight">{flightNumber}</DetailRow>}
+        {pickupMapUrl && (
+          <DetailRow label="Pickup map">
+            <a href={pickupMapUrl} style={emailStyles.link}>Open in Google Maps</a>
+          </DetailRow>
+        )}
+        {dropoffMapUrl && (
+          <DetailRow label="Drop-off map">
+            <a href={dropoffMapUrl} style={emailStyles.link}>Open in Google Maps</a>
+          </DetailRow>
+        )}
       </DetailsSection>
 
       <InfoBox type="info" title="Action Required">

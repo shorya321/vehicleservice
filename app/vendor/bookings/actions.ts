@@ -114,6 +114,12 @@ export interface VendorBooking {
     trip_number: string | null
     pickup_datetime: string
     pickup_address: string
+    /** Google Maps link to the exact pickup pin, when known. */
+    pickup_map_url: string | null
+    /** Google Maps link to the exact drop-off pin, when known. */
+    dropoff_map_url: string | null
+    /** Customer-entered flight number, when given. */
+    flight_number: string | null
     dropoff_address: string
     passenger_count: number
     total_price: number
@@ -302,6 +308,9 @@ export async function getVendorAssignedBookings(filters?: BookingFilters) {
           pickup_datetime: booking.pickupDatetime,
           pickup_address: booking.pickupAddress || '',
           dropoff_address: booking.dropoffAddress || '',
+          pickup_map_url: booking.pickupMapUrl,
+          dropoff_map_url: booking.dropoffMapUrl,
+          flight_number: booking.flightNumber,
           passenger_count: booking.passengerCount,
           total_price: booking.totalPrice,
           booking_status: booking.bookingStatus,
@@ -662,6 +671,9 @@ export async function acceptAndAssignResources(
         pickupDate: format(pickupDt, 'MMMM d, yyyy'),
         pickupTime: format(pickupDt, 'h:mm a'),
         vendorName: vendorInfo?.business_name || 'Your Company',
+        pickupMapUrl: booking.pickupMapUrl,
+        dropoffMapUrl: booking.dropoffMapUrl,
+        flightNumber: booking.flightNumber,
         tripLabel:
           tripAssignmentLabel(
             {
@@ -1579,6 +1591,9 @@ export async function getVendorBookingDetail(
     dropoffAddress: booking.dropoffAddress || '',
     fromLocationName: booking.fromLocations?.name ?? null,
     toLocationName: booking.toLocations?.name ?? null,
+    pickupMapUrl: booking.pickupMapUrl,
+    dropoffMapUrl: booking.dropoffMapUrl,
+    flightNumber: booking.flightNumber,
     tripLabel: tripAssignmentLabel(
       {
         trip_type: booking.tripType,

@@ -19,6 +19,7 @@ export interface TripContactValues {
   email: string
   phone: string
   specialRequests?: string
+  flightNumber?: string
   /** Honeypot; see PassengerInfoSection. */
   website?: string
   selectedAddons?: Array<{
@@ -131,6 +132,7 @@ export function useTripBooking({
       email: values.email,
       phone: values.phone,
       specialRequests: values.specialRequests,
+      flightNumber: values.flightNumber,
       website: values.website,
       agreeToTerms: true as const,
       paymentMethod: 'card' as const,

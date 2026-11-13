@@ -36,7 +36,9 @@ import {
   UserCheck,
   UserPlus,
   AlertTriangle,
-  History
+  History,
+  ExternalLink,
+  Plane
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { toBookingTz } from '@/lib/utils/timezone'
@@ -305,6 +307,23 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                   {booking.from_zone?.name && (
                     <p className="text-sm text-muted-foreground">Zone: {booking.from_zone.name}</p>
                   )}
+                  {booking.pickup_map_url && (
+                    <a
+                      href={booking.pickup_map_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-2 hover:underline"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      Open in Google Maps
+                    </a>
+                  )}
+                  {booking.flight_number && (
+                    <p className="inline-flex items-center gap-1 text-sm">
+                      <Plane className="h-3.5 w-3.5 text-muted-foreground" />
+                      Flight <span className="font-medium">{booking.flight_number}</span>
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -329,6 +348,17 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                     <p className="font-medium">{booking.dropoff_address}</p>
                     {booking.to_zone?.name && (
                       <p className="text-sm text-muted-foreground">Zone: {booking.to_zone.name}</p>
+                    )}
+                    {booking.dropoff_map_url && (
+                      <a
+                        href={booking.dropoff_map_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-2 hover:underline"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        Open in Google Maps
+                      </a>
                     )}
                   </div>
                 )}

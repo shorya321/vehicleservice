@@ -18,6 +18,7 @@ import { Database } from '@/lib/supabase/types';
 import { bookingWallClockToUtc, toBookingTz } from '@/lib/utils/timezone';
 import { addDays, format } from 'date-fns';
 import { groupTripRows } from '@/lib/trips/group-list-rows';
+import { googleMapsUrl, type MapPoint } from '@/lib/maps/google-maps-link'
 
 export type BookingType = 'customer' | 'business';
 
@@ -151,6 +152,12 @@ export interface UnifiedBooking {
   groupNumber: string | null;
   legIndex: number | null;
   legCount: number | null;
+  /** Google Maps link to the exact pickup pin; null when the location has no coordinates. */
+  pickupMapUrl: string | null;
+  /** Google Maps link to the exact drop-off pin; null for hourly hire or missing coordinates. */
+  dropoffMapUrl: string | null;
+  /** Customer-entered flight number (customer bookings only). */
+  flightNumber: string | null;
   // Related data (populated via joins)
   fromLocations?: {
     name: string;
@@ -182,6 +189,21 @@ export interface UnifiedBooking {
  * opinion, and the reader just renders a blank. The vendor bookings list lost its whole
  * vehicle-category badge to this for as long as the badge has existed.
  */
+/**
+ * The aliased location embed is not in the generated types (see above), so read the pin
+ * fields defensively instead of trusting the inferred type.
+ */
+function toMapPoint(row: unknown): MapPoint | null {
+  if (!row || typeof row !== 'object') return null
+  const r = row as Record<string, unknown>
+  const num = (v: unknown) => (typeof v === 'number' || typeof v === 'string' ? v : null)
+  return {
+    latitude: num(r.latitude),
+    longitude: num(r.longitude),
+    google_place_id: typeof r.google_place_id === 'string' ? r.google_place_id : null,
+  }
+}
+
 function mapLocationEmbed(row: any): UnifiedBooking['fromLocations'] {
   if (!row) return undefined;
   return { name: row.name, city: row.city ?? null };
@@ -254,8 +276,8 @@ export async function getUnifiedBookingDetails(
         profiles!bookings_customer_id_fkey(full_name, email, phone),
         booking_passengers(first_name, last_name, email, phone, is_primary),
         booking_group:booking_group_id(group_number, leg_count),
-        from_locations:from_location_id(name, city),
-        to_locations:to_location_id(name, city),
+        from_locations:from_location_id(name, city, latitude, longitude, google_place_id),
+        to_locations:to_location_id(name, city, latitude, longitude, google_place_id),
         vehicle_types:vehicle_type_id(
           name,
           description,
@@ -298,6 +320,9 @@ export async function getUnifiedBookingDetails(
       createdAt: data.created_at,
       updatedAt: data.updated_at,
       ...customerTripFields(data),
+      pickupMapUrl: googleMapsUrl(toMapPoint(data.from_locations)),
+      dropoffMapUrl: googleMapsUrl(toMapPoint(data.to_locations)),
+      flightNumber: data.flight_number ?? null,
       fromLocations: mapLocationEmbed(data.from_locations),
       toLocations: mapLocationEmbed(data.to_locations),
       vehicleTypes: mapVehicleTypeEmbed(data.vehicle_types),
@@ -313,8 +338,8 @@ export async function getUnifiedBookingDetails(
       .select(`
         *,
         booking_group:booking_group_id(group_number, leg_count),
-        from_locations:from_location_id(name, city),
-        to_locations:to_location_id(name, city),
+        from_locations:from_location_id(name, city, latitude, longitude, google_place_id),
+        to_locations:to_location_id(name, city, latitude, longitude, google_place_id),
         vehicle_types:vehicle_type_id(
           name,
           description,
@@ -359,6 +384,10 @@ export async function getUnifiedBookingDetails(
       createdAt: data.created_at,
       updatedAt: data.updated_at,
       ...customerTripFields(data),
+      pickupMapUrl: googleMapsUrl(toMapPoint(data.from_locations)),
+      dropoffMapUrl: googleMapsUrl(toMapPoint(data.to_locations)),
+      // Business bookings have no flight number field.
+      flightNumber: null,
       fromLocations: mapLocationEmbed(data.from_locations),
       toLocations: mapLocationEmbed(data.to_locations),
       vehicleTypes: mapVehicleTypeEmbed(data.vehicle_types),

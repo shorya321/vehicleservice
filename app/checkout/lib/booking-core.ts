@@ -41,6 +41,8 @@ export const tripContactSchema = z.object({
   email: z.string().email(),
   phone: phoneSchema,
   specialRequests: z.string().max(2000).optional(),
+  /** Optional, as typed by the customer; normalised before it is stored. */
+  flightNumber: z.string().max(40).optional(),
   agreeToTerms: z.literal(true),
   paymentMethod: z.literal('card'),
   selectedAddons: z.array(tripAddonSchema).max(20).optional(),

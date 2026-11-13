@@ -17,6 +17,7 @@ import { sendBookingDatetimeModifiedEmail } from '@/lib/email/services/vendor-em
 import { sendBusinessCustomerDatetimeChangedEmail } from '@/lib/business/email/services/business-emails';
 import { notifyBusinessBookingRescheduled } from '@/lib/business/email/notify';
 import { getAppUrl } from '@/lib/email/config';
+import { googleMapsUrl, type MapPoint } from '@/lib/maps/google-maps-link';
 import {
   buildBusinessSideRecipients,
   loadBookingCreatorById,
@@ -93,7 +94,8 @@ export const PATCH = requireBusinessAuth(
           booking_group_id,
           leg_index,
           from_location_id,
-          to_location_id
+          to_location_id,
+          from_location:locations!from_location_id(latitude, longitude, google_place_id)
         `
         )
         .eq('id', bookingId)
@@ -219,6 +221,7 @@ export const PATCH = requireBusinessAuth(
             newDatetime: newPickupDatetime,
             modificationReason: reason,
             bookingUrl: `${getAppUrl()}/vendor/bookings/${assignment.id}`,
+            pickupMapUrl: googleMapsUrl(booking.from_location as MapPoint | null),
           });
         } catch (emailError) {
           console.error('Failed to send vendor notification email:', emailError);

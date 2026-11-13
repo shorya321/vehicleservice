@@ -102,6 +102,7 @@ export async function sendBookingDatetimeModifiedEmail(
       newDatetime: data.newDatetime,
       modificationReason: data.modificationReason,
       bookingUrl: data.bookingUrl,
+      pickupMapUrl: data.pickupMapUrl ?? null,
     },
   });
 }
@@ -130,6 +131,9 @@ export async function sendBookingAssignmentEmail(
       pickupTime: data.pickupTime,
       bookingUrl: data.bookingUrl,
       tripLabel: data.tripLabel,
+      pickupMapUrl: data.pickupMapUrl ?? null,
+      dropoffMapUrl: data.dropoffMapUrl ?? null,
+      flightNumber: data.flightNumber ?? null,
     },
   });
 }

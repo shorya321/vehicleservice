@@ -34,7 +34,8 @@ import {
   User,
   Phone,
   UserCheck,
-  Clock
+  Clock,
+  Plane
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { format } from 'date-fns'
@@ -214,12 +215,42 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                     <div className="space-y-1 text-sm max-w-[140px]">
                       <div className="flex items-start gap-1">
                         <MapPin className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <span className="truncate" title={assignment.booking?.pickup_address ?? undefined}>{assignment.booking?.pickup_address || 'N/A'}</span>
+                        {assignment.booking?.pickup_map_url ? (
+                          <a
+                            href={assignment.booking.pickup_map_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="truncate underline decoration-dotted underline-offset-2 hover:text-primary"
+                            title={`${assignment.booking.pickup_address || ''} (open in Google Maps)`}
+                          >
+                            {assignment.booking.pickup_address || 'N/A'}
+                          </a>
+                        ) : (
+                          <span className="truncate" title={assignment.booking?.pickup_address ?? undefined}>{assignment.booking?.pickup_address || 'N/A'}</span>
+                        )}
                       </div>
                       <div className="flex items-start gap-1">
                         <MapPin className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <span className="truncate" title={assignment.booking?.dropoff_address ?? undefined}>{assignment.booking?.dropoff_address || 'N/A'}</span>
+                        {assignment.booking?.dropoff_map_url ? (
+                          <a
+                            href={assignment.booking.dropoff_map_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="truncate underline decoration-dotted underline-offset-2 hover:text-primary"
+                            title={`${assignment.booking.dropoff_address || ''} (open in Google Maps)`}
+                          >
+                            {assignment.booking.dropoff_address || 'N/A'}
+                          </a>
+                        ) : (
+                          <span className="truncate" title={assignment.booking?.dropoff_address ?? undefined}>{assignment.booking?.dropoff_address || 'N/A'}</span>
+                        )}
                       </div>
+                      {assignment.booking?.flight_number && (
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <Plane className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">Flight {assignment.booking.flight_number}</span>
+                        </div>
+                      )}
                       {assignment.booking?.trip_label && (
                         <StatusPill tone="neutral" className="h-auto whitespace-normal py-0.5">
                           {assignment.booking.trip_label}

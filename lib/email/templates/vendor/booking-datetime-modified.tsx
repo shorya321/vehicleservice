@@ -15,6 +15,7 @@ interface BookingDatetimeModifiedEmailProps {
   tripNumber?: string;
   customerName: string;
   pickupAddress: string;
+  pickupMapUrl?: string | null;
   previousDatetime: string;
   newDatetime: string;
   modificationReason?: string;
@@ -35,6 +36,7 @@ export const BookingDatetimeModifiedEmail = ({
   tripNumber,
   customerName,
   pickupAddress,
+  pickupMapUrl,
   previousDatetime,
   newDatetime,
   modificationReason,
@@ -72,6 +74,11 @@ export const BookingDatetimeModifiedEmail = ({
         <DetailRow label="Trip #">{tripNumber || bookingNumber}</DetailRow>
         <DetailRow label="Customer">{customerName}</DetailRow>
         <DetailRow label="Pickup Location">{pickupAddress}</DetailRow>
+        {pickupMapUrl && (
+          <DetailRow label="Pickup map">
+            <a href={pickupMapUrl} style={emailStyles.link}>Open in Google Maps</a>
+          </DetailRow>
+        )}
       </DetailsSection>
 
       {modificationReason && (

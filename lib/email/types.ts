@@ -197,6 +197,12 @@ export interface BookingAssignmentEmailData {
   pickupTime: string;
   /** Hourly hire or trip leg, e.g. "Hourly hire: Half day, 5 hours, as directed". */
   tripLabel?: string;
+  /** Google Maps link to the exact pickup pin, when the location has coordinates. */
+  pickupMapUrl?: string | null;
+  /** Google Maps link to the exact drop-off pin (none for hourly "as directed"). */
+  dropoffMapUrl?: string | null;
+  /** Customer-entered flight number, when given. */
+  flightNumber?: string | null;
 }
 
 export interface BookingUnassignmentEmailData {
@@ -293,6 +299,8 @@ export interface BookingDatetimeModifiedEmailData {
   newDatetime: string;
   modificationReason?: string;
   bookingUrl: string;
+  /** Google Maps link to the exact pickup pin, when the location has coordinates. */
+  pickupMapUrl?: string | null;
 }
 
 // Driver notification emails
@@ -311,6 +319,12 @@ export interface DriverBookingAssignmentEmailData {
   vendorName: string;
   /** Hourly hire or trip leg, e.g. "Round trip, return journey". */
   tripLabel?: string;
+  /** Google Maps link to the exact pickup pin, when the location has coordinates. */
+  pickupMapUrl?: string | null;
+  /** Google Maps link to the exact drop-off pin (none for hourly "as directed"). */
+  dropoffMapUrl?: string | null;
+  /** Customer-entered flight number, when given. */
+  flightNumber?: string | null;
 }
 
 export interface DriverBookingUnassignmentEmailData {

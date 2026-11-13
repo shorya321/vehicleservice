@@ -8,11 +8,13 @@ import {
   Car,
   CheckCircle,
   Clock,
+  ExternalLink,
   History,
   Luggage,
   Mail,
   MapPin,
   Phone,
+  Plane,
   Users,
   UserCheck,
   XCircle,
@@ -195,6 +197,23 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                       {booking.pickupAddress || 'No address recorded'}
                     </p>
                   )}
+                  {booking.pickupMapUrl && (
+                    <a
+                      href={booking.pickupMapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-2 hover:underline"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      Open in Google Maps
+                    </a>
+                  )}
+                  {booking.flightNumber && (
+                    <p className="inline-flex items-center gap-1 text-sm">
+                      <Plane className="h-3.5 w-3.5 text-muted-foreground" />
+                      Flight <span className="font-medium">{booking.flightNumber}</span>
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -213,6 +232,17 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                     >
                       {booking.dropoffAddress || 'No address recorded'}
                     </p>
+                  )}
+                  {booking.dropoffMapUrl && (
+                    <a
+                      href={booking.dropoffMapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-2 hover:underline"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      Open in Google Maps
+                    </a>
                   )}
                 </div>
               </div>

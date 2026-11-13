@@ -27,6 +27,7 @@ import {
   type GroupBookingInput,
   type HourlyBookingInput,
 } from './lib/booking-core'
+import { normalizeFlightNumber } from '@/lib/maps/google-maps-link'
 
 /**
  * Booking actions for hourly hire (this file) and grouped trips. They return a
@@ -123,6 +124,7 @@ export async function createHourlyBooking(input: HourlyBookingInput): Promise<Tr
         booking_status: 'pending',
         payment_status: 'processing',
         customer_notes: data.specialRequests?.trim() || null,
+        flight_number: normalizeFlightNumber(data.flightNumber),
       })
       .select('id, booking_number')
       .single()
@@ -323,6 +325,8 @@ export async function createGroupBooking(input: GroupBookingInput): Promise<Trip
         booking_status: 'pending',
         payment_status: 'processing',
         customer_notes: notes,
+        // One flight number is collected per trip; it belongs to the first pickup.
+        flight_number: index === 0 ? normalizeFlightNumber(data.flightNumber) : null,
       }
     })
 

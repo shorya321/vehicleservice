@@ -764,6 +764,7 @@ export type Database = {
           customer_id: string | null
           customer_notes: string | null
           dropoff_address: string
+          flight_number: string | null
           from_location_id: string | null
           from_zone_id: string | null
           guest_email: string | null
@@ -813,6 +814,7 @@ export type Database = {
           customer_id?: string | null
           customer_notes?: string | null
           dropoff_address: string
+          flight_number?: string | null
           from_location_id?: string | null
           from_zone_id?: string | null
           guest_email?: string | null
@@ -862,6 +864,7 @@ export type Database = {
           customer_id?: string | null
           customer_notes?: string | null
           dropoff_address?: string
+          flight_number?: string | null
           from_location_id?: string | null
           from_zone_id?: string | null
           guest_email?: string | null

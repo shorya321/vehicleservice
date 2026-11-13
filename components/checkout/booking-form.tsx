@@ -275,6 +275,7 @@ export function BookingForm({
         email: data.email,
         phone: data.phone,
         specialRequests: data.specialRequests,
+        flightNumber: data.flightNumber,
         website: data.website,
         basePrice: basePrice,
         agreeToTerms: data.agreeToTerms,

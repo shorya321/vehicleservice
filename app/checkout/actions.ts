@@ -12,6 +12,7 @@ import type { TablesInsert } from '@/lib/supabase/types'
 import { grantGuestAccess } from '@/lib/security/guest-access'
 import { signatureSubject } from '@/lib/security/guest-checkout'
 import { newBookingNumber, ownerColumns, resolveGuestActor, type BookingActor } from './lib/booking-core'
+import { normalizeFlightNumber } from '@/lib/maps/google-maps-link'
 
 export async function getLocationDetails(locationId: string) {
   const supabase = await createClient()
@@ -272,6 +273,8 @@ const bookingSchema = z.object({
   email: z.string().email(),
   phone: phoneSchema,
   specialRequests: z.string().optional(),
+  /** Optional, as typed by the customer; normalised before it is stored. */
+  flightNumber: z.string().max(40).optional(),
   basePrice: z.number().min(0),
   agreeToTerms: z.boolean().refine(val => val === true, {
     message: 'You must agree to the terms and conditions'
@@ -474,7 +477,8 @@ export async function createBooking(formData: BookingFormData) {
       currency: 'AED', // Charge currency is always AED (PaymentIntent hardcodes 'aed')
       booking_status: 'pending',
       payment_status: 'processing',
-      customer_notes: validatedData.specialRequests || null
+      customer_notes: validatedData.specialRequests || null,
+      flight_number: normalizeFlightNumber(validatedData.flightNumber),
       // trip_number is filled by the BEFORE INSERT trigger, so it is not sent.
     } as TablesInsert<'bookings'>)
     .select()

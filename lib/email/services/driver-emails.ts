@@ -39,6 +39,9 @@ export async function sendDriverBookingAssignmentEmail(
       pickupTime: data.pickupTime,
       vendorName: data.vendorName,
       tripLabel: data.tripLabel,
+      pickupMapUrl: data.pickupMapUrl ?? null,
+      dropoffMapUrl: data.dropoffMapUrl ?? null,
+      flightNumber: data.flightNumber ?? null,
     },
   });
 }

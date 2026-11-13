@@ -22,6 +22,9 @@ interface BookingAssignedEmailProps {
   pickupTime: string;
   bookingUrl: string;
   tripLabel?: string;
+  pickupMapUrl?: string | null;
+  dropoffMapUrl?: string | null;
+  flightNumber?: string | null;
 }
 
 export const BookingAssignedEmail = ({
@@ -37,6 +40,9 @@ export const BookingAssignedEmail = ({
   pickupTime,
   bookingUrl,
   tripLabel,
+  pickupMapUrl,
+  dropoffMapUrl,
+  flightNumber,
 }: BookingAssignedEmailProps) => {
   return (
     <EmailLayout
@@ -68,6 +74,17 @@ export const BookingAssignedEmail = ({
         <DetailRow label="Vehicle Category">{vehicleCategory}</DetailRow>
         <DetailRow label="Vehicle Type">{vehicleType}</DetailRow>
         {tripLabel && <DetailRow label="Service">{tripLabel}</DetailRow>}
+        {flightNumber && <DetailRow label="Flight">{flightNumber}</DetailRow>}
+        {pickupMapUrl && (
+          <DetailRow label="Pickup map">
+            <a href={pickupMapUrl} style={emailStyles.link}>Open in Google Maps</a>
+          </DetailRow>
+        )}
+        {dropoffMapUrl && (
+          <DetailRow label="Drop-off map">
+            <a href={dropoffMapUrl} style={emailStyles.link}>Open in Google Maps</a>
+          </DetailRow>
+        )}
       </DetailsSection>
 
       <Button href={bookingUrl}>View My Bookings</Button>

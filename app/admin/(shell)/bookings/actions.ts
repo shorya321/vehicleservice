@@ -38,6 +38,7 @@ import { vendorAssignBlockedReason } from '@/lib/bookings/unpaid-expiry'
 import { customerPaymentBlockedReason, customerStatusBlockedReason, customerTripPaidBlockedReason } from '@/lib/bookings/admin-booking-rules'
 import { resolveCustomerDisplayName } from '@/lib/bookings/customer-display-name'
 import { syncGroupAfterCancellation } from '@/app/account/lib/cancellation'
+import { googleMapsUrl } from '@/lib/maps/google-maps-link'
 
 export interface BookingFilters {
   search?: string
@@ -223,6 +224,33 @@ export async function getBookings(filters: BookingFilters = {}) {
  * @param bookingId - ID of the booking
  * @param bookingType - Type of booking ('customer' or 'business')
  */
+/**
+ * Google Maps links to the exact pickup and drop-off pins, so admin sees the same
+ * point the vendor and driver get. Null when a location has no coordinates or the
+ * trip has no destination (hourly hire). Never throws: a failed lookup only hides the links.
+ */
+async function locationMapUrls(
+  adminClient: ReturnType<typeof createAdminClient>,
+  fromLocationId: string | null,
+  toLocationId: string | null
+): Promise<{ pickup_map_url: string | null; dropoff_map_url: string | null }> {
+  const ids = [fromLocationId, toLocationId].filter((id): id is string => Boolean(id))
+  if (ids.length === 0) return { pickup_map_url: null, dropoff_map_url: null }
+  const { data, error } = await adminClient
+    .from('locations')
+    .select('id, latitude, longitude, google_place_id')
+    .in('id', ids)
+  if (error) {
+    console.error('Failed to load location pins for booking detail:', error)
+    return { pickup_map_url: null, dropoff_map_url: null }
+  }
+  const byId = new Map((data ?? []).map((row) => [row.id, row]))
+  return {
+    pickup_map_url: fromLocationId ? googleMapsUrl(byId.get(fromLocationId)) : null,
+    dropoff_map_url: toLocationId ? googleMapsUrl(byId.get(toLocationId)) : null,
+  }
+}
+
 export async function getBookingDetailsByType(bookingId: string, bookingType: BookingType) {
   return getUnifiedBookingDetails(
     bookingType === 'customer' ? bookingId : undefined,
@@ -378,8 +406,15 @@ export async function getBookingDetails(bookingId: string) {
       }
     }
 
+    const customerMaps = await locationMapUrls(
+      adminClient,
+      customerBooking.from_location_id,
+      customerBooking.to_location_id
+    )
+
     return {
       ...customerBooking,
+      ...customerMaps,
       bookingType: 'customer' as const,
       booking_assignments: assignments,
       booking_passengers: passengers || [],
@@ -540,8 +575,15 @@ export async function getBookingDetails(bookingId: string) {
     }
   }
 
+  const businessMaps = await locationMapUrls(
+    adminClient,
+    businessBooking.from_location_id,
+    businessBooking.to_location_id
+  )
+
   return {
     ...businessBooking,
+    ...businessMaps,
     bookingType: 'business' as const,
     trip_group: businessTripGroup,
     booking_assignments: businessAssignments,
@@ -1676,6 +1718,9 @@ export async function assignBookingToVendor(
           pickupTime: bookingDetails.pickupTime,
           bookingUrl: `${getAppUrl()}/vendor/bookings`,
           tripLabel: bookingDetails.tripLabel ?? undefined,
+          pickupMapUrl: bookingDetails.pickupMapUrl,
+          dropoffMapUrl: bookingDetails.dropoffMapUrl,
+          flightNumber: bookingDetails.flightNumber,
         })
       }
     }
@@ -1731,11 +1776,14 @@ async function getBookingDetailsForEmail(bookingId: string, bookingType: Booking
   let vehicleTypeId = ''
   let customerName = 'Customer'
   let tripLabel: string | null = null
+  let pickupMapUrl: string | null = null
+  let dropoffMapUrl: string | null = null
+  let flightNumber: string | null = null
 
   if (bookingType === 'business') {
     const { data: booking } = await adminClient
       .from('business_bookings')
-      .select('booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime, vehicle_type_id, customer_name, trip_type, hourly_package, duration_hours, included_km, leg_index, booking_group:booking_group_id(leg_count)')
+      .select('booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime, vehicle_type_id, customer_name, trip_type, hourly_package, duration_hours, included_km, leg_index, booking_group:booking_group_id(leg_count), from_location:locations!from_location_id(latitude, longitude, google_place_id), to_location:locations!to_location_id(latitude, longitude, google_place_id)')
       .eq('id', bookingId)
       .single()
     if (!booking) return null
@@ -1748,14 +1796,19 @@ async function getBookingDetailsForEmail(bookingId: string, bookingType: Booking
     customerName = booking.customer_name || 'Customer'
     // Business rows carry the same trip columns, so the vendor sees the same label either way.
     tripLabel = tripAssignmentLabel(booking, booking.booking_group?.leg_count ?? null)
+    pickupMapUrl = googleMapsUrl(booking.from_location)
+    dropoffMapUrl = googleMapsUrl(booking.to_location)
   } else {
     const { data: booking } = await adminClient
       .from('bookings')
-      .select('booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime, vehicle_type_id, customer_id, trip_type, hourly_package, duration_hours, included_km, leg_index, booking_group:booking_group_id(leg_count)')
+      .select('booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime, vehicle_type_id, customer_id, trip_type, hourly_package, duration_hours, included_km, leg_index, flight_number, booking_group:booking_group_id(leg_count), from_location:locations!from_location_id(latitude, longitude, google_place_id), to_location:locations!to_location_id(latitude, longitude, google_place_id)')
       .eq('id', bookingId)
       .single()
     if (!booking) return null
     tripLabel = tripAssignmentLabel(booking, booking.booking_group?.leg_count ?? null)
+    pickupMapUrl = googleMapsUrl(booking.from_location)
+    dropoffMapUrl = googleMapsUrl(booking.to_location)
+    flightNumber = booking.flight_number ?? null
     bookingNumber = booking.booking_number
     tripNumber = booking.trip_number || ''
     pickupAddress = booking.pickup_address || 'TBD'
@@ -1802,6 +1855,9 @@ async function getBookingDetailsForEmail(bookingId: string, bookingType: Booking
     pickupDate: format(pickupDatetime, 'MMMM d, yyyy'),
     pickupTime: format(pickupDatetime, 'h:mm a'),
     tripLabel,
+    pickupMapUrl,
+    dropoffMapUrl,
+    flightNumber,
   }
 }
 
