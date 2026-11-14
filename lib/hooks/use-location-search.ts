@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createSearchClient } from '@/lib/supabase/search-client'
 import { useDebounce } from '@/lib/hooks/use-debounce'
+import { groupLocationResults } from '@/lib/search/group-location-results'
 import type {
   Location,
   LocationSearchResult,
@@ -89,27 +90,6 @@ function loadPopularLocations(
     })
   }
   return popularLocationsPromise
-}
-
-function groupByType(results: LocationSearchResult[]): GroupedLocationResults[] {
-  const groups = new Map<string, GroupedLocationResults>()
-
-  for (const result of results) {
-    const label = result.location_type_label
-    const existing = groups.get(label)
-    if (existing) {
-      existing.locations.push(result)
-    } else {
-      groups.set(label, {
-        label,
-        icon: result.location_type_icon,
-        sortOrder: result.location_type_sort,
-        locations: [result],
-      })
-    }
-  }
-
-  return Array.from(groups.values()).sort((a, b) => a.sortOrder - b.sortOrder)
 }
 
 export interface UseLocationSearchReturn {
@@ -279,8 +259,8 @@ export function useLocationSearch(
   }, [debouncedQuery, supabase, retryTrigger])
 
 
-  const groupedResults = useMemo(() => groupByType(flatResults), [flatResults])
-  const popularGroups = useMemo(() => groupByType(popularResults), [popularResults])
+  const groupedResults = useMemo(() => groupLocationResults(flatResults), [flatResults])
+  const popularGroups = useMemo(() => groupLocationResults(popularResults), [popularResults])
 
   const selectLocation = useCallback((location: LocationSearchResult) => {
     saveRecentSearch(location)
