@@ -12,18 +12,53 @@ const CATALOG_REVALIDATE_SECONDS = 300
 /** Purged when an admin changes what the home catalog shows (vehicle types). */
 export const HOME_CATALOG_TAG = 'home-catalog'
 
+/**
+ * get_popular_routes() defaults to 10 rows ordered by route_name, so once more
+ * than ten routes are marked popular the alphabet decided which ones reached the
+ * home page. Ask for all of them; the rail caps what it renders.
+ */
+const POPULAR_ROUTES_LIMIT = 100
+
+type PopularRouteRow = Database['public']['Functions']['get_popular_routes']['Returns'][number]
+
+/**
+ * Oldest popular routes first, so adding new ones appends to the home rail
+ * instead of reshuffling the cards already there. The RPC's name order is kept
+ * for routes created at the same moment (Array.prototype.sort is stable). If
+ * the dates cannot be read, the RPC order is used unchanged.
+ */
+async function orderByCreation(
+  supabase: Client,
+  rows: PopularRouteRow[]
+): Promise<PopularRouteRow[]> {
+  const { data, error } = await supabase
+    .from('routes')
+    .select('id, created_at')
+    .in('id', rows.map(r => r.id))
+
+  if (error || !data) {
+    console.warn('Popular route order unavailable:', error?.message ?? 'no rows')
+    return rows
+  }
+
+  const createdAt = new Map(data.map(r => [r.id, r.created_at ? Date.parse(r.created_at) : 0]))
+  return [...rows].sort((a, b) => (createdAt.get(a.id) ?? 0) - (createdAt.get(b.id) ?? 0))
+}
+
 export async function fetchPopularRoutes(supabase: Client): Promise<PopularRoute[]> {
   // Use RPC function to get popular routes with all data
   // This bypasses RLS issues with nested joins
-  const { data: routes, error } = await supabase
-    .rpc('get_popular_routes')
+  const { data: rpcRoutes, error } = await supabase
+    .rpc('get_popular_routes', { limit_count: POPULAR_ROUTES_LIMIT })
 
   if (error) {
     console.warn('Popular routes unavailable:', error.message || error.code || 'Unknown error')
     return []
   }
 
-  if (!routes || routes.length === 0) return []
+  if (!rpcRoutes || rpcRoutes.length === 0) return []
+
+  const routes = await orderByCreation(supabase, rpcRoutes)
 
   // Get slugs for all origin/destination locations
   const locationIds = Array.from(

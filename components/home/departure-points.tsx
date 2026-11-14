@@ -11,11 +11,13 @@ import type { SectionHeader } from '@/lib/cms/fields'
  * which collapse to seven distinct journeys.
  *
  * The limit that remains is about the rail staying scannable rather than about
- * rows and columns. Collapsing still happens before the slice: doing it after
+ * rows and columns. It was 10 while the RPC also returned only 10 rows; with
+ * airport and inter-emirate routes added (19 corridors in Nov 2026) the rail
+ * pages through all of them, oldest first, so new routes append at the end. Collapsing still happens before the slice: doing it after
  * would let a reversible pair occupy two slots and then drop a distinct corridor
  * that would otherwise have made the cut.
  */
-const MAX_CORRIDORS = 10
+const MAX_CORRIDORS = 24
 
 interface DeparturePointsProps {
   todayDate: string
