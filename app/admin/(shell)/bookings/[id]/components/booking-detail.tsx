@@ -319,7 +319,7 @@ export function BookingDetail({ booking }: BookingDetailProps) {
                     </a>
                   )}
                   {booking.flight_number && (
-                    <p className="inline-flex items-center gap-1 text-sm">
+                    <p className="flex items-center gap-1 text-sm">
                       <Plane className="h-3.5 w-3.5 text-muted-foreground" />
                       Flight <span className="font-medium">{booking.flight_number}</span>
                     </p>
