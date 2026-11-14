@@ -256,26 +256,34 @@ export async function deleteZone(id: string) {
   return { success: true }
 }
 
+const PRICING_PAGE_SIZE = 1000
+
 export async function getZonePricing(): Promise<ZonePricingCell[]> {
   const denied = await adminDenial()
   if (denied) return []
 
   const supabase = await createClient()
 
-  // The caller builds a `from|to -> price` Map, so order is irrelevant and the
-  // zone embeds are unused. Range is explicit because PostgREST silently caps
-  // an unbounded select at ~1000 rows, which the N x N matrix will outgrow.
-  const { data, error } = await supabase
-    .from('zone_pricing')
-    .select('from_zone_id, to_zone_id, base_price')
-    .range(0, 9999)
+  // The caller builds a `from|to -> price` Map. PostgREST caps every response
+  // at its max-rows setting (1000) even when a larger .range() is requested,
+  // and the N x N matrix is far past that, so read it page by page in a stable
+  // order. A short page means the end of the table.
+  const rows: ZonePricingCell[] = []
+  for (let from = 0; ; from += PRICING_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from('zone_pricing')
+      .select('from_zone_id, to_zone_id, base_price')
+      .order('id')
+      .range(from, from + PRICING_PAGE_SIZE - 1)
 
-  if (error) {
-    console.error('Error fetching zone pricing:', error)
-    return []
+    if (error) {
+      console.error('Error fetching zone pricing:', error)
+      return []
+    }
+
+    rows.push(...data)
+    if (data.length < PRICING_PAGE_SIZE) return rows
   }
-
-  return data
 }
 
 export async function updateZonePricing(
