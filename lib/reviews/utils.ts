@@ -46,22 +46,6 @@ export function truncateReviewText(text: string, maxLength: number = 300): strin
   return text.slice(0, maxLength).trim() + '...'
 }
 
-// Check if user can review a booking
-export function canReviewBooking(
-  booking: { booking_status: string; customer_id: string | null },
-  userId: string
-): { can: boolean; reason?: string } {
-  if (booking.customer_id !== userId) {
-    return { can: false, reason: 'You can only review your own bookings' }
-  }
-
-  if (booking.booking_status !== 'completed') {
-    return { can: false, reason: 'Booking must be completed to leave a review' }
-  }
-
-  return { can: true }
-}
-
 // Get display status for review
 export function getReviewStatusDisplay(status: string): {
   label: string

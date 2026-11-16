@@ -1,0 +1,19 @@
+-- UNDO for 20261116110049_reviews_customer_insert_paid_travelled.
+-- Restores the policy exactly as it was before (booking_status = 'completed' only).
+-- Apply with Supabase MCP apply_migration, never db push.
+DROP POLICY IF EXISTS "Customers can create reviews for own bookings" ON public.reviews;
+
+CREATE POLICY "Customers can create reviews for own bookings"
+ON public.reviews
+FOR INSERT
+TO public
+WITH CHECK (
+  (auth.uid() = customer_id)
+  AND (EXISTS (
+    SELECT 1
+    FROM bookings
+    WHERE bookings.id = reviews.booking_id
+      AND bookings.customer_id = auth.uid()
+      AND bookings.booking_status = 'completed'::text
+  ))
+);

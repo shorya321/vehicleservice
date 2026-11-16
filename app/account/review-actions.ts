@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import type { ReviewFormData, ReviewFiltersData } from "./schemas"
 import { destinationLabel } from "@/lib/trips/display"
+import { isReviewEligible } from "@/lib/reviews/eligibility"
 
 export interface ReviewFilters {
   search?: string
@@ -137,11 +138,13 @@ export async function getEligibleBookings() {
     .from("bookings")
     .select(`
       id, booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime,
-      booking_status, vehicle_type_id, vehicle_types(name, image_url),
+      booking_status, payment_status, vehicle_type_id, vehicle_types(name, image_url),
       trip_type, hourly_package, duration_hours, leg_index, booking_group_id
     `)
     .eq("customer_id", user.id)
     .neq("booking_status", "cancelled")
+    // Paid trips only, the same rule createReview and the reviews INSERT policy apply.
+    .eq("payment_status", "completed")
     .lt("pickup_datetime", new Date().toISOString())
     // One review per trip: a round trip or multi-city trip is reviewed on its first journey.
     .or("booking_group_id.is.null,leg_index.eq.0")
@@ -168,23 +171,27 @@ export async function createReview(data: ReviewFormData) {
 
   const { data: booking } = await supabase
     .from("bookings")
-    .select("id, customer_id, booking_status, pickup_address, dropoff_address, vehicle_type_id, trip_type, duration_hours")
+    .select(`
+      id, customer_id, booking_status, payment_status, pickup_datetime, booking_group_id, leg_index,
+      pickup_address, dropoff_address, vehicle_type_id, trip_type, duration_hours
+    `)
     .eq("id", data.booking_id)
-    .single()
+    .maybeSingle()
 
-  if (!booking || booking.customer_id !== user.id) {
+  if (!booking) {
     return { error: "Invalid booking" }
   }
 
-  if (booking.booking_status !== "completed") {
-    return { error: "Can only review completed bookings" }
+  const eligibility = isReviewEligible(booking, user.id)
+  if (!eligibility.can) {
+    return { error: eligibility.reason ?? "This trip cannot be reviewed" }
   }
 
   const { data: existing } = await supabase
     .from("reviews")
     .select("id")
     .eq("booking_id", data.booking_id)
-    .single()
+    .maybeSingle()
 
   if (existing) {
     return { error: "Already reviewed this booking" }
@@ -212,6 +219,11 @@ export async function createReview(data: ReviewFormData) {
     .single()
 
   if (error) {
+    // unique_booking_review: a second submit raced the duplicate check above.
+    if (error.code === "23505") {
+      return { error: "Already reviewed this booking" }
+    }
+    console.error("[reviews] createReview insert failed", { code: error.code, message: error.message })
     return { error: "Failed to create review" }
   }
 
