@@ -1,5 +1,5 @@
 import type { NextConfig } from 'next'
-import { buildSecurityHeaders } from './lib/security/headers'
+import { buildSecurityHeaders, resolveCspMode } from './lib/security/headers'
 import { getSiteUrl } from './lib/seo/site-url'
 
 const nextConfig: NextConfig = {
@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
           supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
           siteUrl: getSiteUrl(),
           isDev: process.env.NODE_ENV !== 'production',
+          cspMode: resolveCspMode(process.env.CSP_MODE),
         }),
       },
     ]
