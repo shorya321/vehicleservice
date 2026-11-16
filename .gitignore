@@ -53,6 +53,9 @@ build-fix.log
 # Backup files
 *.bak
 
+# Database backups (contain customer data, never commit)
+/backups/
+
 # Documentation (session notes)
 /docs/
 
