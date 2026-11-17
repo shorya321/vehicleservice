@@ -3,7 +3,8 @@
 import { useMemo } from 'react'
 import Link from 'next/link'
 import { SearchResult } from '../actions'
-import { VehicleTypeCategoryTabs } from './vehicle-type-category-tabs'
+import { FleetBrowser } from './fleet-browser'
+import { FleetPerks, type FleetPerk } from './fleet-perks'
 import { EmptyState } from './empty-state'
 import { ResultsGuestPicker } from './results-guest-picker'
 import { ResultsDatePicker } from './results-date-picker'
@@ -48,6 +49,13 @@ const BOOKING_STEPS = [
     body: '60 minutes of free waiting at pickup, tracked airport arrivals included.',
     foot: 'Name board at the door',
   },
+]
+
+/** Each restates a commitment made in the copy above or in BOOKING_STEPS. */
+const FLEET_PERKS: readonly FleetPerk[] = [
+  { title: 'Full fare', detail: 'Fuel, tolls, parking' },
+  { title: '60 min', detail: 'Free waiting' },
+  { title: 'Free cancellation', detail: 'For 24 hours' },
 ]
 
 interface SearchResultsProps {
@@ -270,29 +278,31 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
         {/* ---- Band 2: the fleet for this trip -------------------------- */}
         <section className="editorial-section editorial-section--raised">
           <div className="luxury-container">
-            <motion.header
-              className="max-w-2xl"
-              initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
-              viewport={{ once: true, amount: 0.4 }}
-            >
-              <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />The fleet</p>
-              <h2 className="editorial-section-title mt-5">Every vehicle that runs this transfer.</h2>
-              <p className="editorial-body mt-6">
-                Every price is the full fare: vehicle, chauffeur, fuel, tolls and parking. Choose on
-                capacity and luggage, not on fine print.
-              </p>
-            </motion.header>
+            <div className="fleet-intro">
+              <motion.header
+                className="max-w-2xl"
+                initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
+                viewport={{ once: true, amount: 0.4 }}
+              >
+                <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />The fleet</p>
+                <h2 className="editorial-section-title mt-5">Every vehicle that runs this transfer.</h2>
+                <p className="editorial-body mt-6">
+                  Every price is the full fare: vehicle, chauffeur, fuel, tolls and parking. Choose on
+                  capacity and luggage, not on fine print.
+                </p>
+              </motion.header>
+              <FleetPerks perks={FLEET_PERKS} />
+            </div>
 
-            {/* `key` on the search remounts this with fresh tab/page state. It holds currentPage and
-                activeCategory internally and only resets them on tab/sort change, but a searchParams
-                navigation keeps it mounted while the vehicle list changes underneath, so page 3 of 18
-                vehicles would slice an empty window out of the new, shorter list and render a blank grid.
+            {/* `key` on the search remounts this with fresh class, filter and sort state. A searchParams
+                navigation would otherwise keep it mounted while the vehicle list changes underneath, so a
+                class or quick filter chosen for the old list would carry over to a list it no longer fits.
                 Dates are in it too: availability is resolved per day, so a new date can shorten the list. */}
             <div className="mt-12">
               <ResultsRefreshRegion>
-                <VehicleTypeCategoryTabs
+                <FleetBrowser
                   key={`${searchParams.date ?? ''}-${returnDateKey}-${searchParams.passengers}-${searchParams.trip?.trip ?? 'one_way'}`}
                   vehicleTypesByCategory={vehicleTypesByCategory}
                   allVehicleTypes={vehicleTypes}

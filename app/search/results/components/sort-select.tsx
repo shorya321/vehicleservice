@@ -11,6 +11,8 @@ interface SortSelectProps<T extends string> {
   onChange: (value: T) => void
   /** Text of the visible label beside the control, e.g. "Sort". */
   label: string
+  /** Pill matches the rounded fleet filter bar; square is the original look. */
+  shape?: 'square' | 'pill'
 }
 
 /**
@@ -31,6 +33,7 @@ export function SortSelect<T extends string>({
   labels,
   onChange,
   label,
+  shape = 'square',
 }: SortSelectProps<T>) {
   const [open, setOpen] = useState(false)
 
@@ -38,7 +41,7 @@ export function SortSelect<T extends string>({
     <DropdownMenu.Root open={open} onOpenChange={setOpen}>
       <DropdownMenu.Trigger
         aria-label={`${label}: ${labels[value]}`}
-        className="inline-flex h-11 min-w-[11rem] items-center justify-between gap-3 rounded-[4px] border border-[var(--graphite)] bg-[var(--charcoal)] px-4 text-[0.875rem] text-[var(--text-primary)] transition-colors duration-200 hover:border-[rgba(var(--gold-rgb),0.35)] focus-visible:outline-none focus-visible:border-[var(--gold)] focus-visible:ring-2 focus-visible:ring-[rgba(var(--gold-rgb),0.25)]"
+        className={`inline-flex h-11 min-w-[11rem] items-center justify-between gap-3 ${shape === 'pill' ? 'rounded-full px-5' : 'rounded-[4px] px-4'} border border-[var(--graphite)] bg-[var(--charcoal)] text-[0.875rem] text-[var(--text-primary)] transition-colors duration-200 hover:border-[rgba(var(--gold-rgb),0.35)] focus-visible:outline-none focus-visible:border-[var(--gold)] focus-visible:ring-2 focus-visible:ring-[rgba(var(--gold-rgb),0.25)]`}
       >
         {labels[value]}
         <ChevronDown

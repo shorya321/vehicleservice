@@ -8,13 +8,21 @@ import { HOURLY_PACKAGES, type HourlyPackage } from '@/lib/trips/types'
 import { HOURLY_PACKAGE_LABELS } from '@/lib/trips/constants'
 import { buildHourlySearchUrl } from '@/lib/utils/url-builder'
 import type { VehicleTypeResult, VehicleTypesByCategory } from '../../../results/actions'
-import { VehicleTypeCategoryTabs } from '../../../results/components/vehicle-type-category-tabs'
+import { FleetBrowser } from '../../../results/components/fleet-browser'
+import { FleetPerks, type FleetPerk } from '../../../results/components/fleet-perks'
 import { ResultsDatePicker } from '../../../results/components/results-date-picker'
 import { ResultsGuestPicker } from '../../../results/components/results-guest-picker'
 import { EmptyState } from '../../../results/components/empty-state'
 import { BookingStepsBand, type BookingStep } from '../../../results/components/booking-steps-band'
 import { formatResultPrice } from '../../../results/components/format-result-price'
 import { toCount, type ResultsSearchParams } from '../../../results/components/results-search-params'
+
+/** Each restates the fleet copy or HOURLY_STEPS on this page. */
+const HOURLY_PERKS: readonly FleetPerk[] = [
+  { title: 'Package price', detail: 'Vehicle, chauffeur, fuel' },
+  { title: 'Extra hours', detail: 'At the rate on each card' },
+  { title: 'Free cancellation', detail: 'For 24 hours' },
+]
 
 const HOURLY_STEPS: BookingStep[] = [
   {
@@ -183,23 +191,26 @@ export function HourlyResults({
 
       <section className="editorial-section editorial-section--raised">
         <div className="luxury-container">
-          <motion.header
-            className="max-w-2xl"
-            initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
-            viewport={{ once: true, amount: 0.4 }}
-          >
-            <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />The fleet</p>
-            <h2 className="editorial-section-title mt-5">Every vehicle offered by the hour.</h2>
-            <p className="editorial-body mt-6">
-              The package price covers the vehicle, chauffeur and fuel for the hours and kilometres
-              shown. Extra hours are billed at the rate on each card.
-            </p>
-          </motion.header>
+          <div className="fleet-intro">
+            <motion.header
+              className="max-w-2xl"
+              initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, amount: 0.4 }}
+            >
+              <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />The fleet</p>
+              <h2 className="editorial-section-title mt-5">Every vehicle offered by the hour.</h2>
+              <p className="editorial-body mt-6">
+                The package price covers the vehicle, chauffeur and fuel for the hours and kilometres
+                shown. Extra hours are billed at the rate on each card.
+              </p>
+            </motion.header>
+            <FleetPerks perks={HOURLY_PERKS} />
+          </div>
 
           <div className="mt-12">
-            <VehicleTypeCategoryTabs
+            <FleetBrowser
               key={`${searchParams.passengers}-${hourlyPackage}`}
               vehicleTypesByCategory={vehicleTypesByCategory}
               allVehicleTypes={vehicleTypes}

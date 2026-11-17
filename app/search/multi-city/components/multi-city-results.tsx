@@ -6,12 +6,20 @@ import { ArrowLeft } from 'lucide-react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useCurrency } from '@/lib/currency/context'
 import type { VehicleTypeResult, VehicleTypesByCategory } from '../../results/actions'
-import { VehicleTypeCategoryTabs } from '../../results/components/vehicle-type-category-tabs'
+import { FleetBrowser } from '../../results/components/fleet-browser'
+import { FleetPerks, type FleetPerk } from '../../results/components/fleet-perks'
 import { ResultsGuestPicker } from '../../results/components/results-guest-picker'
 import { EmptyState } from '../../results/components/empty-state'
 import { BookingStepsBand, type BookingStep } from '../../results/components/booking-steps-band'
 import { formatResultPrice } from '../../results/components/format-result-price'
 import type { ResultsSearchParams } from '../../results/components/results-search-params'
+
+/** Each restates the fleet copy or MULTI_CITY_STEPS on this page. */
+const MULTI_CITY_PERKS: readonly FleetPerk[] = [
+  { title: 'One price', detail: 'Covers every journey' },
+  { title: '60 min', detail: 'Free waiting at every pickup' },
+  { title: 'Free cancellation', detail: 'Up to 24 hours before each journey' },
+]
 
 const MULTI_CITY_STEPS: BookingStep[] = [
   {
@@ -118,15 +126,18 @@ export function MultiCityResults({ legs, vehicleTypes, vehicleTypesByCategory, m
 
       <section className="editorial-section editorial-section--raised">
         <div className="luxury-container">
-          <header className="max-w-2xl">
-            <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />The fleet</p>
-            <h2 className="editorial-section-title mt-5">One vehicle class for the whole trip.</h2>
-            <p className="editorial-body mt-6">
-              Every price covers all {legs.length} journeys: vehicle, chauffeur, fuel, tolls and parking.
-            </p>
-          </header>
+          <div className="fleet-intro">
+            <header className="max-w-2xl">
+              <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />The fleet</p>
+              <h2 className="editorial-section-title mt-5">One vehicle class for the whole trip.</h2>
+              <p className="editorial-body mt-6">
+                Every price covers all {legs.length} journeys: vehicle, chauffeur, fuel, tolls and parking.
+              </p>
+            </header>
+            <FleetPerks perks={MULTI_CITY_PERKS} />
+          </div>
           <div className="mt-12">
-            <VehicleTypeCategoryTabs
+            <FleetBrowser
               key={`${searchParams.passengers}-multi`}
               vehicleTypesByCategory={vehicleTypesByCategory}
               allVehicleTypes={vehicleTypes}
