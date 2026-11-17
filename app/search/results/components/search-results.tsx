@@ -276,7 +276,7 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
         </motion.section>
 
         {/* ---- Band 2: the fleet for this trip -------------------------- */}
-        <section className="editorial-section editorial-section--raised">
+        <section className="editorial-section editorial-section--raised results-fleet">
           <div className="luxury-container">
             <div className="results-intro">
               <motion.header

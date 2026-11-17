@@ -124,7 +124,7 @@ export function MultiCityResults({ legs, vehicleTypes, vehicleTypesByCategory, m
         </div>
       </motion.section>
 
-      <section className="editorial-section editorial-section--raised">
+      <section className="editorial-section editorial-section--raised results-fleet">
         <div className="luxury-container">
           <div className="results-intro">
             <header className="max-w-2xl">

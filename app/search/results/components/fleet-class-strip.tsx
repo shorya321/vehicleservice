@@ -3,6 +3,7 @@
 import { useCallback, useRef } from 'react'
 import { formatResultPrice } from './format-result-price'
 import { useCurrency } from '@/lib/currency/context'
+import { PriceMeter } from './price-meter'
 
 export interface FleetClassTile {
   /** Null is the All tile. */
@@ -10,6 +11,8 @@ export interface FleetClassTile {
   name: string
   count: number
   fromPrice: number | null
+  /** 1 to 5 price level; omitted on the All tile. */
+  level?: number
 }
 
 interface FleetClassStripProps {
@@ -59,14 +62,15 @@ export function FleetClassStrip({ tiles, activeId, onSelect }: FleetClassStripPr
           >
             <span className="results-tile__top">
               <span className="results-tile__name">{tile.name}</span>
-              <span className="results-tile__count numeric">{tile.count}</span>
+              {tile.level !== undefined && <PriceMeter level={tile.level} />}
             </span>
-            <span className="results-tile__from">
+            <span className="results-tile__from numeric">
               {tile.fromPrice === null ? (
                 'Unavailable'
               ) : (
-                <>from <b className="numeric">{formatResultPrice(tile.fromPrice, currentCurrency, exchangeRates)}</b></>
+                <>from <b>{formatResultPrice(tile.fromPrice, currentCurrency, exchangeRates)}</b></>
               )}
+              {' · '}{tile.count}
             </span>
           </button>
         )

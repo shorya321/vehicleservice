@@ -88,7 +88,7 @@ export function SearchPageSkeleton() {
         </div>
       </section>
 
-      <section className="editorial-section editorial-section--raised">
+      <section className="editorial-section editorial-section--raised results-fleet">
         <div className="luxury-container">
           <div className="max-w-2xl">
             <Bar className="h-3 w-20" />

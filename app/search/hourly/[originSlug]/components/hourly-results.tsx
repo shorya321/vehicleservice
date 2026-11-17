@@ -189,7 +189,7 @@ export function HourlyResults({
         </div>
       </motion.section>
 
-      <section className="editorial-section editorial-section--raised">
+      <section className="editorial-section editorial-section--raised results-fleet">
         <div className="luxury-container">
           <div className="results-intro">
             <motion.header

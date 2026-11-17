@@ -9026,6 +9026,14 @@
      Tailwind arbitrary values because var()-with-opacity colours and
      ease-[...] curves emit no rule on this setup.
      ------------------------------------------------------------------ */
+  /* Band 2 sits under the route band, whose own 80px bottom padding already
+     separates them; the full editorial padding stacked on that left ~190px of
+     empty space. Trimmed here only, band 1 is untouched. */
+  .results-fleet {
+    padding-top: clamp(2.5rem, 4vw, 3rem);
+    padding-bottom: clamp(3.5rem, 5vw, 4rem);
+  }
+
   .results-intro {
     display: flex;
     flex-wrap: wrap;
@@ -9105,8 +9113,8 @@
 
   .results-tile {
     display: grid;
-    gap: 0.3rem;
-    padding: 0.875rem 0.9375rem;
+    gap: 0.25rem;
+    padding: 0.8125rem 0.875rem;
     text-align: left;
     cursor: pointer;
     background-color: var(--stub-bot);
@@ -9114,16 +9122,19 @@
     border: 1px solid var(--stub-line);
     border-radius: 14px;
     box-shadow: inset 0 1px 0 var(--stub-edge);
-    transition: border-color 200ms var(--ease-luxury), box-shadow 200ms var(--ease-luxury);
+    transition: border-color 200ms var(--ease-luxury), background-color 200ms var(--ease-luxury);
   }
 
   .results-tile:hover {
     border-color: rgba(var(--gold-rgb), 0.45);
   }
 
+  /* Selected: gold edge over a gold tint, prepended so it shows above the stub gradient. */
   .results-tile[aria-selected="true"] {
     border-color: var(--gold);
-    box-shadow: inset 0 1px 0 var(--stub-edge), 0 0 0 1px var(--gold), 0 0 0 5px rgba(var(--gold-rgb), 0.12);
+    background-image:
+      linear-gradient(rgba(var(--gold-rgb), 0.1), rgba(var(--gold-rgb), 0.1)),
+      linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
   }
 
   .results-tile:focus-visible,
@@ -9148,14 +9159,8 @@
     color: var(--text-primary);
   }
 
-  .results-tile__count {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--gold-text);
-  }
-
   .results-tile__from {
-    font-size: 0.78125rem;
+    font-size: 0.75rem;
     white-space: nowrap;
     color: var(--text-muted);
   }

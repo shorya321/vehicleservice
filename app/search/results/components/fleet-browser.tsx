@@ -38,6 +38,7 @@ export function FleetBrowser({ vehicleTypesByCategory, allVehicleTypes, searchPa
   // An id from a previous render that no longer exists reads as All.
   const activeCategoryId = resolveCategory(vehicleTypesByCategory, categoryId)?.categoryId ?? null
 
+  const levels = useMemo(() => classLevels(vehicleTypesByCategory), [vehicleTypesByCategory])
   const tiles = useMemo<FleetClassTile[]>(() => [
     { id: null, name: 'All', count: allVehicleTypes.length, fromPrice: fromPrice(allVehicleTypes) },
     ...vehicleTypesByCategory.map((c) => ({
@@ -45,8 +46,9 @@ export function FleetBrowser({ vehicleTypesByCategory, allVehicleTypes, searchPa
       name: c.categoryName,
       count: c.vehicleTypes.length,
       fromPrice: fromPrice(c.vehicleTypes),
+      level: levels[c.categoryId],
     })),
-  ], [allVehicleTypes, vehicleTypesByCategory])
+  ], [allVehicleTypes, vehicleTypesByCategory, levels])
 
   const scope = useMemo(
     () => vehiclesInScope({ byCategory: vehicleTypesByCategory, all: allVehicleTypes, categoryId: activeCategoryId }),
@@ -55,7 +57,6 @@ export function FleetBrowser({ vehicleTypesByCategory, allVehicleTypes, searchPa
   const needs = useMemo(() => needChips(scope), [scope])
   const activeNeedId = activeNeed(scope, needId)?.id ?? null
 
-  const levels = useMemo(() => classLevels(vehicleTypesByCategory), [vehicleTypesByCategory])
   const groups = useMemo(
     () => buildFleetGroups({ byCategory: vehicleTypesByCategory, all: allVehicleTypes, categoryId: activeCategoryId, needId: activeNeedId, sort }),
     [vehicleTypesByCategory, allVehicleTypes, activeCategoryId, activeNeedId, sort]
