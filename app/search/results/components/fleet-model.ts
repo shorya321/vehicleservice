@@ -84,12 +84,24 @@ export function matchesNeed(vehicle: VehicleTypeResult, need: FleetNeed): boolea
   return value >= need.min
 }
 
-/** Only filters that narrow the list without emptying it: a chip never does nothing and never leads to a blank page. */
+/**
+ * Only filters that narrow the list without emptying it: a chip never does
+ * nothing and never leads to a blank page. Chips of one kind that keep exactly
+ * the same vehicles are duplicates; the highest threshold is kept, because
+ * "6+ passengers" says more than "4+" about a list where everything seats six.
+ */
 export function needChips(list: readonly VehicleTypeResult[]): FleetNeed[] {
-  return NEED_CANDIDATES.filter((need) => {
-    const kept = list.filter((v) => matchesNeed(v, need)).length
-    return kept > 0 && kept < list.length
+  const seen = new Set<string>()
+  const kept = [...NEED_CANDIDATES].reverse().filter((need) => {
+    const matches = list.filter((v) => matchesNeed(v, need))
+    // A chip must keep something bookable: one whose only matches are sold out leads to a page of grey cards.
+    if (!matches.some(isBookable) || matches.length === list.length) return false
+    const signature = `${need.kind}:${matches.map((v) => v.id).join(',')}`
+    if (seen.has(signature)) return false
+    seen.add(signature)
+    return true
   })
+  return kept.reverse()
 }
 
 export interface FleetGroup {
@@ -144,11 +156,9 @@ export function buildFleetGroups(selection: FleetSelection): FleetGroup[] {
 
   const levels = classLevels(selection.byCategory)
   const visibleIds = new Set(visible.map((v) => v.id))
-  const grouped = new Set<string>()
 
-  const groups: FleetGroup[] = selection.byCategory.flatMap((category) => {
+  const classGroups: FleetGroup[] = selection.byCategory.flatMap((category) => {
     const vehicles = sortVehicles(category.vehicleTypes.filter((v) => visibleIds.has(v.id)), selection.sort)
-    vehicles.forEach((v) => grouped.add(v.id))
     if (vehicles.length === 0) return []
     return [{
       id: category.categoryId,
@@ -159,33 +169,17 @@ export function buildFleetGroups(selection: FleetSelection): FleetGroup[] {
     }]
   })
 
+  // Cheapest class first, so the default "Price · low to high" still reads low to high.
+  // A class with nothing bookable has no price and goes after every bookable class.
+  // The sort is stable, so ties keep the server's class order.
+  const ordered = [...classGroups].sort((a, b) => {
+    if (a.fromPrice === null || b.fromPrice === null) return Number(a.fromPrice === null) - Number(b.fromPrice === null)
+    return a.fromPrice - b.fromPrice
+  })
+
   // A vehicle with no category group must still show; it never silently drops off the page.
-  const stray = visible.filter((v) => !grouped.has(v.id))
-  if (stray.length > 0) {
-    const vehicles = sortVehicles(stray, selection.sort)
-    groups.push({ id: OTHER_GROUP_ID, name: 'Other vehicles', vehicles, fromPrice: fromPrice(vehicles), level: undefined })
-  }
-  return groups
-}
-
-/**
- * Makes that are two words, checked before the one-word list. Anything not
- * listed keeps its full name as the model: "Range Rover" is a model line, and
- * splitting it would print "Range" over "Rover".
- */
-const TWO_WORD_MAKES = ['Rolls Royce', 'Land Rover', 'Aston Martin', 'Alfa Romeo']
-const ONE_WORD_MAKES = [
-  'Audi', 'Bentley', 'BMW', 'Cadillac', 'Chevrolet', 'Chrysler', 'Ferrari', 'Ford', 'Genesis', 'GMC',
-  'Honda', 'Hyundai', 'Infiniti', 'Jaguar', 'Jeep', 'Kia', 'Lamborghini', 'Lexus', 'Lincoln', 'Lucid',
-  'Maserati', 'Maybach', 'Mercedes', 'Mercedes-Benz', 'Mitsubishi', 'Nissan', 'Porsche', 'Rolls-Royce',
-  'Tesla', 'Toyota', 'Volkswagen', 'Volvo',
-]
-
-export function splitVehicleName(name: string): { make: string | null; model: string } {
-  const full = name.trim().replace(/\s+/g, ' ')
-  const lower = full.toLowerCase()
-  const make = [...TWO_WORD_MAKES, ...ONE_WORD_MAKES].find((m) => lower.startsWith(`${m.toLowerCase()} `))
-  if (!make) return { make: null, model: full }
-  const model = full.slice(make.length).trim()
-  return model ? { make: full.slice(0, make.length), model } : { make: null, model: full }
+  const grouped = new Set(classGroups.flatMap((g) => g.vehicles.map((v) => v.id)))
+  const stray = sortVehicles(visible.filter((v) => !grouped.has(v.id)), selection.sort)
+  if (stray.length === 0) return ordered
+  return [...ordered, { id: OTHER_GROUP_ID, name: 'Other vehicles', vehicles: stray, fromPrice: fromPrice(stray), level: undefined }]
 }

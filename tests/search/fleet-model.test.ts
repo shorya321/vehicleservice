@@ -10,9 +10,9 @@ import {
   isBookable,
   needChips,
   sortVehicles,
-  splitVehicleName,
   DEFAULT_FLEET_SORT,
 } from '@/app/search/results/components/fleet-model'
+import { splitVehicleName } from '@/app/search/results/components/vehicle-name'
 import type { VehicleTypeResult, VehicleTypesByCategory } from '@/app/search/results/actions'
 
 function vt(
@@ -140,8 +140,23 @@ describe('classLevels', () => {
 describe('needChips', () => {
   it('offers only filters that narrow the list without emptying it', () => {
     const ids = needChips(ALL).map((n) => n.id)
-    // 4+ and 6+ passengers both keep some and drop some; 8+ and 12+ keep only the Sprinter.
-    expect(ids).toEqual(['passengers-4', 'passengers-6', 'passengers-8', 'passengers-12', 'bags-3', 'bags-5'])
+    expect(ids).toEqual(['passengers-6', 'passengers-12', 'bags-3', 'bags-5'])
+  })
+
+  it('keeps only the most precise of chips that show the same vehicles', () => {
+    // 4+ and 6+ keep the same three vehicles, as do 8+ and 12+ (the Sprinter).
+    // The higher threshold says more about what is left, so it is the one kept.
+    const ids = needChips(ALL).map((n) => n.id)
+    expect(ids).not.toContain('passengers-4')
+    expect(ids).not.toContain('passengers-8')
+    expect(ids).toContain('passengers-6')
+    expect(ids).toContain('passengers-12')
+  })
+
+  it('keeps chips in ascending order', () => {
+    const mixed = [camry, vt('Four Seater', 'x', 120, 4, 2), vclass, sprinter]
+    // Bags: 3+ and 5+ both keep the V-Class and the Sprinter, so only 5+ stays.
+    expect(needChips(mixed).map((n) => n.id)).toEqual(['passengers-4', 'passengers-6', 'passengers-12', 'bags-5'])
   })
 
   it('drops a chip that would keep every vehicle', () => {
@@ -154,6 +169,13 @@ describe('needChips', () => {
 
   it('drops a chip that would keep nothing', () => {
     expect(needChips([camry, lexus])).toEqual([])
+  })
+
+  it('never offers a chip whose only matches are sold out', () => {
+    // The Sprinter is the only 12-seater; sold out, "12+ passengers" would lead to a page of one grey card.
+    const ids = needChips([camry, vclass, { ...sprinter, availableVehicles: 0 }]).map((n) => n.id)
+    expect(ids).not.toContain('passengers-12')
+    expect(ids).toContain('passengers-6')
   })
 
   it('labels chips in words', () => {
@@ -219,6 +241,22 @@ describe('buildFleetGroups', () => {
     })
     expect(groups[0].vehicles.map((v) => v.name)).toEqual(['Lexus ES', 'Toyota Camry'])
     expect(groups[0].fromPrice).toBe(110)
+  })
+
+  it('orders classes by from-price, whatever order the server lists them in', () => {
+    const groups = buildFleetGroups({ ...base, byCategory: [...BY_CATEGORY].reverse() })
+    expect(groups.map((g) => g.fromPrice)).toEqual([100, 160, 170, 200, 500])
+  })
+
+  it('puts a class with nothing bookable after every bookable class', () => {
+    const soldUltra = { ...phantom, availableVehicles: 0, price: 50 }
+    const groups = buildFleetGroups({
+      ...base,
+      all: [camry, soldUltra],
+      byCategory: [cat('ultra', 'Ultra luxury', [soldUltra]), cat('exec', 'Executive', [camry])],
+    })
+    expect(groups.map((g) => g.name)).toEqual(['Executive', 'Ultra luxury'])
+    expect(groups[1].fromPrice).toBeNull()
   })
 
   it('returns no groups for an empty fleet', () => {
