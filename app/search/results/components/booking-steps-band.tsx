@@ -35,13 +35,15 @@ export function BookingStepsBand({ steps }: { steps: readonly BookingStep[] }) {
           <h2 className="editorial-section-title mt-5">Three steps from here to pickup.</h2>
         </motion.header>
 
-        <ul className="mt-12 grid list-none grid-cols-1 gap-5 p-0 min-[900px]:grid-cols-3">
+        <ol className="mt-12 grid list-none grid-cols-1 gap-5 p-0 min-[900px]:grid-cols-3">
           {steps.map((step, index) => {
             const Icon = STEP_ICONS[index] ?? CarFront
+            const number = Number.parseInt(step.index, 10) || index + 1
             return (
             <motion.li
               key={step.index}
-              className="steps-card"
+              // Step 1 is always "choose your vehicle", which is this page.
+              className={index === 0 ? 'steps-card steps-card--here' : 'steps-card'}
               initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{
@@ -51,8 +53,11 @@ export function BookingStepsBand({ steps }: { steps: readonly BookingStep[] }) {
               }}
               viewport={{ once: true, amount: 0.2 }}
             >
-              <span className="steps-card__icon" aria-hidden="true">
-                <Icon size={18} strokeWidth={1.6} />
+              <span className="steps-card__top">
+                <span className="steps-card__icon" aria-hidden="true">
+                  <Icon size={18} strokeWidth={1.6} />
+                </span>
+                <span className="steps-card__step numeric">Step {number}</span>
               </span>
               <h3 className="editorial-list-title">{step.title}</h3>
               <p className="editorial-list-body">{step.body}</p>
@@ -60,7 +65,7 @@ export function BookingStepsBand({ steps }: { steps: readonly BookingStep[] }) {
             </motion.li>
             )
           })}
-        </ul>
+        </ol>
       </div>
     </section>
   )
