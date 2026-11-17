@@ -126,7 +126,7 @@ export function MultiCityResults({ legs, vehicleTypes, vehicleTypesByCategory, m
 
       <section className="editorial-section editorial-section--raised">
         <div className="luxury-container">
-          <div className="fleet-intro">
+          <div className="results-intro">
             <header className="max-w-2xl">
               <p className="editorial-eyebrow editorial-eyebrow--pill"><i aria-hidden="true" />The fleet</p>
               <h2 className="editorial-section-title mt-5">One vehicle class for the whole trip.</h2>

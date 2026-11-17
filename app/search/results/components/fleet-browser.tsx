@@ -106,27 +106,27 @@ export function FleetBrowser({ vehicleTypesByCategory, allVehicleTypes, searchPa
         />
       )}
 
-      <div ref={countRef} tabIndex={-1} className="fleet-count" aria-live="polite">
+      <div ref={countRef} tabIndex={-1} className="results-count" aria-live="polite">
         <p className="numeric">
           <b>{shown} {shown === 1 ? 'vehicle' : 'vehicles'}</b>
           {filtered && <span> of {allVehicleTypes.length}</span>}
         </p>
         {filtered && (
-          <button type="button" className="fleet-clear" onClick={clearFilters}>
+          <button type="button" className="results-clear" onClick={clearFilters}>
             Clear filters
           </button>
         )}
       </div>
 
       {groups.length === 0 ? (
-        <div className="fleet-empty">
+        <div className="results-empty">
           <p>No vehicle on this trip matches that.</p>
-          <button type="button" className="fleet-clear" onClick={clearFilters}>
+          <button type="button" className="results-clear" onClick={clearFilters}>
             Show all {allVehicleTypes.length}
           </button>
         </div>
       ) : (
-        <div className="fleet-groups">
+        <div className="results-groups">
           {groups.map((group, i) => (
             <FleetGroup
               key={group.id}

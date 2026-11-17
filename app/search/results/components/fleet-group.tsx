@@ -20,15 +20,15 @@ interface FleetGroupProps {
 export function FleetGroup({ group, searchParams, startIndex, levels }: FleetGroupProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const count = group.vehicles.length
-  const headingId = `fleet-group-${group.id}`
+  const headingId = `results-group-${group.id}`
 
   return (
-    <section className="fleet-group" aria-labelledby={group.name ? headingId : undefined}>
+    <section className="results-group" aria-labelledby={group.name ? headingId : undefined}>
       {group.name && (
-        <div className="fleet-group__head">
-          <h3 id={headingId} className="fleet-group__title">{group.name}</h3>
+        <div className="results-group__head">
+          <h3 id={headingId} className="results-group__title">{group.name}</h3>
           {group.level !== undefined && <PriceMeter level={group.level} />}
-          <p className="fleet-group__meta numeric">
+          <p className="results-group__meta numeric">
             {count} {count === 1 ? 'vehicle' : 'vehicles'}
             {' · '}
             {group.fromPrice === null
@@ -38,7 +38,7 @@ export function FleetGroup({ group, searchParams, startIndex, levels }: FleetGro
         </div>
       )}
 
-      <div className="fleet-grid">
+      <div className="results-grid">
         {group.vehicles.map((vehicleType, i) => (
           <VehicleFleetCard
             key={vehicleType.id}

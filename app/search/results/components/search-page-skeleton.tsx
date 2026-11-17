@@ -4,8 +4,8 @@ import { RouteBandMap } from './route-band-map'
  * The search page at rest, before the server query returns.
  *
  * A server component with no motion on purpose: a skeleton that animates in is
- * a skeleton you see twice. It paints the real `.route-band`, `.trip-ledger`
- * and `.vehicle-card` chrome with pulsing blocks inside, so it cannot drift out
+ * a skeleton you see twice. It paints the real `.route-band`, `.trip-ledger`,
+ * `.results-strip`, `.results-bar` and `.results-card` chrome with pulsing blocks inside, so it cannot drift out
  * of sync with the page the way its predecessor did, which skeletoned a summary
  * bar that no longer exists and a 4/3 plate on a 16/9 card.
  *
@@ -24,18 +24,32 @@ function Bar({ className, style }: { className?: string; style?: React.CSSProper
 
 function CardSkeleton() {
   return (
-    <div className="vehicle-card">
-      <div className="vehicle-card__plate animate-pulse bg-[rgba(var(--text-primary-rgb),0.06)]" />
-      <div className="vehicle-card__body gap-2.5">
+    <div className="results-card">
+      <div className="results-card__photo animate-pulse bg-[rgba(var(--text-primary-rgb),0.06)]" />
+      <div className="results-card__body gap-2.5">
         <Bar className="h-2.5 w-16" />
         <Bar className="h-5 w-36" />
         <Bar className="h-3 w-full" />
         <Bar className="h-3 w-3/4" />
-        <div className="mt-4 flex items-end justify-between border-t border-[var(--stub-line)] pt-5">
+        <div className="mt-2 flex gap-1.5">
+          <Bar className="h-7 w-28 rounded-full" />
+          <Bar className="h-7 w-16 rounded-full" />
+        </div>
+        <div className="results-card__foot">
           <Bar className="h-7 w-24" />
-          <Bar className="h-11 w-28" />
+          <Bar className="h-11 w-28 rounded-full" />
         </div>
       </div>
+    </div>
+  )
+}
+
+/** One class tile in the strip: name and count, then the from-price. */
+function TileSkeleton() {
+  return (
+    <div className="results-tile">
+      <Bar className="h-3.5 w-20" />
+      <Bar className="h-3 w-24" />
     </div>
   )
 }
@@ -83,21 +97,32 @@ export function SearchPageSkeleton() {
           </div>
 
           <div className="mt-12">
-            <div className="flex items-baseline gap-7 border-b border-[var(--graphite)] pb-3">
-              {[70, 96, 88, 104].map((w) => (
-                <Bar key={w} className="h-3" style={{ width: w }} />
-              ))}
-            </div>
-
-            <div className="mt-7">
-              <Bar className="h-7 w-10" />
-              <Bar className="mt-2 h-2.5 w-28" />
-            </div>
-
-            <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="results-strip scrollbar-hide">
               {Array.from({ length: 6 }).map((_, i) => (
-                <CardSkeleton key={i} />
+                <TileSkeleton key={i} />
               ))}
+            </div>
+
+            <div className="results-bar">
+              {[110, 110, 80].map((w, i) => (
+                <Bar key={i} className="h-10 rounded-full" style={{ width: w }} />
+              ))}
+              <Bar className="ml-auto h-11 w-44 rounded-full" />
+            </div>
+
+            <div className="results-count">
+              <Bar className="h-4 w-24" />
+            </div>
+
+            <div className="results-groups">
+              <div className="results-group">
+                <Bar className="h-6 w-40" />
+                <div className="results-grid">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <CardSkeleton key={i} />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>

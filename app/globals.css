@@ -9018,94 +9018,7 @@
     padding: 1.25rem 1.5rem 1.5rem;
   }
 
-  /* ------------------------------------------------------------------
-     Search results: the vehicle card and the trip summary
-     (app/search/results/components/*).
-
-     .fleet-card above and the search card render the same object: a
-     vehicle on a 16/9 plate with a name, a spec row and a price. They
-     used to disagree on ground, border, shadow and hover, so the same car
-     looked like it sat on two different sites. This is the fleet card's
-     physics with the body geometry the results grid needs.
-
-     Here rather than in Tailwind arbitrary values for the same reasons as
-     the three blocks above, plus one more: ease-[var(--ease-luxury)]
-     emits no rule at all, neither does rgba-over-a-var border colour, and
-     --stub-shadow is a two-layer comma list that cannot ride inside a
-     shadow-[...] utility.
-     ------------------------------------------------------------------ */
-  .vehicle-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-    background-color: var(--stub-bot);
-    background-image: linear-gradient(to bottom, var(--stub-top), var(--stub-bot));
-    border: 1px solid var(--stub-line);
-    border-radius: 8px;
-    box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
-    transition: border-color 200ms var(--ease-luxury);
-  }
-
-  .vehicle-card:hover,
-  .vehicle-card:focus-within {
-    border-color: rgba(var(--gold-rgb), 0.4);
-  }
-
-  /* Hover never fires on touch. Without this a tap has no feedback at all. */
-  .vehicle-card:active {
-    border-color: rgba(var(--gold-rgb), 0.55);
-  }
-
-  /* Sold out: still readable, no longer inviting a tap. */
-  .vehicle-card--out {
-    opacity: 0.55;
-  }
-
-  .vehicle-card--out:hover,
-  .vehicle-card--out:active,
-  .vehicle-card--out:focus-within {
-    border-color: var(--stub-line);
-  }
-
-  /* The plate carries its own ground, so a vehicle shot with a transparent
-     edge does not show the card's warm gradient through it. */
-  .vehicle-card__plate {
-    position: relative;
-    aspect-ratio: 16 / 9;
-    width: 100%;
-    overflow: hidden;
-    background-color: var(--black-warm);
-    border-bottom: 1px solid var(--stub-line);
-  }
-
-  .vehicle-card__img {
-    object-fit: cover;
-    transition: transform 700ms var(--ease-luxury);
-  }
-
-  .vehicle-card:hover .vehicle-card__img {
-    transform: scale(1.03);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .vehicle-card,
-    .vehicle-card__img,
-    .vehicle-card:hover .vehicle-card__img {
-      transition: none;
-      transform: none;
-    }
-  }
-
-  .vehicle-card__body {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    padding: 1.25rem 1.5rem 1.5rem;
-  }
-
-  /* ---- fleet (search results) ------------------------------------------
+  /* ---- results fleet (search results) ------------------------------------------
      The class strip, filter bar, class groups and vehicle cards on every
      results page (fleet-browser.tsx and its parts). Same --stub-* card
      physics as .vehicle-card and the home cards, so light and dark follow
@@ -9113,7 +9026,7 @@
      Tailwind arbitrary values because var()-with-opacity colours and
      ease-[...] curves emit no rule on this setup.
      ------------------------------------------------------------------ */
-  .fleet-intro {
+  .results-intro {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
@@ -9121,12 +9034,12 @@
     gap: 1.75rem 2.5rem;
   }
 
-  .fleet-intro > header {
+  .results-intro > header {
     min-width: 0;
     flex: 1 1 28rem;
   }
 
-  .fleet-perks {
+  .results-perks {
     display: flex;
     flex-wrap: wrap;
     margin: 0;
@@ -9134,7 +9047,7 @@
     list-style: none;
   }
 
-  .fleet-perks__item {
+  .results-perks__item {
     display: flex;
     min-width: 0;
     flex-direction: column;
@@ -9143,13 +9056,13 @@
     border-left: 1px solid var(--graphite);
   }
 
-  .fleet-perks__title {
+  .results-perks__title {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-primary);
   }
 
-  .fleet-perks__detail {
+  .results-perks__detail {
     font-size: 0.78125rem;
     color: var(--text-muted);
   }
@@ -9179,7 +9092,7 @@
   }
 
   /* class strip */
-  .fleet-strip {
+  .results-strip {
     display: grid;
     grid-auto-columns: minmax(10.5rem, 1fr);
     grid-auto-flow: column;
@@ -9190,7 +9103,7 @@
     margin: -6px -6px 0;
   }
 
-  .fleet-tile {
+  .results-tile {
     display: grid;
     gap: 0.3rem;
     padding: 0.875rem 0.9375rem;
@@ -9204,56 +9117,56 @@
     transition: border-color 200ms var(--ease-luxury), box-shadow 200ms var(--ease-luxury);
   }
 
-  .fleet-tile:hover {
+  .results-tile:hover {
     border-color: rgba(var(--gold-rgb), 0.45);
   }
 
-  .fleet-tile[aria-selected="true"] {
+  .results-tile[aria-selected="true"] {
     border-color: var(--gold);
     box-shadow: inset 0 1px 0 var(--stub-edge), 0 0 0 1px var(--gold), 0 0 0 5px rgba(var(--gold-rgb), 0.12);
   }
 
-  .fleet-tile:focus-visible,
-  .fleet-chip:focus-visible,
-  .fleet-clear:focus-visible,
-  .fleet-pill--select:focus-visible {
+  .results-tile:focus-visible,
+  .results-chip:focus-visible,
+  .results-clear:focus-visible,
+  .results-pill--select:focus-visible {
     outline: 2px solid var(--gold);
     outline-offset: 2px;
   }
 
-  .fleet-tile__top {
+  .results-tile__top {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
   }
 
-  .fleet-tile__name {
+  .results-tile__name {
     font-size: 0.90625rem;
     font-weight: 600;
     white-space: nowrap;
     color: var(--text-primary);
   }
 
-  .fleet-tile__count {
+  .results-tile__count {
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--gold-text);
   }
 
-  .fleet-tile__from {
+  .results-tile__from {
     font-size: 0.78125rem;
     white-space: nowrap;
     color: var(--text-muted);
   }
 
-  .fleet-tile__from b {
+  .results-tile__from b {
     font-weight: 600;
     color: var(--text-primary);
   }
 
   /* filter bar */
-  .fleet-bar {
+  .results-bar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -9267,7 +9180,7 @@
     box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
   }
 
-  .fleet-bar__chips {
+  .results-bar__chips {
     display: flex;
     min-width: 0;
     flex: 1 1 auto;
@@ -9276,7 +9189,7 @@
     overflow-x: auto;
   }
 
-  .fleet-bar__label {
+  .results-bar__label {
     flex: none;
     margin-right: 0.25rem;
     font-size: 0.6875rem;
@@ -9286,7 +9199,7 @@
     color: var(--text-muted);
   }
 
-  .fleet-bar__sort {
+  .results-bar__sort {
     display: flex;
     flex: none;
     align-items: center;
@@ -9294,7 +9207,7 @@
     margin-left: auto;
   }
 
-  .fleet-chip {
+  .results-chip {
     display: inline-flex;
     flex: none;
     align-items: center;
@@ -9312,27 +9225,27 @@
     transition: border-color 200ms var(--ease-luxury), background-color 200ms var(--ease-luxury);
   }
 
-  .fleet-chip svg {
+  .results-chip svg {
     width: 14px;
     height: 14px;
     color: var(--gold-text);
   }
 
-  .fleet-chip:hover {
+  .results-chip:hover {
     border-color: rgba(var(--gold-rgb), 0.45);
   }
 
-  .fleet-chip[aria-pressed="true"] {
+  .results-chip[aria-pressed="true"] {
     color: var(--black-rich);
     background: var(--text-primary);
     border-color: var(--text-primary);
   }
 
-  .fleet-chip[aria-pressed="true"] svg {
+  .results-chip[aria-pressed="true"] svg {
     color: inherit;
   }
 
-  .fleet-count {
+  .results-count {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
@@ -9343,16 +9256,16 @@
   }
 
   /* Takes focus after Clear filters (the button that had it unmounts). */
-  .fleet-count:focus {
+  .results-count:focus {
     outline: none;
   }
 
-  .fleet-count b {
+  .results-count b {
     font-weight: 600;
     color: var(--text-primary);
   }
 
-  .fleet-clear {
+  .results-clear {
     padding: 0;
     font-size: 0.8125rem;
     font-weight: 500;
@@ -9364,7 +9277,7 @@
     text-underline-offset: 3px;
   }
 
-  .fleet-empty {
+  .results-empty {
     display: grid;
     justify-items: center;
     gap: 0.75rem;
@@ -9377,32 +9290,32 @@
   }
 
   /* class groups */
-  .fleet-groups {
+  .results-groups {
     display: grid;
     gap: 2.75rem;
     margin-top: 1.25rem;
   }
 
-  .fleet-group {
+  .results-group {
     display: grid;
     gap: 1rem;
   }
 
-  .fleet-group__head {
+  .results-group__head {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem 0.75rem;
   }
 
-  .fleet-group__head::after {
+  .results-group__head::after {
     content: "";
     flex: 1 1 2.5rem;
     height: 1px;
     background: var(--graphite);
   }
 
-  .fleet-group__title {
+  .results-group__title {
     margin: 0;
     font-size: 1.375rem;
     font-weight: 600;
@@ -9410,32 +9323,32 @@
     color: var(--text-primary);
   }
 
-  .fleet-group__meta {
+  .results-group__meta {
     margin: 0;
     font-size: 0.8125rem;
     color: var(--text-muted);
   }
 
-  .fleet-grid {
+  .results-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 1.25rem;
   }
 
   @media (min-width: 768px) {
-    .fleet-grid {
+    .results-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
   @media (min-width: 1024px) {
-    .fleet-grid {
+    .results-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
   /* vehicle card */
-  .fleet-card {
+  .results-card {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -9450,16 +9363,16 @@
     transition: border-color 250ms var(--ease-luxury);
   }
 
-  .fleet-card:hover,
-  .fleet-card:focus-within {
+  .results-card:hover,
+  .results-card:focus-within {
     border-color: rgba(var(--gold-rgb), 0.4);
   }
 
-  .fleet-card:active {
+  .results-card:active {
     border-color: rgba(var(--gold-rgb), 0.55);
   }
 
-  .fleet-card__photo {
+  .results-card__photo {
     position: relative;
     aspect-ratio: 16 / 10;
     width: 100%;
@@ -9467,16 +9380,16 @@
     background-color: var(--black-warm);
   }
 
-  .fleet-card__img {
+  .results-card__img {
     object-fit: cover;
     transition: transform 700ms var(--ease-luxury);
   }
 
-  .fleet-card:hover .fleet-card__img {
+  .results-card:hover .results-card__img {
     transform: scale(1.03);
   }
 
-  .fleet-card__fallback {
+  .results-card__fallback {
     position: absolute;
     inset: 0;
     display: grid;
@@ -9489,7 +9402,7 @@
     background: var(--charcoal);
   }
 
-  .fleet-glass {
+  .results-glass {
     position: absolute;
     top: 0.75rem;
     z-index: 1;
@@ -9510,16 +9423,16 @@
     backdrop-filter: blur(10px);
   }
 
-  .fleet-glass--start {
+  .results-glass--start {
     left: 0.75rem;
   }
 
-  .fleet-glass--end {
+  .results-glass--end {
     right: 0.75rem;
     font-weight: 500;
   }
 
-  .fleet-card__status {
+  .results-card__status {
     position: absolute;
     inset: 0;
     display: grid;
@@ -9528,7 +9441,7 @@
     pointer-events: none;
   }
 
-  .fleet-card__status > span {
+  .results-card__status > span {
     display: inline-flex;
     align-items: center;
     gap: 0.5625rem;
@@ -9543,7 +9456,7 @@
     border-radius: 999px;
   }
 
-  .fleet-card__status > span::before {
+  .results-card__status > span::before {
     content: "";
     flex: none;
     width: 7px;
@@ -9552,27 +9465,27 @@
     background: #e0645a;
   }
 
-  .fleet-card__body {
+  .results-card__body {
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
     padding: 1.125rem 1.25rem 1.25rem;
   }
 
-  .fleet-card__name {
+  .results-card__name {
     display: flex;
     flex-direction: column;
     gap: 0.125rem;
     margin: 0;
   }
 
-  .fleet-card__make {
+  .results-card__make {
     font-size: 0.8125rem;
     font-weight: 400;
     color: var(--text-muted);
   }
 
-  .fleet-card__model {
+  .results-card__model {
     font-size: 1.375rem;
     font-weight: 600;
     line-height: 1.2;
@@ -9580,7 +9493,7 @@
     color: var(--text-primary);
   }
 
-  .fleet-card__desc {
+  .results-card__desc {
     display: -webkit-box;
     min-height: 3em;
     margin: 0.5rem 0 0;
@@ -9592,7 +9505,7 @@
     -webkit-line-clamp: 2;
   }
 
-  .fleet-card__chips {
+  .results-card__chips {
     display: flex;
     flex-wrap: wrap;
     gap: 0.375rem;
@@ -9601,7 +9514,7 @@
     list-style: none;
   }
 
-  .fleet-card__chips li {
+  .results-card__chips li {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
@@ -9613,14 +9526,14 @@
     border-radius: 999px;
   }
 
-  .fleet-card__chips svg {
+  .results-card__chips svg {
     width: 13px;
     height: 13px;
     flex: none;
     color: var(--gold-text);
   }
 
-  .fleet-card__notes {
+  .results-card__notes {
     display: grid;
     gap: 0.25rem;
     margin: 0.75rem 0 0;
@@ -9631,7 +9544,7 @@
     color: var(--text-secondary);
   }
 
-  .fleet-card__foot {
+  .results-card__foot {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
@@ -9641,19 +9554,19 @@
     border-top: 1px solid var(--graphite);
   }
 
-  .fleet-card__chips + .fleet-card__foot,
-  .fleet-card__notes + .fleet-card__foot {
+  .results-card__chips + .results-card__foot,
+  .results-card__notes + .results-card__foot {
     margin-top: 1.125rem;
   }
 
-  .fleet-card__label,
-  .fleet-card__caption {
+  .results-card__label,
+  .results-card__caption {
     margin: 0;
     font-size: 0.75rem;
     color: var(--text-muted);
   }
 
-  .fleet-card__price {
+  .results-card__price {
     margin: 0.25rem 0;
     font-size: 1.5rem;
     font-weight: 700;
@@ -9662,7 +9575,7 @@
     color: var(--gold-text);
   }
 
-  .fleet-pill {
+  .results-pill {
     display: inline-flex;
     flex: none;
     align-items: center;
@@ -9674,7 +9587,7 @@
     border-radius: 999px;
   }
 
-  .fleet-pill--select {
+  .results-pill--select {
     color: var(--onyx);
     background: linear-gradient(180deg, var(--gold-cream) 0%, var(--gold) 45%, var(--gold-medium) 100%);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 10px 24px -14px rgba(var(--gold-rgb), 0.5);
@@ -9683,110 +9596,110 @@
   /* Lighter by moving the gradient, not by filter: a filter would make the pill
      the containing block of its ::after and shrink the whole-card hit area to
      the pill while the pointer is on it. */
-  .fleet-pill--select:hover {
+  .results-pill--select:hover {
     background: linear-gradient(180deg, var(--gold-cream) 0%, var(--gold-cream) 18%, var(--gold) 62%, var(--gold-medium) 100%);
   }
 
-  .fleet-pill--select svg {
+  .results-pill--select svg {
     transition: transform 200ms var(--ease-luxury);
   }
 
-  .fleet-card:hover .fleet-pill--select svg {
+  .results-card:hover .results-pill--select svg {
     transform: translateX(2px);
   }
 
   /* The whole card is Select's hit area. */
-  .fleet-pill--select::after {
+  .results-pill--select::after {
     content: "";
     position: absolute;
     inset: 0;
     border-radius: 20px;
   }
 
-  .fleet-pill--off {
+  .results-pill--off {
     color: var(--text-muted);
     background: rgba(var(--gold-rgb), 0.06);
     border: 1px solid var(--stub-line);
   }
 
   /* Unavailable: still readable, no longer inviting a tap. */
-  .fleet-card--out .fleet-card__img {
+  .results-card--out .results-card__img {
     filter: grayscale(1) brightness(0.75) contrast(0.9);
   }
 
-  .fleet-card--out .fleet-card__model,
-  .fleet-card--out .fleet-card__price {
+  .results-card--out .results-card__model,
+  .results-card--out .results-card__price {
     color: var(--text-secondary);
   }
 
-  .fleet-card--out:hover,
-  .fleet-card--out:active,
-  .fleet-card--out:focus-within {
+  .results-card--out:hover,
+  .results-card--out:active,
+  .results-card--out:focus-within {
     border-color: var(--stub-line);
   }
 
-  .fleet-card--out:hover .fleet-card__img {
+  .results-card--out:hover .results-card__img {
     transform: none;
   }
 
   @media (max-width: 1180px) {
-    .fleet-strip {
+    .results-strip {
       grid-auto-columns: 10.5rem;
     }
   }
 
   @media (max-width: 639px) {
-    .fleet-perks__item {
+    .results-perks__item {
       flex: 1 1 0;
       padding: 0.125rem 0.75rem;
     }
 
-    .fleet-perks__item:first-child {
+    .results-perks__item:first-child {
       padding-left: 0;
       border-left: 0;
     }
 
-    .fleet-strip {
+    .results-strip {
       grid-auto-columns: 9.25rem;
     }
 
-    .fleet-bar {
+    .results-bar {
       padding: 0.625rem;
     }
 
-    .fleet-bar__chips {
+    .results-bar__chips {
       flex: 1 1 100%;
     }
 
-    .fleet-bar__chips .fleet-bar__label {
+    .results-bar__chips .results-bar__label {
       display: none;
     }
 
-    .fleet-bar__sort {
+    .results-bar__sort {
       flex: 1 1 100%;
       margin-left: 0;
     }
 
-    .fleet-bar__sort .fleet-bar__label {
+    .results-bar__sort .results-bar__label {
       display: none;
     }
 
-    .fleet-bar__sort > button {
+    .results-bar__sort > button {
       flex: 1 1 auto;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .fleet-tile,
-    .fleet-chip,
-    .fleet-card,
-    .fleet-card__img,
-    .fleet-pill--select svg {
+    .results-tile,
+    .results-chip,
+    .results-card,
+    .results-card__img,
+    .results-pill--select svg {
       transition: none;
     }
 
-    .fleet-card:hover .fleet-card__img,
-    .fleet-card:hover .fleet-pill--select svg {
+    .results-card:hover .results-card__img,
+    .results-card:hover .results-pill--select svg {
       transform: none;
     }
   }

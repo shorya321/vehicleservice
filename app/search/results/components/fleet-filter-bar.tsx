@@ -19,10 +19,10 @@ interface FleetFilterBarProps {
  */
 export function FleetFilterBar({ needs, activeNeedId, onNeedChange, sort, onSortChange }: FleetFilterBarProps) {
   return (
-    <div className="fleet-bar">
+    <div className="results-bar">
       {needs.length > 0 && (
-        <div role="group" aria-label="Filter by passengers and bags" className="fleet-bar__chips scrollbar-hide">
-          <span className="fleet-bar__label" aria-hidden="true">Need</span>
+        <div role="group" aria-label="Filter by passengers and bags" className="results-bar__chips scrollbar-hide">
+          <span className="results-bar__label" aria-hidden="true">Need</span>
           {needs.map((need) => {
             const pressed = need.id === activeNeedId
             const Icon = need.kind === 'passengers' ? Users : Briefcase
@@ -32,7 +32,7 @@ export function FleetFilterBar({ needs, activeNeedId, onNeedChange, sort, onSort
                 type="button"
                 aria-pressed={pressed}
                 onClick={() => onNeedChange(pressed ? null : need.id)}
-                className="fleet-chip"
+                className="results-chip"
               >
                 <Icon aria-hidden="true" />
                 {need.label}
@@ -42,8 +42,8 @@ export function FleetFilterBar({ needs, activeNeedId, onNeedChange, sort, onSort
         </div>
       )}
 
-      <div className="fleet-bar__sort">
-        <span className="fleet-bar__label" aria-hidden="true">Sort</span>
+      <div className="results-bar__sort">
+        <span className="results-bar__label" aria-hidden="true">Sort</span>
         <SortSelect<FleetSort>
           value={sort}
           options={FLEET_SORTS}

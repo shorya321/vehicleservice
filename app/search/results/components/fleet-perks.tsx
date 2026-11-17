@@ -10,11 +10,11 @@ export interface FleetPerk {
  */
 export function FleetPerks({ perks }: { perks: readonly FleetPerk[] }) {
   return (
-    <ul className="fleet-perks">
+    <ul className="results-perks">
       {perks.map((perk) => (
-        <li key={perk.title} className="fleet-perks__item">
-          <span className="fleet-perks__title">{perk.title}</span>
-          <span className="fleet-perks__detail">{perk.detail}</span>
+        <li key={perk.title} className="results-perks__item">
+          <span className="results-perks__title">{perk.title}</span>
+          <span className="results-perks__detail">{perk.detail}</span>
         </li>
       ))}
     </ul>

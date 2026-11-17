@@ -59,7 +59,7 @@ export function VehicleFleetCard({ vehicleType, searchParams, index = 0, level, 
   return (
     <motion.article
       aria-label={unavailable ? `${vehicleType.name}, ${unavailableLabel}` : vehicleType.name}
-      className={`fleet-card group ${unavailable ? 'fleet-card--out' : ''}`}
+      className={`results-card group ${unavailable ? 'results-card--out' : ''}`}
       // `animate` is always supplied: useReducedMotion() is false during SSR, so
       // leaving it undefined would serialise opacity:0 and never animate back.
       initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }}
@@ -70,9 +70,9 @@ export function VehicleFleetCard({ vehicleType, searchParams, index = 0, level, 
         ease: [0.16, 1, 0.3, 1],
       }}
     >
-      <div className="fleet-card__photo">
+      <div className="results-card__photo">
         {imageError ? (
-          <div className="fleet-card__fallback" aria-hidden="true">
+          <div className="results-card__fallback" aria-hidden="true">
             <span>{vehicleType.name}</span>
           </div>
         ) : (
@@ -81,41 +81,41 @@ export function VehicleFleetCard({ vehicleType, searchParams, index = 0, level, 
             alt={vehicleType.name}
             fill
             priority={index < 3}
-            className="fleet-card__img"
+            className="results-card__img"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             onError={() => setImageError(true)}
           />
         )}
 
-        <span className="fleet-glass fleet-glass--start">
+        <span className="results-glass results-glass--start">
           {vehicleType.category}
           {level !== undefined && <PriceMeter level={level} className="price-meter--glass" />}
         </span>
 
         {unavailable ? (
-          <span className="fleet-card__status">
+          <span className="results-card__status">
             <span>{unavailableLabel}</span>
           </span>
         ) : (
-          <span className="fleet-glass fleet-glass--end">
+          <span className="results-glass results-glass--end">
             <Check className="h-3 w-3" aria-hidden="true" />
             Free cancellation
           </span>
         )}
       </div>
 
-      <div className="fleet-card__body">
-        <Heading className="fleet-card__name">
+      <div className="results-card__body">
+        <Heading className="results-card__name">
           {/* The line is kept when there is no make, so every card's body starts at the same height. */}
           {make
-            ? <span className="fleet-card__make">{make}</span>
-            : <span className="fleet-card__make" aria-hidden="true">{'\u00a0'}</span>}
-          <span className="fleet-card__model">{model}</span>
+            ? <span className="results-card__make">{make}</span>
+            : <span className="results-card__make" aria-hidden="true">{'\u00a0'}</span>}
+          <span className="results-card__model">{model}</span>
         </Heading>
 
-        {description && <p className="fleet-card__desc">{description}</p>}
+        {description && <p className="results-card__desc">{description}</p>}
 
-        <ul className="fleet-card__chips">
+        <ul className="results-card__chips">
           <li>
             <Users aria-hidden="true" />
             <span className="numeric">{plural(vehicleType.capacity, 'passenger', 'passengers')}</span>
@@ -131,7 +131,7 @@ export function VehicleFleetCard({ vehicleType, searchParams, index = 0, level, 
         </ul>
 
         {hasPricingNotes && tripPricing && (
-          <ul className="fleet-card__notes">
+          <ul className="results-card__notes">
             {tripPricing.details.map((detail) => (
               <li key={detail}>{detail}</li>
             ))}
@@ -143,23 +143,23 @@ export function VehicleFleetCard({ vehicleType, searchParams, index = 0, level, 
           </ul>
         )}
 
-        <div className="fleet-card__foot">
+        <div className="results-card__foot">
           <div className="min-w-0">
-            <p className="fleet-card__label">{tripPricing?.label ?? 'From'}</p>
-            <p className="fleet-card__price numeric">
+            <p className="results-card__label">{tripPricing?.label ?? 'From'}</p>
+            <p className="results-card__price numeric">
               {formatResultPrice(vehicleType.price, currentCurrency, exchangeRates)}
             </p>
-            <p className="fleet-card__caption">{tripPricing?.caption ?? 'per vehicle'}</p>
+            <p className="results-card__caption">{tripPricing?.caption ?? 'per vehicle'}</p>
           </div>
 
           {unavailable ? (
-            <span className="fleet-pill fleet-pill--off">Unavailable</span>
+            <span className="results-pill results-pill--off">Unavailable</span>
           ) : (
             // The ::after overlay makes the whole card the target. People tap
             // the car, not the button; the button keeps its own focus ring.
             <Link
               href={selectionHref(vehicleType, searchParams)}
-              className="fleet-pill fleet-pill--select"
+              className="results-pill results-pill--select"
               aria-label={`Select ${vehicleType.name}`}
             >
               Select

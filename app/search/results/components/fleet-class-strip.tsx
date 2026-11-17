@@ -42,7 +42,7 @@ export function FleetClassStrip({ tiles, activeId, onSelect }: FleetClassStripPr
   }, [tiles, onSelect])
 
   return (
-    <div role="tablist" aria-label="Vehicle classes" className="fleet-strip scrollbar-hide">
+    <div role="tablist" aria-label="Vehicle classes" className="results-strip scrollbar-hide">
       {tiles.map((tile, index) => {
         const selected = tile.id === activeId
         return (
@@ -55,13 +55,13 @@ export function FleetClassStrip({ tiles, activeId, onSelect }: FleetClassStripPr
             tabIndex={selected ? 0 : -1}
             onClick={() => onSelect(tile.id)}
             onKeyDown={(event) => onKeyDown(event, index)}
-            className="fleet-tile"
+            className="results-tile"
           >
-            <span className="fleet-tile__top">
-              <span className="fleet-tile__name">{tile.name}</span>
-              <span className="fleet-tile__count numeric">{tile.count}</span>
+            <span className="results-tile__top">
+              <span className="results-tile__name">{tile.name}</span>
+              <span className="results-tile__count numeric">{tile.count}</span>
             </span>
-            <span className="fleet-tile__from">
+            <span className="results-tile__from">
               {tile.fromPrice === null ? (
                 'Unavailable'
               ) : (

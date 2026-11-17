@@ -278,7 +278,7 @@ export function SearchResults({ results, routeMap, searchParams }: SearchResults
         {/* ---- Band 2: the fleet for this trip -------------------------- */}
         <section className="editorial-section editorial-section--raised">
           <div className="luxury-container">
-            <div className="fleet-intro">
+            <div className="results-intro">
               <motion.header
                 className="max-w-2xl"
                 initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 16 }}
