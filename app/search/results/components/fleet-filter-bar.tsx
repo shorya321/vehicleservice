@@ -21,7 +21,7 @@ export function FleetFilterBar({ needs, activeNeedId, onNeedChange, sort, onSort
   return (
     <div className="results-bar">
       {needs.length > 0 && (
-        <div role="group" aria-label="Filter by passengers and bags" className="results-bar__chips scrollbar-hide">
+        <div role="group" aria-label="Filter by passengers and bags" className="results-bar__chips">
           <span className="results-bar__label" aria-hidden="true">Need</span>
           {needs.map((need) => {
             const pressed = need.id === activeNeedId

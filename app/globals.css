@@ -9180,13 +9180,15 @@
     box-shadow: inset 0 1px 0 var(--stub-edge), var(--stub-shadow);
   }
 
+  /* Chips wrap at every width: a scrolled row cut off at the bar's edge hid
+     filters with nothing to say they were there. */
   .results-bar__chips {
     display: flex;
     min-width: 0;
     flex: 1 1 auto;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.375rem;
-    overflow-x: auto;
   }
 
   .results-bar__label {
@@ -9648,15 +9650,26 @@
     }
   }
 
+  /* Phone: three narrow columns broke a perk over five lines, so they stack,
+     one line each, title then detail. */
   @media (max-width: 639px) {
-    .results-perks__item {
-      flex: 1 1 0;
-      padding: 0.125rem 0.75rem;
+    .results-perks {
+      width: 100%;
+      flex-direction: column;
     }
 
-    .results-perks__item:first-child {
-      padding-left: 0;
+    .results-perks__item {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.25rem 0.5rem;
+      padding: 0.5rem 0;
       border-left: 0;
+      border-top: 1px solid var(--graphite);
+    }
+
+    .results-perks__item:last-child {
+      border-bottom: 1px solid var(--graphite);
     }
 
     .results-strip {
