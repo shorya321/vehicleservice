@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { Bell, Mail, CreditCard, CheckCheck, ChevronDown, Loader2, Eraser } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { subscribeWithAuth } from "@/lib/supabase/subscribe-with-auth"
 import {
   getNotifications,
   getNotificationStats,
@@ -84,34 +85,34 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
   useEffect(() => {
     const supabase = createClient()
 
-    const channel = supabase
-      .channel("notifications-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          const newNotification = payload.new as NotificationListItem
-          if (category === "all" || newNotification.category === category) {
-            setNotifications((prev) => [newNotification, ...prev])
-            setStats((prev) => ({
-              ...prev,
-              total: prev.total + 1,
-              unread: prev.unread + 1,
-            }))
-            toast.info("New notification received")
+    // Join only once the user's token is on the socket, or RLS hides every row
+    // and no INSERT ever arrives (see subscribeWithAuth).
+    return subscribeWithAuth(supabase, () =>
+      supabase
+        .channel("notifications-realtime")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${userId}`,
+          },
+          (payload) => {
+            const newNotification = payload.new as NotificationListItem
+            if (category === "all" || newNotification.category === category) {
+              setNotifications((prev) => [newNotification, ...prev])
+              setStats((prev) => ({
+                ...prev,
+                total: prev.total + 1,
+                unread: prev.unread + 1,
+              }))
+              toast.info("New notification received")
+            }
           }
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
+        )
+        .subscribe()
+    )
   }, [userId, category])
 
   const handleMarkAsRead = async (id: string) => {

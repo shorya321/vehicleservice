@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { subscribeBusinessRealtimeWithAuth } from '@/lib/business/realtime/subscribe-with-auth';
 import { Notification, NotificationCategory } from '@/lib/notifications/types';
 import {
   getRecentNotificationsAction,
@@ -172,49 +173,54 @@ export function useBusinessNotifications(limit: number = 5): UseBusinessNotifica
     const supabase = createClient();
 
     // Subscribe to INSERT events on notifications table for this user
-    const channel = supabase
-      .channel(`business_notifications:${userId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          const newNotification = payload.new as Notification;
+    // Join only once the user's token is on the socket, or RLS hides every row
+    // and no INSERT ever arrives (see subscribeWithAuth).
+    // The topic is per instance: two hooks sharing one topic share one channel,
+    // and the second listener makes the join reply fail with a postgres
+    // binding mismatch, which unsubscribes the channel for both.
+    return subscribeBusinessRealtimeWithAuth(supabase, () =>
+      supabase
+        .channel(`business_notifications:${userId}:${syncSource}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`,
+          },
+          (payload) => {
+            const newNotification = payload.new as Notification;
 
-          // Only show business-relevant notifications
-          if (['booking', 'payment', 'system'].includes(newNotification.category)) {
-            // Add to notifications list
-            setNotifications((prev) => [newNotification, ...prev.slice(0, limit - 1)]);
+            // Only show business-relevant notifications
+            if (['booking', 'payment', 'system'].includes(newNotification.category)) {
+              // Add to notifications list
+              setNotifications((prev) => [newNotification, ...prev.slice(0, limit - 1)]);
 
-            // Increment unread count
-            setUnreadCount((prev) => prev + 1);
+              // Increment unread count
+              setUnreadCount((prev) => prev + 1);
 
-            // Show toast notification
-            toast.info(newNotification.title, {
-              description: newNotification.message,
-              action: newNotification.link
-                ? {
-                    label: 'View',
-                    onClick: () => {
-                      window.location.href = newNotification.link!;
-                    },
-                  }
-                : undefined,
-            });
+              // Show toast notification
+              toast.info(newNotification.title, {
+                // Stable id: the header bell and the sidebar badge both run this hook,
+                // and the toast library shows one toast per id.
+                id: `notification-${newNotification.id}`,
+                description: newNotification.message,
+                action: newNotification.link
+                  ? {
+                      label: 'View',
+                      onClick: () => {
+                        window.location.href = newNotification.link!;
+                      },
+                    }
+                  : undefined,
+              });
+            }
           }
-        }
-      )
-      .subscribe();
-
-    // Cleanup subscription on unmount
-    return () => {
-      channel.unsubscribe();
-    };
-  }, [userId, limit]);
+        )
+        .subscribe()
+    );
+  }, [userId, limit, syncSource]);
 
   // Latest list and count, read by the sync listener below without re-subscribing.
   const bellStateRef = useRef({ notifications, unreadCount });

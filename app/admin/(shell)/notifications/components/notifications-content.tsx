@@ -39,6 +39,7 @@ import {
   subscribeNotificationChanges,
 } from '@/lib/notifications/notification-sync';
 import { createClient } from '@/lib/supabase/client';
+import { subscribeWithAuth } from '@/lib/supabase/subscribe-with-auth';
 
 const categories: (NotificationCategory | 'all')[] = [
   'all',
@@ -138,26 +139,26 @@ export function NotificationsContent({ adminEmail }: NotificationsContentProps) 
   useEffect(() => {
     const supabase = createClient();
 
-    const channel = supabase
-      .channel('admin-notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-        },
-        () => {
-          // Refresh notifications and stats when new notification arrives
-          fetchNotifications(activeTab === 'all' ? undefined : activeTab, 1);
-          fetchStats();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    // Join only once the user's token is on the socket, or RLS hides every row
+    // and no INSERT ever arrives (see subscribeWithAuth).
+    return subscribeWithAuth(supabase, () =>
+      supabase
+        .channel('admin-notifications')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+          },
+          () => {
+            // Refresh notifications and stats when new notification arrives
+            fetchNotifications(activeTab === 'all' ? undefined : activeTab, 1);
+            fetchStats();
+          }
+        )
+        .subscribe()
+    );
   }, [activeTab]);
 
   // The bell, or another tab, changed something. Mirror it in the loaded list
