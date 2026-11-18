@@ -27,13 +27,22 @@ import {
   publishBusinessNotificationChange,
   subscribeBusinessNotificationChanges,
 } from '@/lib/business/notifications/notification-sync';
+import {
+  appendUniqueBusinessNotifications,
+  mergeIncomingBusinessNotification,
+} from '@/lib/business/notifications/page-live-insert';
+import { useBusinessNotificationInserts } from '@/lib/business/hooks/use-business-notification-inserts';
 import { cn } from '@/lib/utils';
 import { PageContainer } from '@/components/business/layout';
 import { BusinessNotificationItem } from '@/components/business/notifications/notification-item';
 
 const ITEMS_PER_PAGE = 8;
 
-export function NotificationsContent() {
+interface NotificationsContentProps {
+  userId: string;
+}
+
+export function NotificationsContent({ userId }: NotificationsContentProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<NotificationCategory | 'all'>('all');
@@ -70,7 +79,8 @@ export function NotificationsContent() {
         const newNotifications = result.data.notifications;
 
         if (append) {
-          setNotifications((prev) => [...prev, ...newNotifications]);
+          // Skips rows already shown: a live insert shifts the offsets by one.
+          setNotifications((prev) => appendUniqueBusinessNotifications(prev, newNotifications));
         } else {
           setNotifications(newNotifications);
         }
@@ -127,6 +137,13 @@ export function NotificationsContent() {
       true // append mode
     );
   };
+
+  // New notifications while this page is open: add to the list if they belong on
+  // the active tab, and refresh the counts. The bell shows the toast.
+  useBusinessNotificationInserts<Notification>(userId, syncSource, (row) => {
+    setNotifications((prev) => mergeIncomingBusinessNotification(prev, row, activeCategory));
+    fetchStats();
+  });
 
   // The bell, or another tab, changed something. Mirror it in the loaded list
   // (keeping any extra pages already loaded) and refresh the counts.

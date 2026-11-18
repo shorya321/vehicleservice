@@ -36,5 +36,5 @@ export default async function BusinessNotificationsPage() {
     redirect('/business/login');
   }
 
-  return <NotificationsContent />;
+  return <NotificationsContent userId={user.id} />;
 }

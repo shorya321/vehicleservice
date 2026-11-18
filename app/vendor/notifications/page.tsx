@@ -33,7 +33,7 @@ export default async function VendorNotificationsPage() {
   return (
     <AnimatedPage>
       <Suspense fallback={<NotificationsContentSkeleton />}>
-        <NotificationsContent />
+        <NotificationsContent userId={user.id} />
       </Suspense>
     </AnimatedPage>
   );

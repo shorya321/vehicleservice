@@ -26,6 +26,12 @@ import {
   Building2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { createClient } from '@/lib/supabase/client';
+import { subscribeWithAuth } from '@/lib/supabase/subscribe-with-auth';
+import {
+  appendUniqueNotifications,
+  mergeIncomingNotification,
+} from '@/lib/notifications/page-live-insert';
 import {
   createNotificationSyncSource,
   publishNotificationChange,
@@ -49,7 +55,11 @@ interface NotificationStats {
   payment: number;
 }
 
-export function NotificationsContent() {
+interface NotificationsContentProps {
+  userId: string;
+}
+
+export function NotificationsContent({ userId }: NotificationsContentProps) {
   const [activeTab, setActiveTab] = useState<NotificationCategory | 'all'>('all');
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -90,7 +100,9 @@ export function NotificationsContent() {
         if (pageNum === 1) {
           setNotifications(result.data.notifications);
         } else {
-          setNotifications((prev) => [...prev, ...result.data!.notifications]);
+          // Skips rows already shown: a live insert shifts the offsets by one.
+          const nextPage = result.data.notifications;
+          setNotifications((prev) => appendUniqueNotifications(prev, nextPage));
         }
         setUnreadCount(result.data.unreadCount);
         setHasMore(result.data.notifications.length === 20);
@@ -107,6 +119,34 @@ export function NotificationsContent() {
     fetchStats();
     fetchNotifications(activeTab === 'all' ? undefined : activeTab);
   }, [activeTab]);
+
+  // New notifications while this page is open. The bell has its own channel and
+  // shows the toast; this one keeps the list and counts current. Its topic is its
+  // own, so it never shares (and breaks) the bell's channel.
+  useEffect(() => {
+    const supabase = createClient();
+    const category = activeTab === 'all' ? undefined : activeTab;
+    return subscribeWithAuth(supabase, () =>
+      supabase
+        .channel(`vendor-notifications-page:${userId}:${syncSource}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`,
+          },
+          (payload) => {
+            const row = payload.new as Notification;
+            setNotifications((prev) => mergeIncomingNotification(prev, row, activeTab));
+            getUnreadCountAction(category).then((result) => setUnreadCount(result.data ?? 0));
+            fetchStats();
+          }
+        )
+        .subscribe()
+    );
+  }, [userId, activeTab, syncSource]);
 
   // The bell, or another tab, changed something. Mirror it in the loaded list
   // (keeping any extra pages already loaded) and refresh the counts.
