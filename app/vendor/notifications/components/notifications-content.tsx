@@ -12,6 +12,7 @@ import {
   getNotificationsAction,
   markNotificationAsReadAction,
   markAllAsReadAction,
+  getUnreadCountAction,
   deleteNotificationAction,
   clearReadNotificationsAction,
   getNotificationStatsAction,
@@ -25,6 +26,11 @@ import {
   Building2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  createNotificationSyncSource,
+  publishNotificationChange,
+  subscribeNotificationChanges,
+} from '@/lib/notifications/notification-sync';
 
 const categories: (NotificationCategory | 'all')[] = [
   'all',
@@ -50,6 +56,8 @@ export function NotificationsContent() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  // Identifies this page, so it ignores its own sync announcements.
+  const [syncSource] = useState(createNotificationSyncSource);
   const [stats, setStats] = useState<NotificationStats>({
     total: 0,
     unread: 0,
@@ -100,6 +108,48 @@ export function NotificationsContent() {
     fetchNotifications(activeTab === 'all' ? undefined : activeTab);
   }, [activeTab]);
 
+  // The bell, or another tab, changed something. Mirror it in the loaded list
+  // (keeping any extra pages already loaded) and refresh the counts.
+  useEffect(() => {
+    const category = activeTab === 'all' ? undefined : activeTab;
+    return subscribeNotificationChanges(
+      'vendor',
+      ({ change }) => {
+        switch (change.type) {
+          case 'read':
+            setNotifications((prev) =>
+              prev.map((n) => (n.id === change.id ? { ...n, is_read: true } : n))
+            );
+            break;
+          case 'read-all':
+            setNotifications((prev) =>
+              prev.map((n) =>
+                !change.category || n.category === change.category ? { ...n, is_read: true } : n
+              )
+            );
+            break;
+          case 'deleted':
+            setNotifications((prev) => prev.filter((n) => n.id !== change.id));
+            break;
+          case 'cleared-read':
+            setNotifications((prev) =>
+              prev.filter(
+                (n) => !n.is_read || (change.category !== undefined && n.category !== change.category)
+              )
+            );
+            break;
+          case 'purged':
+            setPage(1);
+            fetchNotifications(category, 1);
+            break;
+        }
+        getUnreadCountAction(category).then((result) => setUnreadCount(result.data ?? 0));
+        fetchStats();
+      },
+      { ignoreSource: syncSource }
+    );
+  }, [activeTab, syncSource]);
+
   // Mark notification as read
   const handleMarkAsRead = async (id: string) => {
     const result = await markNotificationAsReadAction(id);
@@ -110,6 +160,7 @@ export function NotificationsContent() {
       setUnreadCount((prev) => Math.max(0, prev - 1));
       // Refresh stats
       fetchStats();
+      publishNotificationChange('vendor', syncSource, { type: 'read', id });
     }
   };
 
@@ -123,6 +174,9 @@ export function NotificationsContent() {
       toast.success('All notifications marked as read');
       // Refresh stats
       fetchStats();
+      publishNotificationChange('vendor', syncSource, { type: 'read-all', category });
+    } else {
+      toast.error('Failed to mark notifications as read');
     }
   };
 
@@ -159,6 +213,7 @@ export function NotificationsContent() {
     }
 
     fetchStats();
+    publishNotificationChange('vendor', syncSource, { type: 'deleted', id });
   };
 
   // Delete the read notifications in the active tab
@@ -178,6 +233,7 @@ export function NotificationsContent() {
         : `Cleared ${result.deleted ?? 0} read notifications`
     );
     fetchStats();
+    publishNotificationChange('vendor', syncSource, { type: 'cleared-read', category });
   };
 
   // Load more

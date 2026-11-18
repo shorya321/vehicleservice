@@ -22,6 +22,11 @@ import {
   getNotificationStatsAction,
 } from '../actions';
 import { toast } from 'sonner';
+import {
+  createBusinessNotificationSyncSource,
+  publishBusinessNotificationChange,
+  subscribeBusinessNotificationChanges,
+} from '@/lib/business/notifications/notification-sync';
 import { cn } from '@/lib/utils';
 import { PageContainer } from '@/components/business/layout';
 import { BusinessNotificationItem } from '@/components/business/notifications/notification-item';
@@ -35,6 +40,8 @@ export function NotificationsContent() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  // Identifies this page, so it ignores its own sync announcements.
+  const [syncSource] = useState(createBusinessNotificationSyncSource);
   const [stats, setStats] = useState({
     total: 0,
     unread: 0,
@@ -121,6 +128,41 @@ export function NotificationsContent() {
     );
   };
 
+  // The bell, or another tab, changed something. Mirror it in the loaded list
+  // (keeping any extra pages already loaded) and refresh the counts.
+  useEffect(() => {
+    return subscribeBusinessNotificationChanges(
+      ({ change }) => {
+        switch (change.type) {
+          case 'read':
+            setNotifications((prev) =>
+              prev.map((n) => (n.id === change.id ? { ...n, is_read: true } : n))
+            );
+            break;
+          case 'read-all':
+            setNotifications((prev) =>
+              prev.map((n) =>
+                !change.category || n.category === change.category ? { ...n, is_read: true } : n
+              )
+            );
+            break;
+          case 'deleted':
+            setNotifications((prev) => prev.filter((n) => n.id !== change.id));
+            break;
+          case 'cleared-read':
+            setNotifications((prev) =>
+              prev.filter(
+                (n) => !n.is_read || (change.category !== undefined && n.category !== change.category)
+              )
+            );
+            break;
+        }
+        fetchStats();
+      },
+      { ignoreSource: syncSource }
+    );
+  }, [syncSource]);
+
   // Mark notification as read
   const handleMarkAsRead = async (notificationId: string) => {
     const result = await markNotificationAsReadAction(notificationId);
@@ -129,6 +171,7 @@ export function NotificationsContent() {
         prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n))
       );
       fetchStats();
+      publishBusinessNotificationChange(syncSource, { type: 'read', id: notificationId });
     }
   };
 
@@ -140,6 +183,9 @@ export function NotificationsContent() {
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
       fetchStats();
       toast.success('All notifications marked as read');
+      publishBusinessNotificationChange(syncSource, { type: 'read-all', category });
+    } else {
+      toast.error('Failed to mark notifications as read');
     }
   };
 
@@ -170,6 +216,7 @@ export function NotificationsContent() {
     }
 
     fetchStats();
+    publishBusinessNotificationChange(syncSource, { type: 'deleted', id: notificationId });
   };
 
   // Delete the read notifications in the active category
@@ -189,6 +236,7 @@ export function NotificationsContent() {
         : `Cleared ${result.deleted ?? 0} read notifications`
     );
     fetchStats();
+    publishBusinessNotificationChange(syncSource, { type: 'cleared-read', category });
   };
 
   // Tab configuration

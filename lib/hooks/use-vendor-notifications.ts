@@ -11,6 +11,12 @@ import {
   deleteNotificationAction,
 } from '@/app/vendor/notifications/actions';
 import { toast } from 'sonner';
+import {
+  createNotificationSyncSource,
+  publishNotificationChange,
+  subscribeNotificationChanges,
+} from '@/lib/notifications/notification-sync';
+import { applyNotificationChange } from '@/lib/notifications/apply-notification-change';
 
 interface UseVendorNotificationsReturn {
   notifications: Notification[];
@@ -27,6 +33,8 @@ export function useVendorNotifications(limit: number = 5): UseVendorNotification
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  // Identifies this bell, so it ignores its own sync announcements.
+  const [syncSource] = useState(createNotificationSyncSource);
 
   const hasLoaded = useRef(false);
 
@@ -66,8 +74,9 @@ export function useVendorNotifications(limit: number = 5): UseVendorNotification
         prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n))
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
+      publishNotificationChange('vendor', syncSource, { type: 'read', id: notificationId });
     }
-  }, []);
+  }, [syncSource]);
 
   // Mark all as read
   const markAllAsRead = useCallback(async (category?: NotificationCategory) => {
@@ -76,8 +85,11 @@ export function useVendorNotifications(limit: number = 5): UseVendorNotification
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
       setUnreadCount(0);
       toast.success('All notifications marked as read');
+      publishNotificationChange('vendor', syncSource, { type: 'read-all', category });
+    } else {
+      toast.error('Failed to mark notifications as read');
     }
-  }, []);
+  }, [syncSource]);
 
   // Delete a notification.
   //
@@ -102,11 +114,13 @@ export function useVendorNotifications(limit: number = 5): UseVendorNotification
 
       if (result.error) {
         toast.error('Failed to delete notification');
+      } else {
+        publishNotificationChange('vendor', syncSource, { type: 'deleted', id: notificationId });
       }
 
       await fetchNotifications();
     },
-    [fetchNotifications]
+    [fetchNotifications, syncSource]
   );
 
   // Get current user and set up realtime subscription
@@ -187,6 +201,29 @@ export function useVendorNotifications(limit: number = 5): UseVendorNotification
       channel.unsubscribe();
     };
   }, [userId, limit]);
+
+  // Latest list and count, read by the sync listener below without re-subscribing.
+  const bellStateRef = useRef({ notifications, unreadCount });
+  useEffect(() => {
+    bellStateRef.current = { notifications, unreadCount };
+  }, [notifications, unreadCount]);
+
+  // Catch up when the notifications page, or another tab, reads or deletes.
+  // The realtime channel only carries INSERTs, so without this the count went
+  // stale until a reload. Apply the change at once, then refetch to confirm.
+  useEffect(() => {
+    if (!userId) return;
+    return subscribeNotificationChanges(
+      'vendor',
+      ({ change }) => {
+        const next = applyNotificationChange(bellStateRef.current, change);
+        setNotifications(next.notifications);
+        setUnreadCount(next.unreadCount);
+        void fetchNotifications();
+      },
+      { ignoreSource: syncSource }
+    );
+  }, [userId, fetchNotifications, syncSource]);
 
   return {
     notifications,

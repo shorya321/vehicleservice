@@ -11,6 +11,12 @@ import {
   deleteNotificationAction,
 } from '@/app/business/(portal)/notifications/actions';
 import { toast } from 'sonner';
+import {
+  createBusinessNotificationSyncSource,
+  publishBusinessNotificationChange,
+  subscribeBusinessNotificationChanges,
+} from '@/lib/business/notifications/notification-sync';
+import { applyBusinessNotificationChange } from '@/lib/business/notifications/apply-notification-change';
 
 interface UseBusinessNotificationsReturn {
   notifications: Notification[];
@@ -28,11 +34,18 @@ export function useBusinessNotifications(limit: number = 5): UseBusinessNotifica
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const hasFetchedRef = useRef(false);
+  // Only the first fetch shows the loading state. Sync refetches would otherwise
+  // swap an open bell panel's list for a skeleton.
+  const hasLoadedRef = useRef(false);
+  // Identifies this bell, so it ignores its own sync announcements.
+  const [syncSource] = useState(createBusinessNotificationSyncSource);
 
   // Fetch initial notifications and unread count
   const fetchNotifications = useCallback(async () => {
     try {
-      setLoading(true);
+      if (!hasLoadedRef.current) {
+        setLoading(true);
+      }
       const [notificationsResult, countResult] = await Promise.all([
         getRecentNotificationsAction(limit),
         getUnreadCountAction(),
@@ -48,6 +61,7 @@ export function useBusinessNotifications(limit: number = 5): UseBusinessNotifica
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
+      hasLoadedRef.current = true;
       setLoading(false);
     }
   }, [limit]);
@@ -60,8 +74,9 @@ export function useBusinessNotifications(limit: number = 5): UseBusinessNotifica
         prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n))
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
+      publishBusinessNotificationChange(syncSource, { type: 'read', id: notificationId });
     }
-  }, []);
+  }, [syncSource]);
 
   // Mark all as read
   const markAllAsRead = useCallback(async (category?: NotificationCategory) => {
@@ -70,8 +85,11 @@ export function useBusinessNotifications(limit: number = 5): UseBusinessNotifica
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
       setUnreadCount(0);
       toast.success('All notifications marked as read');
+      publishBusinessNotificationChange(syncSource, { type: 'read-all', category });
+    } else {
+      toast.error('Failed to mark notifications as read');
     }
-  }, []);
+  }, [syncSource]);
 
   // Delete a notification.
   //
@@ -96,11 +114,13 @@ export function useBusinessNotifications(limit: number = 5): UseBusinessNotifica
 
       if (result.error) {
         toast.error('Failed to delete notification');
+      } else {
+        publishBusinessNotificationChange(syncSource, { type: 'deleted', id: notificationId });
       }
 
       await fetchNotifications();
     },
-    [fetchNotifications]
+    [fetchNotifications, syncSource]
   );
 
   // Get current user and set up realtime subscription
@@ -195,6 +215,28 @@ export function useBusinessNotifications(limit: number = 5): UseBusinessNotifica
       channel.unsubscribe();
     };
   }, [userId, limit]);
+
+  // Latest list and count, read by the sync listener below without re-subscribing.
+  const bellStateRef = useRef({ notifications, unreadCount });
+  useEffect(() => {
+    bellStateRef.current = { notifications, unreadCount };
+  }, [notifications, unreadCount]);
+
+  // Catch up when the notifications page, or another tab, reads or deletes.
+  // The realtime channel only carries INSERTs, so without this the count went
+  // stale until a reload. Apply the change at once, then refetch to confirm.
+  useEffect(() => {
+    if (!userId) return;
+    return subscribeBusinessNotificationChanges(
+      ({ change }) => {
+        const next = applyBusinessNotificationChange(bellStateRef.current, change);
+        setNotifications(next.notifications);
+        setUnreadCount(next.unreadCount);
+        void fetchNotifications();
+      },
+      { ignoreSource: syncSource }
+    );
+  }, [userId, fetchNotifications, syncSource]);
 
   return {
     notifications,
