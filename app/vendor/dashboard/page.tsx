@@ -15,7 +15,7 @@ import {
   Car,
   Star,
   Navigation,
-  DollarSign,
+  Banknote,
 } from "lucide-react"
 import Link from "next/link"
 import { getVendorDashboardStats, getRecentBusinessActivities, getAnalyticsData, getVendorRevenueTrend, getVendorBookingPipeline } from "./actions"
@@ -23,6 +23,7 @@ import { RevenueChart } from "./components/revenue-chart"
 import { BookingPipelineChart } from "./components/booking-pipeline-chart"
 import { DriverPerformance } from "./components/driver-performance"
 import { Breadcrumb } from '@/components/ui/breadcrumb'
+import { formatCurrency } from "@/lib/utils"
 
 export default async function VendorDashboard() {
   const user = await requireVendor()
@@ -128,12 +129,12 @@ export default async function VendorDashboard() {
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-sm font-medium text-muted-foreground">Fulfilled Value (Month)</span>
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
-                    <DollarSign className="h-4 w-4 text-amber-500" />
+                    <Banknote className="h-4 w-4 text-amber-500" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-700 dark:text-amber-400">
-                    ${stats.monthlyRevenue.toLocaleString()}
+                    {formatCurrency(stats.monthlyRevenue)}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">Gross value, completed jobs</p>

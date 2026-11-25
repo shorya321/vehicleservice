@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency, cn } from '@/lib/utils'
 import { getVendorRevenueTrend, type PeriodType } from '../actions'
-import { DollarSign } from 'lucide-react'
+import { Banknote } from 'lucide-react'
 import { CustomRangeButton } from './custom-range-button'
 
 interface RevenueChartProps {
@@ -83,7 +83,7 @@ export function RevenueChart({ initialData }: RevenueChartProps) {
       <CardHeader className="flex flex-col items-start justify-between gap-3 space-y-0 pb-3 border-b border-border sm:flex-row sm:flex-wrap sm:items-center">
         <div className="flex min-w-0 items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
-            <DollarSign className="h-4 w-4 text-emerald-500" />
+            <Banknote className="h-4 w-4 text-emerald-500" />
           </div>
           <div>
             <CardTitle className="text-base font-semibold">Fulfilled Booking Value</CardTitle>
