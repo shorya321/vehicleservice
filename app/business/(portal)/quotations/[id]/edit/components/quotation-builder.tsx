@@ -36,7 +36,7 @@ import { TripEditorSheet } from './trip-editor-sheet';
 import { CustomerDetailsCard } from './customer-details-card';
 import { VehicleThumb } from '../../../components/vehicle-thumb';
 import type { QuotationCustomerDraft } from './customer-details-card';
-import type { QuotationTripDraft } from '@/lib/business/quotations/types';
+import type { QuotationAddonOption, QuotationTripDraft } from '@/lib/business/quotations/types';
 import { isLineConverted } from '@/lib/business/quotations/status';
 import type { BusinessTripSettings } from '@/lib/business/trips/settings';
 import { shiftTripByDays, tripTypeOf } from '@/lib/business/quotations/trip-legs';
@@ -66,6 +66,8 @@ interface QuotationBuilderProps {
   initialTrips: QuotationTripDraft[];
   /** Admin trip-type switches, read fresh on every page load. */
   tripSettings: BusinessTripSettings;
+  /** Active extras catalogue, read once by the page and shared by every trip sheet open. */
+  addonOptions: QuotationAddonOption[];
 }
 
 export function QuotationBuilder({
@@ -76,6 +78,7 @@ export function QuotationBuilder({
   header,
   initialTrips,
   tripSettings,
+  addonOptions,
 }: QuotationBuilderProps) {
   const router = useRouter();
   const [isSaving, startSaving] = useTransition();
@@ -457,6 +460,7 @@ export function QuotationBuilder({
         exchangeRate={exchangeRate}
         defaultMarkupPct={defaultMarkupPct}
         tripSettings={tripSettings}
+        addonOptions={addonOptions}
         onSave={upsertTrip}
       />
     </div>

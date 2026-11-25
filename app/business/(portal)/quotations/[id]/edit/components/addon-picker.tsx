@@ -8,18 +8,17 @@
  * inside a sheet. The quotations module also keeps its own copies of the guest and addon reads for
  * the same reason — a change to the wizard must never silently alter quotations.
  *
- * Only the action FUNCTION is imported from the quotations actions module — never its types
- * (that file is 'use server', and a type exported from one breaks at runtime while tsc stays
- * silent). Shapes come from lib/business/quotations/types.
+ * The catalogue arrives as a prop, read once by the edit page (getQuotationAddonOptions). It used
+ * to be fetched here on every mount, and because Server Actions run one at a time, that read
+ * queued the trip sheet's vehicle quote behind it. Shapes come from lib/business/quotations/types.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/business/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/business/wallet-operations';
-import { getQuotationAddonOptions } from '../../../actions';
 import { childSeatFitHint } from '@/lib/business/child-seat-fit';
 import type { QuotationAddonOption, QuotationItemAddon } from '@/lib/business/quotations/types';
 
@@ -80,6 +79,8 @@ export function toPersistableAddons(addons: DraftAddon[]): QuotationItemAddon[] 
 }
 
 interface AddonPickerProps {
+  /** Active extras catalogue, in display order. Empty when the read failed or none are active. */
+  options: QuotationAddonOption[];
   value: DraftAddon[];
   onChange: (addons: DraftAddon[]) => void;
   /** children + infants on this trip. Child seats are capped at this, and hidden when it is 0. */
@@ -97,44 +98,23 @@ interface AddonPickerProps {
 }
 
 export function AddonPicker({
+  options,
   value,
   onChange,
   childSeatCapacity,
   onSeatAddonsAvailable,
   disabled,
 }: AddonPickerProps) {
-  const [options, setOptions] = useState<QuotationAddonOption[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    getQuotationAddonOptions()
-      .then((res) => {
-        if (!cancelled) setOptions(res.addons);
-      })
-      .catch(() => {
-        if (!cancelled) setOptions([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   /**
-   * Report seat availability once the catalogue has settled.
+   * Report seat availability to the sheet on mount.
    *
-   * Its own effect rather than a call inside the fetch above, so the fetch keeps its empty
-   * dependency list and the callback can stay in the dependencies here. A failed fetch leaves
-   * `options` empty and therefore reports false, which is what the sheet needs: it keeps Save
-   * usable instead of enforcing a rule with no control on screen to satisfy it.
+   * A failed catalogue read arrives as an empty list and therefore reports false, which is what
+   * the sheet needs: it keeps Save usable instead of enforcing a rule with no control on screen
+   * to satisfy it.
    */
   useEffect(() => {
-    if (loading) return;
     onSeatAddonsAvailable?.(options.some((o) => o.requires_child_age));
-  }, [loading, options, onSeatAddonsAvailable]);
+  }, [options, onSeatAddonsAvailable]);
 
   const selectedById = useMemo(
     () => new Map(value.map((a) => [a.addon_id, a])),
@@ -254,10 +234,6 @@ export function AddonPicker({
     });
     return out;
   }, [options, childSeatCapacity]);
-
-  if (loading) {
-    return <p className="text-sm text-muted-foreground">Loading extras…</p>;
-  }
 
   if (grouped.length === 0) {
     return <p className="text-sm text-muted-foreground">No extras available.</p>;

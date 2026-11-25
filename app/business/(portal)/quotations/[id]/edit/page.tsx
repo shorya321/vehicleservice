@@ -15,7 +15,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getBusinessMember } from '@/lib/business/member-scope';
 import { canEditHeader, normalizeQuotationStatus } from '@/lib/business/quotations/status';
 import { PageHeader } from '@/app/business/(portal)/components/ui/page-header';
-import { getQuotation } from '../../actions';
+import { getQuotation, getQuotationAddonOptions } from '../../actions';
 import { QuotationBuilder } from './components/quotation-builder';
 import { getBusinessTripSettings } from '@/lib/business/trips/settings-server';
 import { tripDraftFromItem } from './trip-draft-from-item';
@@ -68,7 +68,9 @@ export default async function EditQuotationPage({ params }: PageProps) {
     )
   );
 
-  const [locationsResult, vehiclesResult, tripSettings] = await Promise.all([
+  // The extras catalogue is read here, once per page, rather than by the trip sheet on every
+  // open: Server Actions run one at a time, so a per-open read queued the vehicle quote behind it.
+  const [locationsResult, vehiclesResult, tripSettings, addonsResult] = await Promise.all([
     locationIds.length
       ? supabase.from('locations').select('id, name').in('id', locationIds)
       : Promise.resolve({ data: [] as { id: string; name: string }[] }),
@@ -78,6 +80,7 @@ export default async function EditQuotationPage({ params }: PageProps) {
           data: [] as { id: string; name: string; image_url: string | null }[],
         }),
     getBusinessTripSettings(supabase),
+    getQuotationAddonOptions(),
   ]);
 
   const locationNames = new Map(
@@ -133,6 +136,7 @@ export default async function EditQuotationPage({ params }: PageProps) {
         }}
         initialTrips={initialTrips}
         tripSettings={tripSettings}
+        addonOptions={addonsResult.addons}
       />
     </div>
   );

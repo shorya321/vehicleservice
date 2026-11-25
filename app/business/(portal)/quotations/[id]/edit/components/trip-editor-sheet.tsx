@@ -70,7 +70,7 @@ import {
   draftSeatCount,
 } from '@/lib/business/child-seat-requirement';
 import type { LocationSearchResult } from '@/lib/types/location';
-import type { QuotationTripDraft } from '@/lib/business/quotations/types';
+import type { QuotationAddonOption, QuotationTripDraft } from '@/lib/business/quotations/types';
 
 /** Local shape for a vehicle option. Declared here, not imported from the 'use server' module. */
 type VehicleOption = SheetVehicle;
@@ -86,6 +86,8 @@ interface TripEditorSheetProps {
   defaultMarkupPct: number;
   /** Admin trip-type switches. Decide which types the sheet offers. */
   tripSettings: BusinessTripSettings;
+  /** Active extras catalogue from the page, handed to AddonPicker. */
+  addonOptions: QuotationAddonOption[];
   onSave: (trip: QuotationTripDraft) => void;
 }
 
@@ -156,6 +158,7 @@ export function TripEditorSheet({
   exchangeRate,
   defaultMarkupPct,
   tripSettings,
+  addonOptions,
   onSave,
 }: TripEditorSheetProps) {
   // Edited on a COPY so Cancel genuinely discards.
@@ -731,6 +734,7 @@ export function TripEditorSheet({
                 }
               >
                 <AddonPicker
+                  options={addonOptions}
                   value={draft.addons as DraftAddon[]}
                   onChange={setAddons}
                   childSeatCapacity={childSeatCapacity}
