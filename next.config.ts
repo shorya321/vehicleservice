@@ -54,8 +54,9 @@ const nextConfig: NextConfig = {
       { source: '/terms-and-conditions', destination: '/terms', permanent: true },
       { source: '/privacy-policy', destination: '/privacy', permanent: true },
       { source: '/cookie-policy', destination: '/privacy#cookies-and-tracking', permanent: true },
-      { source: '/refund-policy', destination: '/terms#cancellation-and-refund', permanent: true },
-      { source: '/cancellation-policy', destination: '/terms#cancellation-and-refund', permanent: true },
+      // Same target as CANCELLATION_POLICY_PATH in lib/bookings/cancellation-policy.ts.
+      { source: '/refund-policy', destination: '/refund', permanent: true },
+      { source: '/cancellation-policy', destination: '/refund', permanent: true },
     ]
   },
   typescript: {
