@@ -15,7 +15,7 @@ import { Button } from '@/components/business/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/business/(portal)/components/ui/select';
-import { Loader2, Save, CreditCard, DollarSign, ShieldCheck, Check } from 'lucide-react';
+import { Loader2, Save, CreditCard, Banknote, ShieldCheck, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { getCurrencyOptions, type CurrencyCode } from '@/lib/utils/currency-converter';
@@ -138,7 +138,7 @@ export function PaymentSettingsForm({ initialSettings }: PaymentSettingsFormProp
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <DollarSign className="h-5 w-5 text-primary" />
+              <Banknote className="h-5 w-5 text-primary" />
             </div>
             <div>
               <CardTitle className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">

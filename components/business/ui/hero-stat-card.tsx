@@ -13,6 +13,7 @@ import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { CountUp, CurrencyCountUp, PercentageCountUp } from '@/components/business/motion/count-up';
 import { fadeInUp } from '@/lib/business/animation/variants';
+import { BUSINESS_BASE_CURRENCY } from '@/lib/business/wallet-operations';
 import { useReducedMotion, useInView } from '@/lib/business/animation/hooks';
 import { LuxuryButton } from './luxury-button';
 import { TrendingUp, TrendingDown } from 'lucide-react';
@@ -55,7 +56,7 @@ const HeroStatCard = forwardRef<HTMLDivElement, HeroStatCardProps>(
       title,
       value,
       format = 'number',
-      currency = '$',
+      currency = `${BUSINESS_BASE_CURRENCY} `,
       decimals,
       subtitle,
       icon,

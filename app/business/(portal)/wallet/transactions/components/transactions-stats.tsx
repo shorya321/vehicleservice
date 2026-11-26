@@ -12,7 +12,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/business/ui/button';
-import { Loader2, TrendingUp, TrendingDown, DollarSign, Activity, X } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, Banknote, Activity, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { convertForDisplay, formatCurrency } from '@/lib/business/wallet-operations';
 import type { ExchangeRatesMap } from '@/lib/currency/types';
@@ -230,7 +230,7 @@ export function TransactionsStats({
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                 className="h-10 w-10 rounded-xl bg-sky-500/10 flex items-center justify-center"
               >
-                <DollarSign className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+                <Banknote className="h-5 w-5 text-sky-600 dark:text-sky-400" />
               </motion.div>
             </div>
           </motion.div>

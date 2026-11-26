@@ -23,7 +23,7 @@ import {
   TrendingUp,
   Clock,
   CheckCircle2,
-  DollarSign,
+  Banknote,
   Trash2,
   Loader2,
   AlertTriangle,
@@ -585,7 +585,7 @@ export function BookingsPageContent({
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                 className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/10 dark:bg-emerald-500/20"
               >
-                <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <Banknote className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </motion.div>
             </div>
           </div>

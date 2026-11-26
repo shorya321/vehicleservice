@@ -9,6 +9,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useCountUp, useReducedMotion, useInView } from '@/lib/business/animation/hooks';
+import { BUSINESS_BASE_CURRENCY } from '@/lib/business/wallet-operations';
 
 interface CountUpProps {
   /** End value to count to */
@@ -19,7 +20,7 @@ interface CountUpProps {
   duration?: number;
   /** Number of decimal places */
   decimals?: number;
-  /** Prefix (e.g., "$") */
+  /** Prefix (e.g., "AED ") */
   prefix?: string;
   /** Suffix (e.g., "%", "k") */
   suffix?: string;
@@ -120,7 +121,7 @@ interface CurrencyCountUpProps extends Omit<CountUpProps, 'prefix' | 'decimals'>
 }
 
 export function CurrencyCountUp({
-  currency = '$',
+  currency = `${BUSINESS_BASE_CURRENCY} `,
   ...props
 }: CurrencyCountUpProps) {
   return <CountUp {...props} prefix={currency} decimals={2} />;

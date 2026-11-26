@@ -162,7 +162,7 @@ export function LivePreview({ darkColors, lightColors, brandName = 'Your Brand',
             {/* Stat Cards */}
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: 'Balance', value: '$2,450' },
+                { label: 'Balance', value: 'AED 2,450' },
                 { label: 'Bookings', value: '24' },
               ].map((stat, i) => (
                 <div
