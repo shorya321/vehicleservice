@@ -11,6 +11,8 @@ import { useCurrency } from '@/lib/currency/context'
 import type { GuestBreakdown } from '@/components/home/hero/guest-breakdown'
 import type { CheckoutPriceBreakdown, CheckoutTrip } from '@/lib/trips/checkout-trip'
 import { tripLedgerOverrides, type LegSchedule } from './trip-ledger-props'
+import { bookingWallClockToUtc } from '@/lib/utils/timezone'
+import { isFreeCancellationAvailable } from '@/lib/bookings/cancellation-policy'
 
 /**
  * Pickup wall-clock plus the route's estimate, as a wall-clock string. Same arithmetic as
@@ -109,6 +111,22 @@ export const MobileStickyBar = memo(function MobileStickyBar({
     : ''
 
   const arrival = arrivalClock(pickupTime, route.estimated_duration_minutes)
+
+  /**
+   * Inside the free window the bar must not promise free cancellation. An unparseable or
+   * half-entered time keeps the default promise, which the payment page re-checks against the
+   * stored pickup before the card is charged.
+   */
+  const cancellationLine = (() => {
+    if (!pickupDate || !pickupTime) return 'Free cancellation up to 24h before pickup'
+    try {
+      return isFreeCancellationAvailable(bookingWallClockToUtc(pickupDate, pickupTime))
+        ? 'Free cancellation up to 24h before pickup'
+        : 'Non-refundable: pickup within 24h'
+    } catch {
+      return 'Free cancellation up to 24h before pickup'
+    }
+  })()
   const total = totalPrice - promoDiscount
   const overrides = trip && pricing
     ? tripLedgerOverrides(trip, pricing, selectedAddons, pickupTime, schedule)
@@ -328,7 +346,7 @@ export const MobileStickyBar = memo(function MobileStickyBar({
           {/* Matches OrderSummary's line on the same step: the desktop card merged its two
               stacked reassurances ("You won't be charged yet" above "ENCRYPTED · SSL SECURE")
               into one, and the two surfaces must not now say different things. */}
-          {isLastStep ? 'Encrypted · you are not charged yet' : 'Free cancellation · 24h'}
+          {isLastStep ? 'Encrypted · you are not charged yet' : cancellationLine}
         </p>
       </div>
     </motion.div>

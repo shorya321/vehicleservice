@@ -11,7 +11,7 @@ import { getBookingTimezone, bookingToday } from '@/lib/utils/timezone'
 import { formatGuestSummary } from '@/components/home/hero/guest-breakdown'
 import { formatChildAges } from '@/lib/utils/child-ages'
 import { InvoiceDownloadButton } from '@/app/booking/confirmation/components/invoice-download-button'
-import { BookingCancelAction } from '@/components/account/booking-cancel-action'
+import { CANCELLATION_POLICY_PATH, isFreeCancellationAvailable } from '@/lib/bookings/cancellation-policy'
 import { destinationLabel, hourlyPackageLabel, hourlySummary, isHourlyBooking } from '@/lib/trips/display'
 import {
   CARD,
@@ -156,7 +156,13 @@ function amenityLabel(a: DetailAmenity): string {
 
 /* ------------------------------------------------------------------ component */
 
-export function BookingDetailContent({ booking }: { booking: DetailBooking }) {
+interface BookingDetailContentProps {
+  booking: DetailBooking
+  /** Settings > General support inbox. Cancellations are requested by email, not self-served. */
+  supportEmail: string
+}
+
+export function BookingDetailContent({ booking, supportEmail }: BookingDetailContentProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const reduceMotion = !!useReducedMotion()
   const [copied, setCopied] = useState(false)
@@ -168,10 +174,7 @@ export function BookingDetailContent({ booking }: { booking: DetailBooking }) {
     }
   }, [])
 
-  /**
-   * Frozen at mount rather than read per render, so the cancellation window cannot flip
-   * mid-interaction and take the control away under the customer's cursor.
-   */
+  /** Frozen at mount rather than read per render, so the cancellation note cannot flip mid-read. */
   const [now] = useState(() => Date.now())
 
   const reference = booking.trip_number || booking.booking_number
@@ -189,9 +192,13 @@ export function BookingDetailContent({ booking }: { booking: DetailBooking }) {
    */
   const showGuarantees = !isCancelled && !isTravelled
 
-  const canCancel =
+  /**
+   * Whether the free-cancellation note shows. Customers cancel by emailing the desk, which
+   * cancels in the admin and refunds by hand, so this is a pointer, not a button.
+   */
+  const canRequestCancel =
     (booking.booking_status === 'confirmed' || booking.booking_status === 'pending') &&
-    new Date(booking.pickup_datetime).getTime() - now > 24 * 60 * 60 * 1000
+    isFreeCancellationAvailable(booking.pickup_datetime, now)
 
   const pickupDate = booking.pickup_datetime ? new Date(booking.pickup_datetime) : null
 
@@ -571,13 +578,21 @@ export function BookingDetailContent({ booking }: { booking: DetailBooking }) {
             {showGuarantees && <GuaranteeList id="guarantees-heading-mobile" />}
           </div>
 
-          {canCancel && (
+          {canRequestCancel && (
             <div className="border-t border-[var(--border-subtle)] pt-6 print:hidden">
-              <BookingCancelAction
-                bookingId={booking.id}
-                partOfTrip={!!booking.trip_group}
-                tripHasDiscount={(booking.trip_group?.discount_amount ?? 0) > 0}
-              />
+              <p className="text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
+                Need to cancel? Email{' '}
+                <a
+                  href={`mailto:${supportEmail}?subject=${encodeURIComponent(`Cancel booking ${reference}`)}`}
+                  className="text-[var(--gold-text)] underline underline-offset-2 hover:text-[var(--gold-text-hover)]"
+                >
+                  {supportEmail}
+                </a>{' '}
+                with reference {reference} more than 24 hours before pickup for a full refund.{' '}
+                <Link href={CANCELLATION_POLICY_PATH} className="editorial-action">
+                  Refund policy
+                </Link>
+              </p>
             </div>
           )}
         </div>

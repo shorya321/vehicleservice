@@ -11,6 +11,7 @@ import { useCurrency } from '@/lib/currency/context'
 import { buildSelectionUrl, type ResultsSearchParams } from './results-search-params'
 import { PriceMeter } from './price-meter'
 import { splitVehicleName } from './vehicle-name'
+import { FREE_CANCELLATION_BADGE, FREE_CANCELLATION_LINE } from '@/lib/bookings/cancellation-policy'
 
 interface VehicleFleetCardProps {
   vehicleType: VehicleTypeResult
@@ -97,9 +98,9 @@ export function VehicleFleetCard({ vehicleType, searchParams, index = 0, level, 
             <span>{unavailableLabel}</span>
           </span>
         ) : (
-          <span className="results-glass results-glass--end">
+          <span className="results-glass results-glass--end" title={FREE_CANCELLATION_LINE}>
             <Check className="h-3 w-3" aria-hidden="true" />
-            Free cancellation
+            {FREE_CANCELLATION_BADGE}
           </span>
         )}
       </div>

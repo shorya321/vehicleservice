@@ -154,6 +154,8 @@ export function FooterPanel({ settings }: FooterPanelProps): React.JSX.Element {
             <span aria-hidden="true">&middot;</span>
             <Link href="/terms" className={`${LINK_CLASS} tap-target`}>Terms</Link>
             <span aria-hidden="true">&middot;</span>
+            <Link href="/refund" className={`${LINK_CLASS} tap-target`}>Refunds</Link>
+            <span aria-hidden="true">&middot;</span>
             {/* The cookie notice is a section of the Privacy Policy, not a page of its own. */}
             <Link href="/privacy#cookies-and-tracking" className={`${LINK_CLASS} tap-target`}>Cookies</Link>
           </nav>

@@ -5,6 +5,7 @@ import { PublicLayout } from "@/components/layout/public-layout"
 import { AccountSidebar } from "@/components/account/account-sidebar"
 import { getAccountData } from "../../account-data"
 import { getBookingByReference } from "../../booking-actions"
+import { getSiteSettings } from "@/lib/site-settings/server"
 import { BookingDetailContent, type DetailBooking } from "./booking-detail-content"
 
 export const metadata: Metadata = {
@@ -63,7 +64,10 @@ export default async function BookingDetailPage({
     redirect(dashboardMap[profile.role] || "/")
   }
 
-  const { data: booking, error } = await getBookingByReference(reference)
+  const [{ data: booking, error }, siteSettings] = await Promise.all([
+    getBookingByReference(reference),
+    getSiteSettings(),
+  ])
 
   // Not-found and not-yours are both 404. A 403 would confirm the reference exists, which turns
   // this page into a way to probe for other customers' bookings.
@@ -99,7 +103,7 @@ export default async function BookingDetailPage({
             </div>
 
             <main className="account-content">
-              <BookingDetailContent booking={booking as unknown as DetailBooking} />
+              <BookingDetailContent booking={booking as unknown as DetailBooking} supportEmail={siteSettings.support_email} />
             </main>
           </div>
         </div>

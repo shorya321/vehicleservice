@@ -168,7 +168,7 @@ export function SummaryRow({ label, value }: { label: string; value: string }) {
 export const GUARANTEES = [
   {
     label: 'Cancellation',
-    body: 'Free up to 24 hours before pickup. Full refund if we cancel on you.',
+    body: 'Full refund to your card if you cancel more than 24 hours before pickup, or if we cancel on you.',
   },
   {
     label: 'Waiting time',

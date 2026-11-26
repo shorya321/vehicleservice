@@ -9,9 +9,13 @@ export interface TocSection {
 
 interface TableOfContentsProps {
   sections: TocSection[]
+  /** Prefix each entry with its position ("1. Timeline"), matching numbered section headings. */
+  numbered?: boolean
+  /** Desktop heading above the list. */
+  heading?: string
 }
 
-export function TableOfContents({ sections }: TableOfContentsProps) {
+export function TableOfContents({ sections, numbered = false, heading = 'Contents' }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>('')
   const [isOpen, setIsOpen] = useState(false)
 
@@ -63,13 +67,13 @@ export function TableOfContents({ sections }: TableOfContentsProps) {
         </summary>
         <nav aria-label="Table of contents" className="px-4 pb-4">
           <ul className="space-y-1">
-            {sections.map((section) => (
+            {sections.map((section, index) => (
               <li key={section.id}>
                 <button
                   onClick={() => handleClick(section.id)}
                   className={linkClass(section.id)}
                 >
-                  {section.title}
+                  {numbered ? `${index + 1}. ` : ''}{section.title}
                 </button>
               </li>
             ))}
@@ -80,16 +84,16 @@ export function TableOfContents({ sections }: TableOfContentsProps) {
       {/* Desktop: sticky sidebar */}
       <nav aria-label="Table of contents" className="hidden lg:block">
         <p className="text-[0.6875rem] font-medium uppercase tracking-[0.16em] text-[var(--text-muted)] mb-4">
-          Contents
+          {heading}
         </p>
         <ul className="space-y-1">
-          {sections.map((section) => (
+          {sections.map((section, index) => (
             <li key={section.id}>
               <button
                 onClick={() => handleClick(section.id)}
                 className={linkClass(section.id)}
               >
-                {section.title}
+                {numbered ? `${index + 1}. ` : ''}{section.title}
               </button>
             </li>
           ))}

@@ -167,7 +167,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                   Fixed price
                 </span>
                 <h2>Landing soon?</h2>
-                <p>Book your transfer now. Flight tracked, free cancellation.</p>
+                <p>Book your transfer now. Flight tracked, free cancellation up to 24 hours before pickup.</p>
                 <Link href="/" className="blog-board-btn">
                   Find your transfer
                   <span className="blog-board-btn__ic" aria-hidden="true">

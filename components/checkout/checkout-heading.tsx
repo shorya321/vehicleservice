@@ -15,7 +15,7 @@ export function CheckoutHeading({
   // The previous copy promised "we hold the vehicle for the next 15 minutes". No hold
   // logic exists anywhere in the codebase, so it was a claim the product could not keep.
   // Cancellation terms are both true and a stronger reassurance at this point in the flow.
-  subtitle = 'Confirm your passenger details and add any extras. The price is fixed at booking and free to cancel up to 24 hours before pickup.',
+  subtitle = 'Confirm your passenger details and add any extras. The price is fixed at booking, with a full refund if you cancel more than 24 hours before pickup.',
 }: CheckoutHeadingProps) {
   const reduceMotion = useReducedMotion()
 

@@ -4,7 +4,7 @@
  * The reassurance block beneath the order summary.
  *
  * Every claim here is contractual, not marketing. Sources:
- *  - Free cancellation up to 24h  -> the Terms page (Admin > Pages; shipped text in lib/cms/templates/legal/terms-defaults.ts) (Cancellation)
+ *  - Free cancellation up to 24h  -> /refund (Admin > Pages; rule in lib/bookings/cancellation-policy.ts)
  *  - 60 minutes free waiting      -> the Terms page (Admin > Pages; shipped text in lib/cms/templates/legal/terms-defaults.ts) (Waiting Time)
  *  - What the fixed fare includes -> the Terms page (Admin > Pages; shipped text in lib/cms/templates/legal/terms-defaults.ts) (Pricing)
  *  - Name board in arrivals       -> the Terms page (Admin > Pages; shipped text in lib/cms/templates/legal/terms-defaults.ts) (Service Delivery)
@@ -14,7 +14,7 @@
 const GUARANTEES = [
   {
     label: 'Cancellation',
-    body: 'Free up to 24 hours before pickup. Full refund if we cancel on you.',
+    body: 'Full refund to your card if you cancel more than 24 hours before pickup, or if we cancel on you.',
   },
   {
     label: 'Waiting time',

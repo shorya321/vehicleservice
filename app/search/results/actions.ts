@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { FREE_CANCELLATION_LINE } from '@/lib/bookings/cancellation-policy'
 
 export interface SearchResultVehicle {
   id: string
@@ -377,7 +378,7 @@ export async function getSearchResults(params: {
       price: calculatedPrice,
       originalPrice: undefined, // No comparison price available
       duration,
-      cancellationPolicy: 'Free cancellation up to 24 hours before',
+      cancellationPolicy: FREE_CANCELLATION_LINE,
       instantConfirmation: true
     }
   })

@@ -51,7 +51,11 @@ export function GroupPaymentScreen({
               <CheckoutHeading
                 eyebrow={null}
                 title="Confirm and pay"
-                subtitle="One payment covers every journey. Each journey is free to cancel up to 24 hours before its pickup."
+                subtitle={
+                  group.tripType === 'round_trip'
+                    ? 'One payment covers both journeys. Each one can be cancelled free up to 24 hours before its pickup, and cancelling one gives up the round-trip saving.'
+                    : 'One payment covers every journey. Each one can be cancelled free up to 24 hours before its pickup.'
+                }
               />
             </div>
             <p className="mt-4 text-[0.8125rem] tabular-nums text-[var(--text-muted)]">

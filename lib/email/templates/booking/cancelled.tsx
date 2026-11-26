@@ -76,7 +76,7 @@ export const BookingCancelledEmail = ({
 
       <Text style={emailStyles.text}>
         {refundDue !== null && refundDue > 0
-          ? 'The refund goes back to the card you paid with. It usually appears within 5 to 10 working days.'
+          ? 'We refund the card you paid with. It usually appears within 5 to 10 working days.'
           : 'Nothing was charged for this booking, so there is nothing to refund.'}
       </Text>
 

@@ -9,8 +9,8 @@ const GUARANTEES: ReadonlyArray<{ label: string; body: string }> = [
     body: "What you see is what you paid. Vehicle, chauffeur, fuel, tolls and parking are all in it. No surge, no tip prompt.",
   },
   {
-    label: "Cancel free up to 24 hours before",
-    body: "Cancel any confirmed transfer up to 24 hours before pickup and the full amount goes back to your card.",
+    label: "Cancel free up to 24 hours before pickup",
+    body: "Cancel any confirmed transfer more than 24 hours before pickup for a full refund to your card within 5 to 10 working days.",
   },
   {
     label: "Someone answers, at any hour",

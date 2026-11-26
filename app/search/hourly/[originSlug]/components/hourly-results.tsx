@@ -21,7 +21,7 @@ import { toCount, type ResultsSearchParams } from '../../../results/components/r
 const HOURLY_PERKS: readonly FleetPerk[] = [
   { title: 'Package price', detail: 'Vehicle, chauffeur, fuel' },
   { title: 'Extra hours', detail: 'At the rate on each card' },
-  { title: 'Free cancellation', detail: 'For 24 hours' },
+  { title: 'Free cancellation', detail: 'Up to 24h before pickup' },
 ]
 
 const HOURLY_STEPS: BookingStep[] = [
@@ -35,7 +35,7 @@ const HOURLY_STEPS: BookingStep[] = [
     index: '02',
     title: 'Confirm and pay',
     body: 'Start time and passenger details, then payment. Tell us your plans in the notes and your chauffeur will follow them.',
-    foot: 'Free cancellation for 24 hours',
+    foot: 'Free cancellation up to 24h before pickup',
   },
   {
     index: '03',

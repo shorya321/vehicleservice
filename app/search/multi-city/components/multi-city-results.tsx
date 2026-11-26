@@ -32,7 +32,7 @@ const MULTI_CITY_STEPS: BookingStep[] = [
     index: '02',
     title: 'Set each pickup time',
     body: 'Passenger details and a pickup time for each journey, then one payment for the trip.',
-    foot: 'Each journey free to cancel up to 24 hours before',
+    foot: 'Each journey free to cancel up to 24h before its pickup',
   },
   {
     index: '03',

@@ -2,13 +2,10 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
-import { revalidatePath } from "next/cache"
-import { closeActiveAssignments } from "@/lib/bookings/unified-service"
 import { sanitiseSearchTerm } from "@/lib/supabase/search-term"
 import type { BookingFiltersData } from "./schemas"
 import { loadAccountTripGroup } from "./lib/trip-group"
 import { groupTripRows } from "@/lib/trips/group-list-rows"
-import { refundForCancellation, sendCancellationEmails, syncGroupAfterCancellation } from "./lib/cancellation"
 
 export interface BookingFilters {
   search?: string
@@ -280,98 +277,3 @@ export async function getBookingByReference(reference: string) {
   return { data: { ...booking, trip_group }, error: null }
 }
 
-export async function cancelBooking(bookingId: string): Promise<{ error?: string }> {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return { error: "Unauthorized" }
-  }
-
-  const { data: booking } = await supabase
-    .from("bookings")
-    .select("id, customer_id, booking_number, trip_number, pickup_address, dropoff_address, pickup_datetime, booking_status, payment_status, total_price, discount_amount, booking_group_id, trip_type, hourly_package, duration_hours, included_km, leg_index")
-    .eq("id", bookingId)
-    .single()
-
-  if (!booking) {
-    return { error: "Booking not found" }
-  }
-
-  if (booking.customer_id !== user.id) {
-    return { error: "Unauthorized" }
-  }
-
-  if (booking.booking_status !== "confirmed" && booking.booking_status !== "pending") {
-    return { error: "Cannot cancel this booking" }
-  }
-
-  const pickupTime = new Date(booking.pickup_datetime)
-  const now = new Date()
-  const hoursUntilPickup = (pickupTime.getTime() - now.getTime()) / (1000 * 60 * 60)
-
-  if (hoursUntilPickup < 24) {
-    return { error: "Bookings can only be cancelled 24+ hours before pickup" }
-  }
-
-  const cancelledAt = new Date().toISOString()
-
-  // Written with the admin client on purpose. `bookings` has SELECT policies for customers
-  // but no UPDATE policy, so the RLS client silently matched zero rows and returned no
-  // error. The booking stayed confirmed while the UI reported success. Authorisation is
-  // enforced above in code: the caller is authenticated, owns this booking, it is still
-  // cancellable, and pickup is more than 24h away.
-  const adminClient = createAdminClient()
-
-  // What the customer is owed, worked out before this booking counts as cancelled. Recorded for
-  // the admin, who issues refunds by hand; one journey of a round trip forfeits the saving.
-  const refund = await refundForCancellation(adminClient, booking)
-
-  const { data: cancelled, error } = await adminClient
-    .from("bookings")
-    .update({
-      booking_status: "cancelled",
-      cancelled_at: cancelledAt,
-      cancellation_reason: "Cancelled by customer",
-      updated_at: cancelledAt,
-      refund_due: refund.refundDue,
-    })
-    .eq("id", bookingId)
-    .eq("customer_id", user.id) // belt-and-braces: the ownership check, restated in SQL
-    .select("id")
-
-  if (error) {
-    console.error("Cancel booking error:", error)
-    return { error: "Failed to cancel booking" }
-  }
-
-  if (!cancelled || cancelled.length === 0) {
-    console.error("Cancel booking affected no rows:", { bookingId, userId: user.id })
-    return { error: "Failed to cancel booking" }
-  }
-
-  // Close the vendor's assignment and release the vehicle and driver. Without this the
-  // resources stay blocked in resource_schedules for a trip that is no longer happening.
-  const { error: closeError } = await closeActiveAssignments({
-    bookingId,
-    outcome: "cancelled",
-    reason: "Cancelled by customer",
-  })
-
-  if (closeError) {
-    // The booking is already cancelled; surfacing a failure here would be misleading.
-    console.error("Failed to close assignment after customer cancellation:", closeError)
-  }
-
-  if (booking.booking_group_id) {
-    await syncGroupAfterCancellation(adminClient, booking.booking_group_id)
-  }
-
-  await sendCancellationEmails(adminClient, booking, refund, user.email)
-
-  revalidatePath("/account")
-  revalidatePath("/account/bookings/[reference]", "page")
-  revalidatePath("/vendor/bookings")
-  revalidatePath("/vendor/availability")
-  return {}
-}

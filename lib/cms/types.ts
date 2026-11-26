@@ -1,4 +1,4 @@
-export const PAGE_TEMPLATES = ['home', 'contact', 'about', 'services', 'faq', 'terms', 'privacy', 'vendor-agreement', 'become-vendor', 'blocks'] as const
+export const PAGE_TEMPLATES = ['home', 'contact', 'about', 'services', 'faq', 'terms', 'privacy', 'refund', 'vendor-agreement', 'become-vendor', 'blocks'] as const
 export type PageTemplate = (typeof PAGE_TEMPLATES)[number]
 
 export type PageStatus = 'draft' | 'published'
@@ -41,6 +41,7 @@ export const TEMPLATE_LABELS: Readonly<Record<PageTemplate, string>> = {
   faq: 'FAQ page',
   terms: 'Legal page',
   privacy: 'Legal page',
+  refund: 'Legal page',
   'vendor-agreement': 'Legal page',
   'become-vendor': 'Partner page',
   blocks: 'Custom page',

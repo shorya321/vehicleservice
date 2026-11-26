@@ -37,6 +37,11 @@ export const PAGE_FALLBACKS: Readonly<Record<string, { title: string; descriptio
     description:
       'How Infinia Transfers collects, uses, and protects your personal data when you book private airport and city transfers.',
   },
+  '/refund': {
+    title: 'Cancellation & Refund Policy',
+    description:
+      'Free cancellation up to 24 hours before pickup with a full refund to your card. How to cancel a Dubai transfer and how long refunds take.',
+  },
   '/vendor-agreement': {
     title: 'Vendor Agreement',
     description:

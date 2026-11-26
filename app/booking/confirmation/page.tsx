@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PublicLayout } from '@/components/layout/public-layout'
+import { getSiteSettings } from '@/lib/site-settings/server'
+import { isFreeCancellationAvailable } from '@/lib/bookings/cancellation-policy'
 import { RouteBandMap } from '@/app/search/results/components/route-band-map'
 import { ConfirmationContent } from './components/confirmation-content'
 import { getConfirmationBooking, getConfirmationTrip, getRouteTiming } from './lib/get-confirmation-booking'
@@ -33,7 +35,10 @@ export default async function ConfirmationPage({ searchParams }: ConfirmationPag
     notFound()
   }
 
-  const route = tripView ? null : await getRouteTiming(booking.from_location_id, booking.to_location_id)
+  const [route, siteSettings] = await Promise.all([
+    tripView ? null : getRouteTiming(booking.from_location_id, booking.to_location_id),
+    getSiteSettings(),
+  ])
 
   // Get primary passenger
   const primaryPassenger = booking.booking_passengers?.find((p: any) => p.is_primary)
@@ -54,6 +59,8 @@ export default async function ConfirmationPage({ searchParams }: ConfirmationPag
         addons={addons}
         route={route}
         trip={tripView?.trip ?? null}
+        supportEmail={siteSettings.support_email}
+        freeCancellation={isFreeCancellationAvailable(booking.pickup_datetime)}
         routeMap={<RouteBandMap />}
       />
     </PublicLayout>

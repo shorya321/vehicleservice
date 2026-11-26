@@ -9,6 +9,8 @@ import { getBookingTimezone, bookingDayKey } from "@/lib/utils/timezone"
 import type { NextTransfer } from "@/app/account/overview-actions"
 import { CalendarLeaf } from "./calendar-leaf"
 import { hourlyPackageLabel, isHourlyBooking } from "@/lib/trips/display"
+// The free-cancellation deadline: the 24 hour boundary from the policy, written out as a date.
+import { FREE_CANCELLATION_HOURS, FREE_CANCELLATION_WINDOW_MS } from "@/lib/bookings/cancellation-policy"
 
 /**
  * The next transfer, given the whole top of the page.
@@ -68,15 +70,6 @@ function countdownLabel(days: number): string {
   return `Next transfer · in ${days} days`
 }
 
-/**
- * The free-cancellation deadline, stated as a date rather than as a rule.
- *
- * cancelBooking in app/account/booking-actions.ts refuses inside 24 hours of pickup, so this is
- * that same boundary written out. Twenty-four hours before the instant, not the wall clock, which
- * is what keeps it right across a DST edge.
- */
-const CANCELLATION_WINDOW_MS = 24 * 60 * 60 * 1000
-
 interface DispatchBandProps {
   transfer: NextTransfer
   /**
@@ -110,7 +103,7 @@ export function DispatchBand({ transfer, asOf, routeMap }: DispatchBandProps) {
   const shortDate = formatShortDate(pickup)
 
   const freeUntil = useMemo(() => {
-    const deadline = new Date(pickup.getTime() - CANCELLATION_WINDOW_MS)
+    const deadline = new Date(pickup.getTime() - FREE_CANCELLATION_WINDOW_MS)
     if (deadline.getTime() <= Date.parse(asOf)) return null
     return `${formatHeadlineDate(deadline)}, ${formatTime(deadline)}`
   }, [pickup, asOf])
@@ -266,7 +259,7 @@ export function DispatchBand({ transfer, asOf, routeMap }: DispatchBandProps) {
           </p>
         ) : (
           <p className="text-[0.8125rem] leading-relaxed text-[var(--text-secondary)]">
-            Inside 24 hours of pickup, so the fare is no longer refundable. The desk can still help.
+            Inside {FREE_CANCELLATION_HOURS} hours of pickup, so the fare is no longer refundable. The desk can still help.
           </p>
         )}
         <div className="account-dispatch-actions">

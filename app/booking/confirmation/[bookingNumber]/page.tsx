@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PublicLayout } from '@/components/layout/public-layout'
+import { getSiteSettings } from '@/lib/site-settings/server'
+import { isFreeCancellationAvailable } from '@/lib/bookings/cancellation-policy'
 import { RouteBandMap } from '@/app/search/results/components/route-band-map'
 import { ConfirmationContent } from '../components/confirmation-content'
 import { getConfirmationBooking, getConfirmationTrip, getRouteTiming } from '../lib/get-confirmation-booking'
@@ -31,7 +33,10 @@ export default async function ConfirmationRoutePage({ params }: ConfirmationRout
     notFound()
   }
 
-  const route = tripView ? null : await getRouteTiming(booking.from_location_id, booking.to_location_id)
+  const [route, siteSettings] = await Promise.all([
+    tripView ? null : getRouteTiming(booking.from_location_id, booking.to_location_id),
+    getSiteSettings(),
+  ])
 
   const primaryPassenger = booking.booking_passengers?.find((p: any) => p.is_primary)
   const amenities = booking.booking_amenities || []
@@ -49,6 +54,8 @@ export default async function ConfirmationRoutePage({ params }: ConfirmationRout
         addons={addons}
         route={route}
         trip={tripView?.trip ?? null}
+        supportEmail={siteSettings.support_email}
+        freeCancellation={isFreeCancellationAvailable(booking.pickup_datetime)}
         // Server-rendered and handed in as a slot: the map's geometry is built at module load and
         // must not ship in this client component's bundle. Same arrangement as the search page.
         routeMap={<RouteBandMap />}

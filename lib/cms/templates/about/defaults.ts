@@ -60,7 +60,7 @@ export const DEFAULT_ABOUT_CONTENT: AboutContent = {
     title: 'The standard, in numbers.',
     items: [
       { figure: '0', unit: 'AED', title: 'Added at the kerb.', body: 'What you see at checkout is what you pay. No surge and no meter.' },
-      { figure: '24', unit: 'h', title: 'Free cancellation.', body: 'Cancel more than 24 hours before pickup for a full refund, 50% back from 24 to 12 hours. Full refund if we cancel.' },
+      { figure: '24', unit: 'h', title: 'Free cancellation.', body: 'Cancel more than 24 hours before pickup for a full refund to your card. Full refund if we cancel.' },
       { figure: '60', unit: 'min', title: 'Free airport waiting.', body: 'Counted from the moment you land, with your flight tracked by the desk.' },
     ],
   },

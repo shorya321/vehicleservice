@@ -41,7 +41,7 @@ const BOOKING_STEPS = [
     index: '02',
     title: 'Confirm and pay',
     body: 'Passenger details, then payment. The fare is fixed at booking and does not move after it.',
-    foot: 'Free cancellation for 24 hours',
+    foot: 'Free cancellation up to 24h before pickup',
   },
   {
     index: '03',
@@ -55,7 +55,7 @@ const BOOKING_STEPS = [
 const FLEET_PERKS: readonly FleetPerk[] = [
   { title: 'Full fare', detail: 'Fuel, tolls, parking' },
   { title: '60 min', detail: 'Free waiting' },
-  { title: 'Free cancellation', detail: 'For 24 hours' },
+  { title: 'Free cancellation', detail: 'Up to 24h before pickup' },
 ]
 
 interface SearchResultsProps {

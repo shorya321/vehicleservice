@@ -40,7 +40,7 @@ export const FOOTER_LINK_CATEGORIES: readonly FooterLinkCategory[] = [
  * `components/checkout/trust-block.tsx`. Sources, all in
  * `the Terms page (Admin > Pages; shipped text in lib/cms/templates/legal/terms-defaults.ts)`:
  *  - What the fixed fare covers  -> Booking & Payment / Pricing
- *  - Free cancellation to 24h    -> Cancellation & Refund Policy
+ *  - Free cancellation to 24h    -> /refund (rule: lib/bookings/cancellation-policy.ts)
  *  - Flight tracking and waiting -> Service Delivery / Waiting Time
  *
  * Do not add a fourth entry without a Terms clause behind it.
@@ -52,7 +52,7 @@ export const FOOTER_GUARANTEES = [
   },
   {
     label: 'Cancellation',
-    body: 'Free up to 24 hours before pickup. Full refund if we cancel on you.',
+    body: 'Full refund to your card if you cancel more than 24 hours before pickup, or if we cancel on you.',
   },
   {
     label: 'Airport pickup',

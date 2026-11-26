@@ -11,7 +11,7 @@ export const DEFAULT_TERMS_CONTENT: LegalContent = {
     "title": "Terms & Conditions",
     "intro": "The agreement between you and Infinia Transfers when you use our services."
   },
-  "last_updated": "1 July 2026",
+  "last_updated": "26 November 2026",
   "sections": [
     {
       "id": "introduction-and-acceptance",
@@ -41,7 +41,7 @@ export const DEFAULT_TERMS_CONTENT: LegalContent = {
       "id": "cancellation-and-refund",
       "title": "Cancellation & Refund Policy",
       "toc_label": "Cancellation and refund",
-      "body": "<h3>Cancellation by You</h3><ul><li><strong>More than 24 hours before pickup:</strong> full refund, processed within 5 to 10 business days to your original payment method</li><li><strong>Between 12 and 24 hours before pickup:</strong> 50% refund</li><li><strong>Less than 12 hours before pickup:</strong> no refund</li></ul><h3>Cancellation by Us</h3><p>In rare circumstances, we may need to cancel a booking due to extreme weather, civil unrest, or other events beyond our control. In such cases, we will offer you a full refund or reschedule at no additional cost.</p><h3>No-Shows</h3><p>If you do not appear at the designated pickup location within the agreed waiting time (see Service Delivery below), the booking will be marked as a no-show and no refund will be issued.</p>"
+      "body": "<h3>Cancellation by You</h3><ul><li><strong>More than 24 hours before pickup:</strong> full refund to your original payment method, usually within 5 to 10 working days</li><li><strong>24 hours or less before pickup:</strong> no refund</li><li><strong>Booked less than 24 hours before pickup:</strong> non-refundable</li></ul><p>Round trips, how to cancel and refund timing are set out in our <a href=\"/refund\">Cancellation &amp; Refund Policy</a>. Bookings made before 26 November 2026 keep the cancellation terms that applied when they were booked.</p><h3>Cancellation by Us</h3><p>In rare circumstances, we may need to cancel a booking due to extreme weather, civil unrest, or other events beyond our control. In such cases, we will offer you a full refund or reschedule at no additional cost.</p><h3>No-Shows</h3><p>If you do not appear at the designated pickup location within the agreed waiting time (see Service Delivery below), the booking will be marked as a no-show and no refund will be issued.</p>"
     },
     {
       "id": "service-delivery",

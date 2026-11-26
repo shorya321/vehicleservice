@@ -2,8 +2,8 @@
  * Copy for the customer auth screens (/login, /register, /forgot-password,
  * /reset-password). Every claim maps to a shipped feature: the Trips page
  * (reference, status, chauffeur, invoice download), checkout pre-fill from the
- * profile, "Book this route again", and cancellation up to 24 hours before
- * pickup. Checkout needs an account, so nothing here may say otherwise.
+ * profile and "Book this route again". Cancellation is by email to the desk,
+ * not from the account. Checkout needs an account, so nothing here may say otherwise.
  */
 export type CustomerAuthScreen = "login" | "register" | "forgot" | "reset"
 
@@ -42,7 +42,7 @@ export const PANEL_COPY: Record<CustomerAuthScreen, PanelCopy> = {
     beats: [
       { index: "01", title: "Checkout fills itself in", body: "Your name and phone number are added to every booking for you." },
       { index: "02", title: "Book this route again", body: "Repeat a past transfer straight from your trip list." },
-      { index: "03", title: "Cancel online", body: "Cancel a booking from your account up to 24 hours before pickup." },
+      { index: "03", title: "Every trip in one place", body: "Reference, status, chauffeur and invoice for each booking." },
     ],
   },
   forgot: {

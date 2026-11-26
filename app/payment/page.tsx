@@ -440,7 +440,7 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
               </div>
 
               <footer className="border-t border-[var(--graphite)] px-6 py-5">
-                <GuaranteeCard />
+                <GuaranteeCard pickupDatetime={booking.pickup_datetime} />
                 <Link
                   href="/contact"
                   className="mt-5 flex items-center justify-center gap-2 text-[0.6875rem] uppercase tracking-[0.16em] text-[var(--text-muted)] hover:text-[var(--gold-text-hover)] transition-colors"

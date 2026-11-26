@@ -31,6 +31,7 @@ import { FaqContentForm } from './components/faq/faq-content-form'
 import { parseLegalContent } from '@/lib/cms/templates/legal/parse'
 import { DEFAULT_TERMS_CONTENT } from '@/lib/cms/templates/legal/terms-defaults'
 import { DEFAULT_PRIVACY_CONTENT } from '@/lib/cms/templates/legal/privacy-defaults'
+import { DEFAULT_REFUND_CONTENT } from '@/lib/cms/templates/legal/refund-defaults'
 import { DEFAULT_VENDOR_AGREEMENT_CONTENT } from '@/lib/cms/templates/legal/vendor-agreement-defaults'
 import { canChangePageStatus, type CmsPage } from '@/lib/cms/types'
 
@@ -144,6 +145,8 @@ function renderContentEditor(page: CmsPage) {
       return <LegalContentForm pageId={page.id} initialContent={parseLegalContent(page.content, DEFAULT_TERMS_CONTENT)} />
     case 'privacy':
       return <LegalContentForm pageId={page.id} initialContent={parseLegalContent(page.content, DEFAULT_PRIVACY_CONTENT)} />
+    case 'refund':
+      return <LegalContentForm pageId={page.id} initialContent={parseLegalContent(page.content, DEFAULT_REFUND_CONTENT)} />
     case 'vendor-agreement':
       return (
         <LegalContentForm

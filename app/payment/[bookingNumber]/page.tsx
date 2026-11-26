@@ -7,6 +7,11 @@ import Link from 'next/link'
 import { PaymentWrapper } from '../components/payment-wrapper'
 import { ProgressBar } from '@/components/checkout/progress-bar'
 import { CheckoutHeading } from '@/components/checkout/checkout-heading'
+import {
+  FREE_CANCELLATION_LINE,
+  NON_REFUNDABLE_LINE,
+  isFreeCancellationAvailable,
+} from '@/lib/bookings/cancellation-policy'
 import { BookingLedger } from '@/components/checkout/booking-ledger'
 import { SecureFooter } from '../components/secure-footer'
 import { PublicHeader } from '@/components/layout/public-header'
@@ -44,7 +49,7 @@ import { payerOwns, receiptEmail, resolvePayer, stripeCustomerAccount, type Paye
 export const metadata: Metadata = {
   // The root layout's title template appends ' | Infinia Transfers'.
   title: 'Confirm and pay',
-  description: 'Confirm your transfer and pay securely. Free to cancel up to 24 hours before pickup.',
+  description: 'Confirm your transfer and pay securely. Free cancellation up to 24 hours before pickup.',
 }
 
 interface PaymentRoutePageProps {
@@ -423,7 +428,11 @@ STRIPE_SECRET_KEY=sk_test_...`}
               <CheckoutHeading
                 eyebrow={null}
                 title="Confirm and pay"
-                subtitle="Your card is charged once. Free to cancel up to 24 hours before pickup."
+                subtitle={
+                  isFreeCancellationAvailable(booking.pickup_datetime)
+                    ? `Your card is charged once. ${FREE_CANCELLATION_LINE}`
+                    : `Your card is charged once. ${NON_REFUNDABLE_LINE}`
+                }
               />
             </div>
             {/* The reference used to appear for the first time as a mono chip in the middle of

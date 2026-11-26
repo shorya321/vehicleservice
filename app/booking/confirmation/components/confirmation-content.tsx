@@ -17,6 +17,11 @@ import { InvoiceDownloadButton } from './invoice-download-button'
 import { DayTime } from './day-time'
 import { hourlyEndTime, hourlyPackageLabel, hourlySummary, isHourlyBooking } from '@/lib/trips/display'
 import type { ConfirmationTrip } from '../lib/get-confirmation-booking'
+import {
+  CANCELLATION_POLICY_PATH,
+  FREE_CANCELLATION_LINE,
+  NON_REFUNDABLE_LINE,
+} from '@/lib/bookings/cancellation-policy'
 
 const tz = () => getBookingTimezone()
 
@@ -127,6 +132,13 @@ interface ConfirmationContentProps {
   routeMap?: ReactNode
   /** Round trip or multi-city: every journey of the trip, paid as one. */
   trip?: ConfirmationTrip | null
+  /** From site settings, so the cancellation hint never names a stale inbox. */
+  supportEmail: string
+  /**
+   * Whether pickup is still outside the free-cancellation window. Worked out on the server so
+   * the hint does not read the clock during render and disagree with the hydrated markup.
+   */
+  freeCancellation: boolean
 }
 
 /**
@@ -245,6 +257,8 @@ export function ConfirmationContent({
   route,
   routeMap,
   trip = null,
+  supportEmail,
+  freeCancellation,
 }: ConfirmationContentProps) {
   const { currentCurrency, exchangeRates } = useCurrency()
   const reduceMotion = !!useReducedMotion()
@@ -605,8 +619,10 @@ export function ConfirmationContent({
                 </dl>
               )}
               <p className="confirm-sat__hint">
-                Free cancellation up to 24 hours before pickup. Changes:{' '}
-                <a href="mailto:info@infiniatransfers.com">info@infiniatransfers.com</a>.
+                {freeCancellation ? FREE_CANCELLATION_LINE : NON_REFUNDABLE_LINE} To cancel or change, use
+                your account or email{' '}
+                <a href={`mailto:${supportEmail}`}>{supportEmail}</a> with your booking reference.{' '}
+                <Link href={CANCELLATION_POLICY_PATH}>Refund policy</Link>.
               </p>
             </div>
           </Rise>

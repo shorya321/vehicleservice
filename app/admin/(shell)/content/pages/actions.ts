@@ -30,6 +30,7 @@ const CONTENT_SCHEMAS: Readonly<Record<string, ZodTypeAny>> = {
   faq: faqContentSchema,
   terms: legalContentSchema,
   privacy: legalContentSchema,
+  refund: legalContentSchema,
   'vendor-agreement': legalContentSchema,
 }
 

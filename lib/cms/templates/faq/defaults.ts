@@ -92,7 +92,7 @@ export const DEFAULT_FAQ_CONTENT: FaqContent = {
         {
           question: 'Can I cancel for free?',
           answer:
-            'Yes, more than 24 hours before pickup, for a full refund to your original payment method within 5 to 10 business days. Between 12 and 24 hours you receive 50%. Under 12 hours there is no refund.',
+            'Yes, more than 24 hours before pickup, for a full refund to your original payment method, usually within 5 to 10 working days. Inside 24 hours there is no refund, and a booking made less than 24 hours before pickup is non-refundable.',
         },
         {
           question: 'What if you have to cancel?',
