@@ -9,6 +9,7 @@ import Stripe from 'stripe';
 import { STRIPE_API_VERSION } from '@/lib/stripe/api-version'
 import { createClient } from '@supabase/supabase-js';
 import { apiSuccess, apiError } from '@/lib/business/api-utils';
+import { BUSINESS_BASE_CURRENCY } from '@/lib/business/wallet-operations';
 import { savePaymentMethod } from '../_lib/save-payment-method';
 import { sendCreditEmail } from '../_lib/send-credit-email';
 
@@ -125,7 +126,7 @@ export async function POST(request: NextRequest) {
         p_business_id: businessAccountId,
         p_amount: amount,
         p_transaction_type: 'credit_added',
-        p_description: `Wallet recharge via Stripe ($${amount.toFixed(2)})`,
+        p_description: `Wallet recharge via Stripe (${BUSINESS_BASE_CURRENCY} ${amount.toFixed(2)})`,
         p_created_by: 'stripe_webhook',
         p_reference_id: null,
         p_stripe_payment_intent_id: paymentIntentId,
@@ -221,7 +222,7 @@ export async function POST(request: NextRequest) {
         p_business_id: businessAccountId,
         p_amount: amount,
         p_transaction_type: 'credit_added',
-        p_description: `Wallet recharge via Payment Element ($${amount.toFixed(2)})`,
+        p_description: `Wallet recharge via Payment Element (${BUSINESS_BASE_CURRENCY} ${amount.toFixed(2)})`,
         p_created_by: 'stripe_webhook',
         p_reference_id: null,
         p_stripe_payment_intent_id: paymentIntentId,

@@ -9,6 +9,7 @@ import Stripe from 'stripe';
 import { STRIPE_API_VERSION } from '@/lib/stripe/api-version'
 import { createClient } from '@supabase/supabase-js';
 import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
+import { BUSINESS_BASE_CURRENCY } from '@/lib/business/wallet-operations';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: STRIPE_API_VERSION,
@@ -95,7 +96,7 @@ export const GET = requireBusinessOwner(async (request: NextRequest, user) => {
       p_business_id: businessAccountId,
       p_amount: amount,
       p_transaction_type: 'credit_added',
-      p_description: `Wallet recharge via Stripe Checkout ($${amount.toFixed(2)})`,
+      p_description: `Wallet recharge via Stripe Checkout (${BUSINESS_BASE_CURRENCY} ${amount.toFixed(2)})`,
       p_created_by: 'client_verification',
       p_reference_id: null,
       p_stripe_payment_intent_id: paymentIntentId,

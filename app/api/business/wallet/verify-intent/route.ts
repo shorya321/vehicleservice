@@ -14,6 +14,7 @@ import Stripe from 'stripe';
 import { STRIPE_API_VERSION } from '@/lib/stripe/api-version'
 import { createClient } from '@supabase/supabase-js';
 import { requireBusinessOwner, apiSuccess, apiError } from '@/lib/business/api-utils';
+import { BUSINESS_BASE_CURRENCY } from '@/lib/business/wallet-operations';
 import { walletIntentVerifySchema } from '@/lib/business/validators';
 import { checkWalletIntent } from '@/lib/business/wallet/intent-credit-check';
 import { savePaymentMethod } from '../_lib/save-payment-method';
@@ -92,7 +93,7 @@ export const GET = requireBusinessOwner(async (request: Request, user) => {
       p_business_id: user.businessAccountId,
       p_amount: check.amount,
       p_transaction_type: 'credit_added',
-      p_description: `Wallet recharge via Payment Element ($${check.amount.toFixed(2)})`,
+      p_description: `Wallet recharge via Payment Element (${BUSINESS_BASE_CURRENCY} ${check.amount.toFixed(2)})`,
       p_created_by: CREATED_BY,
       p_reference_id: null,
       p_stripe_payment_intent_id: paymentIntentId,
