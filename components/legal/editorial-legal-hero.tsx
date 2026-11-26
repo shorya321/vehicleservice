@@ -36,9 +36,9 @@ export function EditorialLegalHero({ hero, lastUpdated, minutes, supportEmail }:
             <p className="text-[0.75rem] font-medium uppercase tracking-[0.24em] text-[var(--gold-text)]">
               {hero.eyebrow}
             </p>
-            <h1 className="mt-5 text-[clamp(2.25rem,5vw,3.75rem)] font-normal leading-[1.05] tracking-[-0.02em] text-[var(--text-primary)] [text-wrap:balance]">
+            <h1 className="mt-5 text-[clamp(2.25rem,5vw,3.5rem)] font-normal leading-[1.05] tracking-[-0.02em] text-[var(--text-primary)] [text-wrap:balance]">
               {lead && <>{lead} </>}
-              <span className="italic text-[var(--gold-text)]">{accent}</span>
+              <span className="text-[var(--gold-text)]">{accent}</span>
             </h1>
             <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[0.8125rem] text-[var(--text-muted)]">
               <span className="inline-flex items-center gap-2">
