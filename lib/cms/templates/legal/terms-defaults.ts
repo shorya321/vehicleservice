@@ -7,7 +7,7 @@ import type { LegalContent } from './schema'
  */
 export const DEFAULT_TERMS_CONTENT: LegalContent = {
   "hero": {
-    "eyebrow": "Legal",
+    "eyebrow": "Legal document",
     "title": "Terms & Conditions",
     "intro": "The agreement between you and Infinia Transfers when you use our services."
   },

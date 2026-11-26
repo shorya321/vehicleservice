@@ -7,7 +7,7 @@ import type { LegalContent } from './schema'
  */
 export const DEFAULT_PRIVACY_CONTENT: LegalContent = {
   "hero": {
-    "eyebrow": "Legal",
+    "eyebrow": "Legal document",
     "title": "Privacy Policy",
     "intro": "How we collect, use, and safeguard your personal information when you book with us."
   },
