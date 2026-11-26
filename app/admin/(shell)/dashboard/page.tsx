@@ -7,7 +7,7 @@ import {
   TrendingDown,
   Car,
   CheckCircle,
-  DollarSign,
+  Banknote,
   Users,
   Truck,
   ArrowRight,
@@ -100,7 +100,7 @@ export default async function AdminDashboard({ searchParams }: AdminDashboardPro
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-sm font-medium text-muted-foreground">Today&apos;s Revenue</span>
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20">
-                    <DollarSign className="h-4 w-4 text-primary" />
+                    <Banknote className="h-4 w-4 text-primary" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">

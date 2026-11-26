@@ -31,7 +31,6 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  DollarSign,
   Building2,
   UserCheck,
   UserPlus,

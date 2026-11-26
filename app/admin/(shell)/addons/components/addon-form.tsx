@@ -28,6 +28,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
 import * as LucideIcons from "lucide-react"
 import { Addon, AddonFormData, createAddon, updateAddon } from "../actions"
 
@@ -329,7 +330,7 @@ export function AddonForm({ addon }: AddonFormProps) {
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Price ($)</FormLabel>
+                  <FormLabel>Price (AED)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -381,18 +382,18 @@ export function AddonForm({ addon }: AddonFormProps) {
                 <div>
                   <span className="text-xs text-muted-foreground">Total:</span>
                   <span className="ml-2 font-medium">
-                    {watchPrice === 0 ? 'Free' : `$${watchPrice.toFixed(2)}`}
+                    {watchPrice === 0 ? 'Free' : formatCurrency(watchPrice)}
                   </span>
                 </div>
               ) : (
                 <>
                   <div>
                     <span className="text-xs text-muted-foreground">1 unit:</span>
-                    <span className="ml-2 font-medium">${watchPrice.toFixed(2)}</span>
+                    <span className="ml-2 font-medium">{formatCurrency(watchPrice)}</span>
                   </div>
                   <div>
                     <span className="text-xs text-muted-foreground">{watchMaxQuantity} units (max):</span>
-                    <span className="ml-2 font-medium">${(watchPrice * watchMaxQuantity).toFixed(2)}</span>
+                    <span className="ml-2 font-medium">{formatCurrency(watchPrice * watchMaxQuantity)}</span>
                   </div>
                 </>
               )}

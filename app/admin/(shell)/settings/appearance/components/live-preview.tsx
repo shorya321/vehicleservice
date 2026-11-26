@@ -176,7 +176,7 @@ export function AdminLivePreview({
               {[
                 { label: 'Users', value: '1,234', icon: Users },
                 { label: 'Bookings', value: '567', icon: Car },
-                { label: 'Revenue', value: '$45K', icon: TrendingUp },
+                { label: 'Revenue', value: '45K AED', icon: TrendingUp },
               ].map((stat, i) => (
                 <div
                   key={i}

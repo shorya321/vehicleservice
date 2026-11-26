@@ -99,7 +99,7 @@ export default async function TestDataPage() {
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>Random locations and routes</li>
                   <li>Various booking and payment statuses</li>
-                  <li>Realistic price ranges ($30-$300)</li>
+                  <li>Realistic price ranges (30-300 AED)</li>
                   <li>More bookings on weekends</li>
                 </ul>
               </div>

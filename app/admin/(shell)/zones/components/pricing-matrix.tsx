@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { DollarSign, Save, Loader2 } from 'lucide-react'
+import { Banknote, Save, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
@@ -157,7 +157,7 @@ export function PricingMatrix({ zones, pricingMap: initialPricingMap }: PricingM
       {changedCells.size > 0 && (
         <div className="flex items-center justify-between rounded-lg border border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950 p-4">
           <div className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-yellow-700 dark:text-yellow-400" />
+            <Banknote className="h-5 w-5 text-yellow-700 dark:text-yellow-400" />
             <span className="text-sm font-medium">
               You have {changedCells.size} unsaved pricing change(s)
             </span>

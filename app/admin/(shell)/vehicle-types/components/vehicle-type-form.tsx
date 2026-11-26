@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
 import { VehicleTypeWithCategory } from "@/lib/types/vehicle"
 import { createVehicleType, updateVehicleType, VehicleTypeFormData } from "../actions"
 import { ImageUpload } from "./image-upload"
@@ -336,15 +337,15 @@ export function VehicleTypeForm({ vehicleType, categories }: VehicleTypeFormProp
 
           {/* Live Price Preview */}
           <div className="p-3 bg-muted rounded-md">
-            <p className="text-sm text-muted-foreground mb-2">Price Preview (Zone Base: $50)</p>
+            <p className="text-sm text-muted-foreground mb-2">Price Preview (Zone Base: 50 AED)</p>
             <div className="flex gap-8">
               <div>
                 <span className="text-xs text-muted-foreground">Customer:</span>
-                <span className="ml-2 font-medium">${(50 * (form.watch('price_multiplier') || 1)).toFixed(2)}</span>
+                <span className="ml-2 font-medium">{formatCurrency(50 * (form.watch('price_multiplier') || 1))}</span>
               </div>
               <div>
                 <span className="text-xs text-muted-foreground">Business:</span>
-                <span className="ml-2 font-medium">${(50 * (form.watch('business_price_multiplier') || 1)).toFixed(2)}</span>
+                <span className="ml-2 font-medium">{formatCurrency(50 * (form.watch('business_price_multiplier') || 1))}</span>
               </div>
             </div>
           </div>

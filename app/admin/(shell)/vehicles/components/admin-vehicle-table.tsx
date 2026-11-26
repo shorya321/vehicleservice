@@ -20,7 +20,6 @@ import {
   Pencil,
   Trash2,
   Car,
-  DollarSign,
   Users,
   Fuel,
   Settings2,

@@ -3,7 +3,7 @@ import { BookingsTable } from './components/bookings-table'
 import { ClientFilters } from './components/client-filters'
 import { getBookings, getBookingStats, BookingFilters } from './actions'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, Car, CheckCircle, XCircle, DollarSign, TrendingUp, Trash2 } from 'lucide-react'
+import { Calendar, Car, CheckCircle, XCircle, Banknote, TrendingUp, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
@@ -188,7 +188,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-sm font-medium text-muted-foreground">Total Revenue</span>
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20">
-                    <DollarSign className="h-4 w-4 text-emerald-500" />
+                    <Banknote className="h-4 w-4 text-emerald-500" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">

@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Plus, Package, DollarSign, Layers, Hash } from "lucide-react"
+import { Plus, Package, Gift, Layers, Hash } from "lucide-react"
 import { AnimatedCard } from '@/components/ui/animated-card'
 import { AnimatedPage } from '@/components/layout/animated-page'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
@@ -134,7 +134,7 @@ export default async function AddonsPage({ searchParams }: PageProps) {
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-sm font-medium text-muted-foreground">Free Addons</span>
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500/20">
-                    <DollarSign className="h-4 w-4 text-amber-500" />
+                    <Gift className="h-4 w-4 text-amber-500" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2 mb-1">
