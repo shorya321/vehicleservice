@@ -12,6 +12,15 @@ const PLATFORM_ICONS: Metadata['icons'] = {
 }
 
 /**
+ * The portal never belongs in search results, on the platform domain or on a
+ * tenant's subdomain or custom domain. Tenant domains cannot serve robots.txt
+ * (proxy.ts only lets /business/* through), so this tag is their only signal.
+ * Inlined rather than imported from lib/seo/noindex.ts: the business module
+ * keeps no dependency on the main site's code.
+ */
+const PORTAL_ROBOTS: Metadata['robots'] = { index: false, follow: false }
+
+/**
  * Same test proxy.ts uses to tell the platform from a tenant: anything that is
  * not the NEXT_PUBLIC_SITE_URL host is a business subdomain or custom domain.
  */
@@ -30,9 +39,9 @@ function isPlatformHost(host: string | null): boolean {
 export async function generateMetadata(): Promise<Metadata> {
   try {
     const host = (await headers()).get('host')
-    return { icons: isPlatformHost(host) ? PLATFORM_ICONS : null }
+    return { icons: isPlatformHost(host) ? PLATFORM_ICONS : null, robots: PORTAL_ROBOTS }
   } catch {
-    return { icons: null }
+    return { icons: null, robots: PORTAL_ROBOTS }
   }
 }
 
