@@ -109,12 +109,14 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsConfig = {
   admin_logo_dark_url: null,
   favicon_url: null,
   copyright_text: 'Infinia Transfers',
-  support_email: 'support@infiniatransfers.com',
+  // Shown only when Settings cannot be read, so keep these equal to the real
+  // values in Settings > General. A placeholder here reaches visitors during an outage.
+  support_email: 'info@infiniatransfers.com',
   info_email: 'info@infiniatransfers.com',
   bookings_email: 'bookings@infiniatransfers.com',
-  support_phone: '+971 50 123 4567',
-  secondary_phone: '+971 4 123 4567',
-  office_address: 'Business Bay, Dubai, United Arab Emirates',
+  support_phone: '+971 52 463 4292',
+  secondary_phone: '',
+  office_address: 'Aspin Commercial Tower, Downtown Dubai, UAE',
   legal_name: '',
   trade_licence_number: '',
   licence_issuer: '',

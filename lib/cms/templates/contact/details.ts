@@ -5,7 +5,7 @@ export interface ContactDetails {
   phone: string
   /** `tel:` target: the number with spaces and punctuation removed. */
   phoneHref: string
-  /** Office address split for display, e.g. ["Business Bay, Dubai", "United Arab Emirates"]. */
+  /** Office address split for display, e.g. ["Aspin Commercial Tower, Downtown Dubai", "UAE"]. */
   officeLines: string[]
 }
 

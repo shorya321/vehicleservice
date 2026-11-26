@@ -471,7 +471,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
                   <FormItem>
                     <FormLabel>Office Address</FormLabel>
                     <FormControl>
-                      <Input placeholder="Business Bay, Dubai, UAE" {...field} />
+                      <Input placeholder="Aspin Commercial Tower, Downtown Dubai, UAE" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

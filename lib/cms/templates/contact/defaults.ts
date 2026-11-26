@@ -5,7 +5,7 @@ export const DEFAULT_CONTACT_CONTENT: ContactContent = {
   hero: {
     eyebrow: 'Get in touch',
     title: 'Talk to the people who run the transfer.',
-    body: 'Questions about a booking, corporate accounts, or feedback on a journey you have already taken. Every message reaches the concierge desk in Business Bay.',
+    body: 'Questions about a booking, corporate accounts, or feedback on a journey you have already taken. Every message reaches the concierge desk in Downtown Dubai.',
     reply: { label: 'Reply', value: 'Within 24 hours' },
     desk: { label: 'Desk', value: 'Open 24 / 7' },
   },
@@ -29,8 +29,8 @@ export const DEFAULT_CONTACT_CONTENT: ContactContent = {
     items: [
       {
         title: 'It lands with a person.',
-        body: 'Messages go to the concierge desk in Business Bay, not a shared inbox that nobody owns.',
-        meta: 'Business Bay, Dubai',
+        body: 'Messages go to the concierge desk in Downtown Dubai, not a shared inbox that nobody owns.',
+        meta: 'Downtown Dubai',
       },
       {
         title: 'You get an answer within 24 hours.',

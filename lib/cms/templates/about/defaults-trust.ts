@@ -18,7 +18,7 @@ export const DEFAULT_ABOUT_TRUST: Pick<AboutContent, 'story' | 'vetting' | 'comp
       'We don\'t own a fleet. We work with established Dubai transport companies that already do this well, set one fixed fare for each trip, and keep a desk watching every booking until the passenger is dropped off.',
     ],
     image: '/images/cities/downtown.webp',
-    imageAlt: 'Downtown Dubai skyline beside Business Bay, where the desk is based',
+    imageAlt: 'Downtown Dubai skyline, where the desk is based',
   },
   vetting: {
     visible: true,

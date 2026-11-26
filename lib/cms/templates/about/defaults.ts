@@ -21,7 +21,7 @@ export const DEFAULT_ABOUT_CONTENT: AboutContent = {
       tag: 'Arrivals',
       eyebrow: 'Our promise',
       title: 'Driver waiting, fare fixed, a person to call.',
-      metaStart: 'Business Bay, Dubai',
+      metaStart: 'Downtown Dubai',
       metaEnd: '',
     },
     stat: { eyebrow: 'Fixed fare', value: 'Nothing added', caption: 'at pickup' },

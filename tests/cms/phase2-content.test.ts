@@ -39,14 +39,14 @@ describe('contact content', () => {
   it('reads email, phone and office from site settings', () => {
     expect(contactDetailsFrom(DEFAULT_SITE_SETTINGS)).toEqual({
       email: 'info@infiniatransfers.com',
-      phone: '+971 50 123 4567',
-      phoneHref: 'tel:+971501234567',
-      officeLines: ['Business Bay, Dubai', 'United Arab Emirates'],
+      phone: '+971 52 463 4292',
+      phoneHref: 'tel:+971524634292',
+      officeLines: ['Aspin Commercial Tower, Downtown Dubai', 'UAE'],
     })
   })
 
   it('falls back to the support email and copes with a one-part address', () => {
-    const details = contactDetailsFrom({ ...DEFAULT_SITE_SETTINGS, info_email: '', office_address: 'Dubai' })
+    const details = contactDetailsFrom({ ...DEFAULT_SITE_SETTINGS, info_email: '', support_email: 'support@infiniatransfers.com', office_address: 'Dubai' })
     expect(details.email).toBe('support@infiniatransfers.com')
     expect(details.officeLines).toEqual(['Dubai'])
   })
