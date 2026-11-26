@@ -428,7 +428,7 @@ function LocationSearchAutocompleteBase({
           id={`${id}-suggestions`}
           role="listbox"
           className={cn(
-            'absolute z-50 rounded-lg shadow-lg max-h-72 overflow-y-auto',
+            'location-autocomplete-list absolute z-50 rounded-lg shadow-lg max-h-72 overflow-y-auto',
             isHero
               ? 'top-full mt-3 left-0 w-full lg:left-[-16px] lg:w-[calc(100%+32px)] lg:min-w-[360px] max-w-[min(600px,calc(100vw-2rem))] border border-[var(--graphite)] bg-[var(--dropdown-surface)] luxury-scrollbar'
               : 'top-full left-0 mt-1 w-full max-w-[min(420px,calc(100vw-2rem))] border bg-popover'

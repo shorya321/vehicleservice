@@ -1910,6 +1910,22 @@ html.light[style*="--admin-surface-0"] :is([role="menu"], [role="listbox"]) :is(
   color: #85663A;
 }
 
+/* Location autocomplete (components/search/location-search-autocomplete.tsx).
+   Its rows highlight with bg-accent, which is solid gold in admin, and its
+   children keep their own colours, so the gold icon and muted subtitle vanish
+   on the gold row. A faint gold tint instead: the runtime --muted is darker
+   than the card in dark mode, so a muted highlight would not show. */
+html[style*="--admin-surface-0"] .location-autocomplete-list [role="option"]:is(:hover, [aria-selected="true"]) {
+  background-color: var(--accent-gold-muted);
+  color: hsl(var(--foreground));
+}
+html[style*="--admin-surface-0"] .location-autocomplete-list [role="option"] svg {
+  color: #D4B07A;
+}
+html.light[style*="--admin-surface-0"] .location-autocomplete-list [role="option"] svg {
+  color: #85663A;
+}
+
 /* Dialogs (components/ui/dialog.tsx, alert-dialog.tsx): the card colour with a
    hairline border and 12px corners, like the page's panels, in place of the
    public site's blurred charcoal and gold. Matched on the centring class so
