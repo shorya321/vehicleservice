@@ -25,11 +25,12 @@ interface NumberedLegalSectionProps {
   id: string
   index: number
   title: string
-  /** Already sanitised HTML. */
-  html: string
+  /** Already sanitised HTML from the CMS. Use `children` instead for content built in code. */
+  html?: string
+  children?: React.ReactNode
 }
 
-export function NumberedLegalSection({ id, index, title, html }: NumberedLegalSectionProps): React.JSX.Element {
+export function NumberedLegalSection({ id, index, title, html, children }: NumberedLegalSectionProps): React.JSX.Element {
   const number = String(index + 1).padStart(2, '0')
 
   return (
@@ -44,10 +45,14 @@ export function NumberedLegalSection({ id, index, title, html }: NumberedLegalSe
         {title}
       </h2>
       {/* Full width under the number on phones; beside it, under the heading, from md. */}
-      <div
-        className={`col-span-2 mt-5 min-w-0 md:col-span-1 md:col-start-2 md:-mt-0 ${BODY_CLASS}`}
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      {html !== undefined ? (
+        <div
+          className={`col-span-2 mt-5 min-w-0 md:col-span-1 md:col-start-2 md:-mt-0 ${BODY_CLASS}`}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      ) : (
+        <div className={`col-span-2 mt-5 min-w-0 md:col-span-1 md:col-start-2 md:-mt-0 ${BODY_CLASS}`}>{children}</div>
+      )}
 
     </section>
   )

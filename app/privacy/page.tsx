@@ -3,7 +3,7 @@ import { buildPageMetadata } from '@/lib/seo/page-metadata'
 import { PAGE_FALLBACKS } from '@/lib/cms/page-fallbacks'
 import { getLegalContent } from '@/lib/cms/server'
 import { DEFAULT_PRIVACY_CONTENT } from '@/lib/cms/templates/legal/privacy-defaults'
-import { LegalDocument } from '@/components/legal/legal-document'
+import { EditorialLegalDocument } from '@/components/legal/editorial-legal-document'
 import { getSiteSettings } from '@/lib/site-settings/server'
 import { getCompanyDetails } from '@/lib/site-settings/company'
 
@@ -19,7 +19,8 @@ export default async function PrivacyPage() {
   ])
   const { legalName, licence } = getCompanyDetails(site)
   return (
-    <LegalDocument
+    <EditorialLegalDocument
+      currentPath="/privacy"
       content={content}
       company={{ legalName, licence, address: site.office_address.trim() }}
       supportEmail={site.support_email}

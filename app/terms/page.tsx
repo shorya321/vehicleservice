@@ -3,7 +3,7 @@ import { buildPageMetadata } from '@/lib/seo/page-metadata'
 import { PAGE_FALLBACKS } from '@/lib/cms/page-fallbacks'
 import { getLegalContent } from '@/lib/cms/server'
 import { DEFAULT_TERMS_CONTENT } from '@/lib/cms/templates/legal/terms-defaults'
-import { LegalDocument } from '@/components/legal/legal-document'
+import { EditorialLegalDocument } from '@/components/legal/editorial-legal-document'
 import { getSiteSettings } from '@/lib/site-settings/server'
 import { getCompanyDetails } from '@/lib/site-settings/company'
 
@@ -19,7 +19,8 @@ export default async function TermsPage() {
   ])
   const { legalName, licence } = getCompanyDetails(site)
   return (
-    <LegalDocument
+    <EditorialLegalDocument
+      currentPath="/terms"
       content={content}
       company={{ legalName, licence, address: site.office_address.trim() }}
       supportEmail={site.support_email}
