@@ -13,6 +13,8 @@ import { ArticleToc, type TocItem } from "../components/article-toc"
 import { ArticleSections } from "../components/article-sections"
 import { ArticleFaq } from "../components/article-faq"
 import { FAQ_ANCHOR, getPostFaqs, getPostSections, withAnchors } from "@/lib/blog/sections"
+import { fillContentPlaceholders } from "@/lib/cms/placeholders"
+import { leadPlaceholderValues, leadSettingsOf } from "@/lib/trips/lead-time"
 import { ArrowUpRight } from "lucide-react"
 import { buildEntityMetadata } from "@/lib/seo/page-metadata"
 import { absoluteUrl } from "@/lib/seo/site-url"
@@ -81,8 +83,10 @@ export default async function BlogPostPage({ params }: PageProps) {
     getSiteSettings(),
   ])
   const postPath = `/blog/${post.slug}`
-  const sections = withAnchors(getPostSections(post))
-  const faqs = getPostFaqs(post)
+  // `{{lead_time}}` / `{{hourly_notice}}` in the body or FAQs follow Settings, as on the CMS pages.
+  const leadValues = leadPlaceholderValues(leadSettingsOf(site))
+  const sections = withAnchors(fillContentPlaceholders(getPostSections(post), leadValues))
+  const faqs = fillContentPlaceholders(getPostFaqs(post), leadValues)
   const tocItems: TocItem[] = [
     ...sections.filter((s) => s.title).map((s) => ({ id: s.id, label: s.title })),
     ...(faqs.length > 0 ? [{ id: FAQ_ANCHOR, label: 'FAQ' }] : []),

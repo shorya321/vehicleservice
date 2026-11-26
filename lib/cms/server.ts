@@ -14,6 +14,9 @@ import { parseServicesContent } from './templates/services/parse'
 import type { ServicesContent } from './templates/services/schema'
 import { parseFaqContent } from './templates/faq/parse'
 import type { FaqContent } from './templates/faq/schema'
+import { fillContentPlaceholders, type LeadPlaceholderValues } from './placeholders'
+import { getSiteSettings } from '@/lib/site-settings/server'
+import { leadPlaceholderValues, leadSettingsOf } from '@/lib/trips/lead-time'
 
 const REVALIDATE_SECONDS = 3600
 
@@ -57,7 +60,8 @@ async function fetchPublishedPage(slug: string): Promise<CmsPage | null> {
  * caller can always fall back to the shipped default copy.
  */
 export async function getPublishedPage(slug: string): Promise<CmsPage | null> {
-  const cached = unstable_cache(() => fetchPublishedPage(slug), ['cms-page', slug, 'v1'], {
+  // v2: FAQ copy now carries `{{lead_time}}`, so an entry cached with the old wording must not be served.
+  const cached = unstable_cache(() => fetchPublishedPage(slug), ['cms-page', slug, 'v2'], {
     revalidate: REVALIDATE_SECONDS,
     tags: [PAGES_TAG, pageTag(slug)],
   })
@@ -70,8 +74,17 @@ export async function getPublishedPage(slug: string): Promise<CmsPage | null> {
  * gives any field it lacks the current default.
  */
 export async function getHomeContent(): Promise<{ page: CmsPage | null; content: HomeContent }> {
-  const page = await getPublishedPage('/')
-  return { page, content: parseHomeContent(page?.content) }
+  const [page, values] = await Promise.all([getPublishedPage('/'), getLeadValues()])
+  return { page, content: fillContentPlaceholders(parseHomeContent(page?.content), values) }
+}
+
+/**
+ * `{{lead_time}}` and `{{hourly_notice}}` values from Settings. Filled after the
+ * page cache, so a settings change shows on the next request, and only on the
+ * public getters: the admin editors parse the raw content and keep the tokens.
+ */
+async function getLeadValues(): Promise<LeadPlaceholderValues> {
+  return leadPlaceholderValues(leadSettingsOf(await getSiteSettings()))
 }
 
 /** A legal page's content (Terms, Privacy), or its shipped default. */
@@ -82,21 +95,21 @@ export async function getLegalContent(slug: string, fallback: LegalContent): Pro
 
 /** Contact page copy, or the shipped default. */
 export async function getContactContent(): Promise<ContactContent> {
-  const page = await getPublishedPage('/contact')
-  return parseContactContent(page?.content)
+  const [page, values] = await Promise.all([getPublishedPage('/contact'), getLeadValues()])
+  return fillContentPlaceholders(parseContactContent(page?.content), values)
 }
 
 export async function getAboutContent(): Promise<AboutContent> {
-  const page = await getPublishedPage('/about')
-  return parseAboutContent(page?.content)
+  const [page, values] = await Promise.all([getPublishedPage('/about'), getLeadValues()])
+  return fillContentPlaceholders(parseAboutContent(page?.content), values)
 }
 
 export async function getFaqContent(): Promise<FaqContent> {
-  const page = await getPublishedPage('/faq')
-  return parseFaqContent(page?.content)
+  const [page, values] = await Promise.all([getPublishedPage('/faq'), getLeadValues()])
+  return fillContentPlaceholders(parseFaqContent(page?.content), values)
 }
 
 export async function getServicesContent(): Promise<ServicesContent> {
-  const page = await getPublishedPage('/services')
-  return parseServicesContent(page?.content)
+  const [page, values] = await Promise.all([getPublishedPage('/services'), getLeadValues()])
+  return fillContentPlaceholders(parseServicesContent(page?.content), values)
 }

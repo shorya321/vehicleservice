@@ -58,7 +58,14 @@ export function FaqListEditor<T extends FieldValues>({ control, name }: FaqListE
             </div>
           </div>
           <TextField control={control} name={at(i, 'question')} label="Question (H3)" max={140} />
-          <TextField control={control} name={at(i, 'answer')} label="Answer" max={800} rows={4} />
+          <TextField
+            control={control}
+            name={at(i, 'answer')}
+            label="Answer"
+            max={800}
+            rows={4}
+            description="Write {{lead_time}} or {{hourly_notice}} to show the booking notice set in Settings > General."
+          />
         </div>
       ))}
 

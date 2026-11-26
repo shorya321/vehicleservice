@@ -24,7 +24,7 @@ export const DEFAULT_FAQ_CONTENT: FaqContent = {
         {
           question: 'How far in advance should I book?',
           answer:
-            '24 hours is comfortable. Bookings under 3 hours are accepted on most routes and confirmed against live chauffeur availability. Same-day airport pickups are usually fine.',
+            '24 hours is comfortable. You can book up to {{lead_time}} before pickup, confirmed against live chauffeur availability. Same-day airport pickups are usually fine.',
         },
         {
           question: 'Can I book a round trip or several stops?',

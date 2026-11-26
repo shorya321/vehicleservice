@@ -171,7 +171,7 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
       {
         question: 'How far in advance should I book?',
         answer:
-          '24 hours is comfortable. Last-minute bookings under 3 hours are accepted on most routes and confirmed against live chauffeur availability. Same-day airport pickups are usually fine.',
+          '24 hours is comfortable. You can book up to {{lead_time}} before pickup, confirmed against live chauffeur availability. Same-day airport pickups are usually fine.',
       },
       {
         question: 'What happens if my flight is delayed?',

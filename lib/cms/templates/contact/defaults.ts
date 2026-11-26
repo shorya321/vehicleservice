@@ -59,7 +59,7 @@ export const DEFAULT_CONTACT_CONTENT: ContactContent = {
       {
         question: 'What is your cancellation policy?',
         answer:
-          'Cancel more than 24 hours before pickup for a full refund. Between 12 and 24 hours you receive 50%, and under 12 hours there is no refund. Booking 24 hours ahead is comfortable, and bookings under 3 hours are accepted on most routes.',
+          'Cancel more than 24 hours before pickup for a full refund. Between 12 and 24 hours you receive 50%, and under 12 hours there is no refund. Booking 24 hours ahead is comfortable, and you can book up to {{lead_time}} before pickup on most routes.',
       },
       {
         question: 'Do you offer corporate accounts?',

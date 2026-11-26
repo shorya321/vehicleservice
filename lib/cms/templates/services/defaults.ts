@@ -178,7 +178,7 @@ export const DEFAULT_SERVICES_CONTENT: ServicesContent = {
       },
       {
         question: 'How late can I book?',
-        answer: 'Transfers can be booked for the same day, subject to live chauffeur availability, but 24 hours ahead is more comfortable. Hourly hire needs at least 12 hours\' notice.',
+        answer: 'Transfers can be booked for the same day, subject to live chauffeur availability, but 24 hours ahead is more comfortable. Hourly hire needs at least {{hourly_notice}} of notice.',
       },
       {
         question: 'Can my company book for guests?',

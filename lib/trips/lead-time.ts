@@ -77,7 +77,19 @@ export function adjustToFloor(date: string, time: string, floor: PickupFloor | n
 
 /** "2 hours", "1 hour", "90 minutes": for customer-facing notice copy. */
 export function formatLead(minutes: number): string {
+  if (minutes <= 0) return 'a few minutes'
   if (minutes % 60 !== 0) return `${minutes} minute${minutes === 1 ? '' : 's'}`
   const hours = minutes / 60
   return `${hours} hour${hours === 1 ? '' : 's'}`
+}
+
+/**
+ * Values for the `{{lead_time}}` and `{{hourly_notice}}` CMS placeholders
+ * (`lib/cms/placeholders.ts`), from the same settings the checkout enforces.
+ */
+export function leadPlaceholderValues(settings: LeadSettings): { leadTime: string; hourlyNotice: string } {
+  return {
+    leadTime: formatLead(customerLeadMinutes('one_way', settings)),
+    hourlyNotice: formatLead(customerLeadMinutes('hourly', settings)),
+  }
 }

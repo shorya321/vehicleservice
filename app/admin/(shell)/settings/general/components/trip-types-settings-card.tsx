@@ -62,7 +62,7 @@ const NUMBERS: NumberSetting[] = [
     min: 0,
     max: MAX_CUSTOMER_MIN_LEAD_HOURS,
     step: '1',
-    help: 'How soon a customer pickup may be. Applies to one way, the outbound of a round trip and the first multi-city leg. Hourly hire uses this or its own notice, whichever is longer. 0 allows any time not yet passed.',
+    help: 'How soon a customer pickup may be. Applies to one way, the outbound of a round trip and the first multi-city leg. Hourly hire uses this or its own notice, whichever is longer. 0 allows any time not yet passed. Page copy shows it through {{lead_time}}.',
     blankIsInvalid: true,
   },
   {
