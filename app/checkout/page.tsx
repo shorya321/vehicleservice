@@ -8,6 +8,8 @@ import { getVehicleType, getLocationDetails, getActiveAddons } from './actions'
 import { createClient } from '@/lib/supabase/server'
 import { toStoredPhone } from '@/lib/validation/phone'
 import { bookingToday } from '@/lib/utils/timezone'
+import { getSiteSettings } from '@/lib/site-settings/server'
+import { customerLeadMinutes, leadSettingsOf } from '@/lib/trips/lead-time'
 import { getSeatedCount, resolveGuestsForVehicle } from '@/components/home/hero/guest-breakdown'
 
 export const metadata: Metadata = {
@@ -155,6 +157,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     infants: String(guests.infants),
   })
   const changeHref = `/search/results?${changeParams.toString()}`
+  const leadMinutes = customerLeadMinutes('one_way', leadSettingsOf(await getSiteSettings()))
 
   return (
     <PublicLayout>
@@ -175,6 +178,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             profile={profile}
             addonsByCategory={addonsData.addonsByCategory}
             changeHref={changeHref}
+            trip={{ kind: 'one_way', leadMinutes }}
           />
       </div>
     </PublicLayout>

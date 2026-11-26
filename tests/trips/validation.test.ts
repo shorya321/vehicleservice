@@ -127,3 +127,48 @@ describe('validatePickupStart', () => {
     expect(validatePickupStart('2026-10-01', '', { now: NOW })).toBe('Choose a valid pickup date and time.')
   })
 })
+
+describe('minimum lead time', () => {
+  const lead = { now: NOW, leadMinutes: 120 }
+
+  it('one way: refuses a pickup inside the lead and accepts one exactly on it', () => {
+    expect(validatePickupStart('2026-10-01', '09:59', lead)).toBe('Book at least 2 hours ahead. Choose a later pickup time.')
+    expect(validatePickupStart('2026-10-01', '10:00', lead)).toBeNull()
+  })
+
+  it('one way: a past pickup still reads as passed, not as too soon', () => {
+    expect(validatePickupStart('2026-10-01', '07:00', lead)).toBe('The pickup time has already passed. Choose a later time.')
+  })
+
+  it('one way: a lead of 0 keeps the old any-future-time rule', () => {
+    expect(validatePickupStart('2026-10-01', '08:01', { now: NOW, leadMinutes: 0 })).toBeNull()
+  })
+
+  it('round trip: the outbound needs the lead', () => {
+    const legs = [
+      { fromId: 'a', toId: 'b', date: '2026-10-01', time: '09:00', durationMinutes: 30 },
+      { fromId: 'b', toId: 'a', date: '2026-10-01', time: '18:00' },
+    ]
+    expect(validateLegTiming(legs, { ...options, roundTrip: true, leadMinutes: 120 }))
+      .toBe('Outbound: book at least 2 hours ahead. Choose a later time.')
+  })
+
+  it('multi-city: only the first leg needs the lead, later legs keep the buffer rule', () => {
+    const legs = [
+      { fromId: 'a', toId: 'b', date: '2026-10-01', time: '10:00', durationMinutes: 30 },
+      { fromId: 'b', toId: 'c', date: '2026-10-01', time: '11:30' },
+    ]
+    expect(validateLegTiming(legs, { ...options, leadMinutes: 120 })).toBeNull()
+    const tooSoon = [{ ...legs[0], time: '09:55' }, legs[1]]
+    expect(validateLegTiming(tooSoon, { ...options, leadMinutes: 120 }))
+      .toBe('Journey 1: book at least 2 hours ahead. Choose a later time.')
+  })
+
+  it('legs: no lead option keeps the old behaviour', () => {
+    const legs = [
+      { fromId: 'a', toId: 'b', date: '2026-10-01', time: '08:05', durationMinutes: 30 },
+      { fromId: 'b', toId: 'a', date: '2026-10-01', time: '18:00' },
+    ]
+    expect(validateLegTiming(legs, options)).toBeNull()
+  })
+})

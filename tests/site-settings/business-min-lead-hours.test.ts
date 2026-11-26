@@ -1,5 +1,10 @@
 import { siteSettingsSchema } from '@/lib/site-settings/schema'
-import { parseSiteSettings, DEFAULT_BUSINESS_MIN_LEAD_HOURS } from '@/lib/site-settings/types'
+import {
+  parseSiteSettings,
+  parseCustomerMinLeadHours,
+  DEFAULT_BUSINESS_MIN_LEAD_HOURS,
+  DEFAULT_CUSTOMER_MIN_LEAD_HOURS,
+} from '@/lib/site-settings/types'
 import { parseBusinessMinLeadHours } from '@/lib/business/trips/settings'
 
 const lead = siteSettingsSchema.shape.business_min_lead_hours
@@ -27,5 +32,34 @@ describe('business_min_lead_hours', () => {
     expect(parseSiteSettings({ business_min_lead_hours: 0 }).business_min_lead_hours).toBe(0)
     expect(parseBusinessMinLeadHours(0)).toBe(0)
     expect(parseBusinessMinLeadHours(6)).toBe(6)
+  })
+})
+
+describe('customer_min_lead_hours', () => {
+  const customerLead = siteSettingsSchema.shape.customer_min_lead_hours
+
+  it('accepts whole hours from 0 to 72 and refuses the rest', () => {
+    expect(customerLead.safeParse('0').data).toBe(0)
+    expect(customerLead.safeParse('2').data).toBe(2)
+    expect(customerLead.safeParse(72).data).toBe(72)
+    for (const bad of [Number.NaN, '1.5', '-1', '73']) {
+      expect(customerLead.safeParse(bad).success).toBe(false)
+    }
+  })
+
+  it('reads a missing or bad stored value as 2 hours', () => {
+    expect(DEFAULT_CUSTOMER_MIN_LEAD_HOURS).toBe(2)
+    for (const raw of [undefined, null, '3', 1.5, -1, 73]) {
+      expect(parseSiteSettings({ customer_min_lead_hours: raw }).customer_min_lead_hours).toBe(2)
+      expect(parseCustomerMinLeadHours(raw)).toBe(2)
+    }
+    expect(parseSiteSettings({ customer_min_lead_hours: 0 }).customer_min_lead_hours).toBe(0)
+    expect(parseSiteSettings({ customer_min_lead_hours: 4 }).customer_min_lead_hours).toBe(4)
+  })
+
+  it('is independent of the business lead', () => {
+    const parsed = parseSiteSettings({ business_min_lead_hours: 6, customer_min_lead_hours: 1 })
+    expect(parsed.business_min_lead_hours).toBe(6)
+    expect(parsed.customer_min_lead_hours).toBe(1)
   })
 })

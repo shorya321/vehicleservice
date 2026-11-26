@@ -17,6 +17,7 @@ import { parseTripSearchParams } from '@/lib/trips/search-params'
 import { quoteLegFare } from '@/lib/trips/pricing-server'
 import { getRouteDurationMinutes } from '@/lib/trips/locations-server'
 import type { CheckoutTrip } from '@/lib/trips/checkout-trip'
+import { customerLeadMinutes, leadSettingsOf } from '@/lib/trips/lead-time'
 import { redirectIfPastDates } from '@/lib/trips/past-dates-server'
 
 interface CheckoutRoutePageProps {
@@ -193,9 +194,10 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
   })
   // Round trip: the reverse route as a second journey, priced strictly (no placeholder fare).
   const requestedTrip = parseTripSearchParams(sp)
-  let checkoutTrip: CheckoutTrip | undefined
+  const settings = await getSiteSettings()
+  const leadSettings = leadSettingsOf(settings)
+  let checkoutTrip: CheckoutTrip = { kind: 'one_way', leadMinutes: customerLeadMinutes('one_way', leadSettings) }
   if (requestedTrip.trip === 'round_trip' && requestedTrip.returnDate) {
-    const settings = await getSiteSettings()
     if (settings.trip_types.round_trip_enabled) {
       const adminClient = createAdminClient()
       const { data: multiplierRow } = await adminClient
@@ -221,6 +223,7 @@ export default async function CheckoutRoutePage({ params, searchParams }: Checko
 
       checkoutTrip = {
         kind: 'round_trip',
+        leadMinutes: customerLeadMinutes('round_trip', leadSettings),
         discountPercent: settings.trip_types.round_trip_discount_percent,
         bufferMinutes: settings.trip_types.leg_buffer_minutes,
         maxLegs: 2,

@@ -98,7 +98,12 @@ export function useTripBooking({
         time: schedule[index].time,
         durationMinutes: leg.durationMinutes,
       })),
-      { bufferMinutes: trip.bufferMinutes, maxLegs: trip.maxLegs, roundTrip: trip.kind === 'round_trip' }
+      {
+        bufferMinutes: trip.bufferMinutes,
+        maxLegs: trip.maxLegs,
+        roundTrip: trip.kind === 'round_trip',
+        leadMinutes: trip.leadMinutes,
+      }
     )
   }, [trip, schedule])
 

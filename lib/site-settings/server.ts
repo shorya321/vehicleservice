@@ -1,7 +1,7 @@
 import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { SiteSettingsConfig } from './types'
-import { DEFAULT_SITE_SETTINGS, parseSiteSettings } from './types'
+import { DEFAULT_SITE_SETTINGS, parseCustomerMinLeadHours, parseSiteSettings } from './types'
 import { parseTripSettings } from '@/lib/trips/settings'
 
 const CACHE_TAGS = {
@@ -48,6 +48,7 @@ export async function getSiteSettings(): Promise<SiteSettingsConfig> {
   return {
     ...DEFAULT_SITE_SETTINGS,
     ...cached,
+    customer_min_lead_hours: parseCustomerMinLeadHours(cached?.customer_min_lead_hours),
     trip_types: parseTripSettings(cached?.trip_types),
   }
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { bookingTodayAsCalendarDate } from '@/lib/utils/timezone'
 import { UseFormReturn, useFormState } from 'react-hook-form'
 import Image from 'next/image'
@@ -15,6 +16,8 @@ import { GuestSelector } from '@/components/home/hero/guest-selector'
 import type { GuestBreakdown } from '@/components/home/hero/guest-breakdown'
 import { isGroupedCheckout, type CheckoutTrip } from '@/lib/trips/checkout-trip'
 import { HOURLY_PACKAGE_LABELS } from '@/lib/trips/constants'
+import { adjustToFloor, formatLead } from '@/lib/trips/lead-time'
+import { usePickupFloor } from '../use-pickup-floor'
 import type { LegSchedule } from '../trip-ledger-props'
 import { TripLegsFields, legTitle } from './trip-legs-fields'
 
@@ -68,11 +71,40 @@ export function TransferDetailsSection({
   const pickupDateStr = watch('pickupDate')
   const pickupDateValue = pickupDateStr ? parse(pickupDateStr, 'yyyy-MM-dd', new Date()) : undefined
 
+  // The earliest pickup on offer: now plus the lead, in the operating timezone. Null until
+  // hydrated, so the pickers fall back to "today" for the first paint.
+  const leadMinutes = trip?.leadMinutes ?? 0
+  const floor = usePickupFloor(leadMinutes)
+  const earliestDay = floor ? bookingTodayAsCalendarDate(floor.date) : bookingTodayAsCalendarDate()
+  const minTime = floor && pickupDateStr === floor.date ? floor.time : undefined
+
+  // A search link can carry a time that is already too soon (or a day the lead has
+  // pushed past). Move it up once, when the floor is first known, rather than letting
+  // the customer fill the form and be refused at Continue.
+  const seededRef = useRef(false)
+  useEffect(() => {
+    if (!floor || seededRef.current) return
+    seededRef.current = true
+    const date: string = watch('pickupDate')
+    const time: string = watch('pickupTime')
+    if (!date) return
+    const next = adjustToFloor(date < floor.date ? floor.date : date, time, floor)
+    if (next.date === date && next.time === time) return
+    setValue('pickupDate', next.date, { shouldValidate: true })
+    setValue('pickupTime', next.time, { shouldValidate: true })
+    onDateTimeChange?.(next.date, next.time)
+  }, [floor, watch, setValue, onDateTimeChange])
+
   const handleDatePickerChange = (date: Date | undefined) => {
     const formatted = date ? format(date, 'yyyy-MM-dd') : ''
+    // On the floor day a too-soon time moves up to the floor; other days keep it.
+    const currentTime: string = watch('pickupTime')
+    const time = formatted && floor && formatted === floor.date && currentTime && currentTime < floor.time
+      ? floor.time
+      : currentTime
     setValue('pickupDate', formatted, { shouldValidate: true })
-    const currentTime = watch('pickupTime')
-    onDateTimeChange?.(formatted, currentTime)
+    if (time !== currentTime) setValue('pickupTime', time, { shouldValidate: true })
+    onDateTimeChange?.(formatted, time)
   }
 
   const handleTimePickerChange = (time: string) => {
@@ -150,7 +182,7 @@ export function TransferDetailsSection({
               id="pickupDate"
               value={pickupDateValue}
               onChange={handleDatePickerChange}
-              disabled={(date) => date < bookingTodayAsCalendarDate()}
+              disabled={(date) => date < earliestDay}
               placeholder="Select pickup date"
               className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] focus-visible:ring-1 focus-visible:ring-[var(--gold)]/15 focus-visible:border-[var(--gold)]"
             />
@@ -166,14 +198,22 @@ export function TransferDetailsSection({
               id="pickupTime"
               value={watch('pickupTime')}
               onChange={handleTimePickerChange}
+              minTime={minTime}
               placeholder="Select pickup time"
               className="h-[52px] bg-[var(--black-warm)] border-[var(--graphite)] text-[var(--text-primary)] focus-visible:ring-1 focus-visible:ring-[var(--gold)]/15 focus-visible:border-[var(--gold)]"
               aria-required="true"
               aria-invalid={!!errors.pickupTime}
               aria-describedby={errors.pickupTime ? 'pickupTime-error' : undefined}
             />
-            {errors.pickupTime && (
+            {errors.pickupTime ? (
               <p id="pickupTime-error" className="text-sm text-destructive mt-1.5">{errors.pickupTime.message as string}</p>
+            ) : (
+              // Hourly states its notice in the paragraph above.
+              !hourly && leadMinutes > 0 && (
+                <p className="text-xs text-[var(--text-muted)] mt-1.5">
+                  Book at least {formatLead(leadMinutes)} ahead.
+                </p>
+              )
             )}
           </div>
         </div>

@@ -14,6 +14,7 @@ import { phoneField } from '@/lib/validation/phone'
 import { getSeatedCount, type GuestBreakdown } from '@/components/home/hero/guest-breakdown'
 import type { CheckoutTrip } from '@/lib/trips/checkout-trip'
 import { validatePickupStart } from '@/lib/trips/validation'
+import { DEFAULT_CUSTOMER_MIN_LEAD_HOURS } from '@/lib/site-settings/types'
 import type { LegSchedule } from './trip-ledger-props'
 import { useTripBooking } from './use-trip-booking'
 
@@ -128,7 +129,8 @@ interface BookingFormProps {
   onScheduleChange?: (schedule: LegSchedule[]) => void
 }
 
-const ONE_WAY: CheckoutTrip = { kind: 'one_way' }
+// A fallback only: every checkout page passes its trip with the configured lead.
+const ONE_WAY: CheckoutTrip = { kind: 'one_way', leadMinutes: DEFAULT_CUSTOMER_MIN_LEAD_HOURS * 60 }
 
 export function BookingForm({
   route,
@@ -250,7 +252,7 @@ export function BookingForm({
 
     // The time can pass while the customer is on the payment step. The server refuses it too,
     // but a thrown Server Action message never reaches the browser in production.
-    const pickupError = validatePickupStart(data.pickupDate, data.pickupTime)
+    const pickupError = validatePickupStart(data.pickupDate, data.pickupTime, { leadMinutes: trip.leadMinutes })
     if (pickupError) {
       toast.error(pickupError)
       return
@@ -304,7 +306,7 @@ export function BookingForm({
     // `guests` must be listed even though `passengers` is derived from it: the derivation is lossy.
     // Swapping an adult for a child leaves the seated total unchanged, so without `guests` here the
     // closure keeps a stale breakdown and posts the wrong adults/children/infants split.
-  }, [trip.kind, submitTrip, vehicleType.id, route.origin.id, route.origin.name, route.destination.id, route.destination.name, passengers, guests, basePrice, router])
+  }, [trip.kind, trip.leadMinutes, submitTrip, vehicleType.id, route.origin.id, route.origin.name, route.destination.id, route.destination.name, passengers, guests, basePrice, router])
 
   const handleContinue = useCallback(async () => {
     const fields = STEP_FIELDS[currentStep] || []
@@ -320,14 +322,16 @@ export function BookingForm({
     if (currentStep === 0 && trip.kind !== 'one_way' && !checkBeforeContinue()) return
     // A one-way pickup can be today (a stale link is moved up to today) at an hour already gone.
     if (currentStep === 0 && trip.kind === 'one_way') {
-      const pickupError = validatePickupStart(getValues('pickupDate'), getValues('pickupTime'))
+      const pickupError = validatePickupStart(getValues('pickupDate'), getValues('pickupTime'), {
+        leadMinutes: trip.leadMinutes,
+      })
       if (pickupError) {
         toast.error(pickupError)
         return
       }
     }
     onGoNext()
-  }, [currentStep, trigger, onGoNext, trip.kind, checkBeforeContinue, getValues])
+  }, [currentStep, trigger, onGoNext, trip.kind, trip.leadMinutes, checkBeforeContinue, getValues])
 
   // Without an onInvalid handler a rejected submit does nothing at all. StepErrorSummary only
   // renders once `stepValidationAttempted` is set, which until now only "Continue" ever did. That

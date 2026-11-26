@@ -9,6 +9,7 @@ import { RouteDetails, VehicleTypeDetails, CheckoutAddonsByCategory } from '@/ap
 import type { GuestBreakdown } from '@/components/home/hero/guest-breakdown'
 import { checkoutPrice, isGroupedCheckout, type CheckoutTrip } from '@/lib/trips/checkout-trip'
 import type { LegSchedule } from './trip-ledger-props'
+import { DEFAULT_CUSTOMER_MIN_LEAD_HOURS } from '@/lib/site-settings/types'
 
 export interface OrderSummaryAddon {
   id: string
@@ -46,7 +47,8 @@ interface CheckoutWrapperProps {
   trip?: CheckoutTrip
 }
 
-const ONE_WAY: CheckoutTrip = { kind: 'one_way' }
+// A fallback only: every checkout page passes its trip with the configured lead.
+const ONE_WAY: CheckoutTrip = { kind: 'one_way', leadMinutes: DEFAULT_CUSTOMER_MIN_LEAD_HOURS * 60 }
 
 const TOTAL_STEPS = 2
 

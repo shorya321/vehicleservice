@@ -20,7 +20,12 @@ export interface CheckoutLeg {
   durationMinutes: number | null
 }
 
-export type CheckoutTrip =
+/**
+ * Every trip carries `leadMinutes`: how far ahead its first pickup must be
+ * (`customerLeadMinutes`). The checkout greys out anything sooner and the
+ * booking actions refuse it.
+ */
+export type CheckoutTrip = (
   | { kind: 'one_way' }
   | {
       kind: 'hourly'
@@ -38,6 +43,9 @@ export type CheckoutTrip =
       bufferMinutes: number
       maxLegs: number
     }
+) & { leadMinutes: number }
+
+export type CheckoutTripKind = CheckoutTrip['kind']
 
 export type GroupedCheckoutTrip = Extract<CheckoutTrip, { kind: 'round_trip' | 'multi_city' }>
 export type HourlyCheckoutTrip = Extract<CheckoutTrip, { kind: 'hourly' }>

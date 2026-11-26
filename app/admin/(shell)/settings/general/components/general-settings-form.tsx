@@ -115,6 +115,7 @@ export function GeneralSettingsForm({ currentSettings }: GeneralSettingsFormProp
       business_cancellation_window_minutes:
         currentSettings.business_cancellation_window_minutes,
       business_min_lead_hours: currentSettings.business_min_lead_hours,
+      customer_min_lead_hours: currentSettings.customer_min_lead_hours,
       trip_types: currentSettings.trip_types,
     },
   })

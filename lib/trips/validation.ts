@@ -1,5 +1,6 @@
 import { bookingWallClockToUtc } from '@/lib/utils/timezone'
 import { MAX_LEGS_HARD_LIMIT } from './constants'
+import { formatLead } from './lead-time'
 import { isHhMm, isIsoDate } from './search-params'
 
 /**
@@ -46,13 +47,14 @@ function formatGap(minutes: number): string {
  */
 export function validateLegTiming(
   legs: TimedLeg[],
-  options: { bufferMinutes: number; maxLegs: number; now?: Date; roundTrip?: boolean }
+  options: { bufferMinutes: number; maxLegs: number; now?: Date; roundTrip?: boolean; leadMinutes?: number }
 ): string | null {
   if (legs.length < 2) return 'Add at least two journeys.'
   const maxLegs = Math.min(options.maxLegs, MAX_LEGS_HARD_LIMIT)
   if (legs.length > maxLegs) return `A trip can hold at most ${maxLegs} journeys.`
 
   const now = options.now ?? new Date()
+  const leadMinutes = options.leadMinutes ?? 0
   let previousEnd: Date | null = null
 
   for (let index = 0; index < legs.length; index += 1) {
@@ -65,6 +67,10 @@ export function validateLegTiming(
     const start = legStart(leg)
     if (!start) return `${label}: choose a valid date and time.`
     if (start.getTime() <= now.getTime()) return `${label}: the pickup time has already passed.`
+    // Only the first pickup needs the lead: every later leg already starts after it.
+    if (index === 0 && isInsideLead(start, now, leadMinutes)) {
+      return `${label}: book at least ${formatLead(leadMinutes)} ahead. Choose a later time.`
+    }
 
     if (previousEnd && start.getTime() < previousEnd.getTime()) {
       const gap = formatGap(Math.round((previousEnd.getTime() - start.getTime()) / 60_000))
@@ -83,18 +89,31 @@ export function validateLegTiming(
 }
 
 /**
- * A one-way pickup must still be ahead of now. The date can be today (a stale
- * link is moved up to today), so the time alone can already have gone.
+ * Whether a future pickup falls inside the minimum lead time
+ * (`customer_min_lead_hours`). A lead of 0 means any future time.
+ */
+function isInsideLead(start: Date, now: Date, leadMinutes: number): boolean {
+  return leadMinutes > 0 && start.getTime() < now.getTime() + leadMinutes * 60_000
+}
+
+/**
+ * A one-way pickup must still be ahead of now, by at least `leadMinutes`. The
+ * date can be today (a stale link is moved up to today), so the time alone can
+ * already have gone.
  */
 export function validatePickupStart(
   date: string,
   time: string,
-  options: { now?: Date } = {}
+  options: { now?: Date; leadMinutes?: number } = {}
 ): string | null {
   const start = legStart({ date, time })
   if (!start) return 'Choose a valid pickup date and time.'
   const now = options.now ?? new Date()
-  return start.getTime() <= now.getTime() ? 'The pickup time has already passed. Choose a later time.' : null
+  if (start.getTime() <= now.getTime()) return 'The pickup time has already passed. Choose a later time.'
+  const leadMinutes = options.leadMinutes ?? 0
+  return isInsideLead(start, now, leadMinutes)
+    ? `Book at least ${formatLead(leadMinutes)} ahead. Choose a later pickup time.`
+    : null
 }
 
 /** Hourly hire must start at least `minNoticeHours` from now. */

@@ -9,6 +9,7 @@ import { resolveVehicleTypeSlug } from '@/lib/utils/slug-resolver'
 import { bookingToday } from '@/lib/utils/timezone'
 import { buildHourlySearchUrl } from '@/lib/utils/url-builder'
 import { AS_DIRECTED } from '@/lib/trips/constants'
+import { customerLeadMinutes, leadSettingsOf } from '@/lib/trips/lead-time'
 import { resolveLocationBySlug } from '@/lib/trips/locations-server'
 import { getHourlyPackage } from '@/lib/trips/pricing-server'
 import { isHhMm, isIsoDate, parseTripSearchParams } from '@/lib/trips/search-params'
@@ -96,14 +97,17 @@ export default async function HourlyCheckoutPage({ params, searchParams }: Hourl
     destination: { id: '', name: AS_DIRECTED, city: '', country_code: originLocation.country_code || 'AE' },
   }
 
+  // Hourly takes the longer of its own notice and the customer lead.
+  const leadMinutes = customerLeadMinutes('hourly', leadSettingsOf(settings))
   const checkoutTrip: CheckoutTrip = {
     kind: 'hourly',
+    leadMinutes,
     hourlyPackage,
     hours: pkg.hours,
     includedKm: pkg.includedKm,
     extraHourPrice: pkg.extraHourPrice,
     price: pkg.price,
-    minNoticeHours: settings.trip_types.hourly_min_notice_hours,
+    minNoticeHours: leadMinutes / 60,
   }
 
   const changeHref = buildHourlySearchUrl(originSlug, {

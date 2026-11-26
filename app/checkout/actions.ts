@@ -8,6 +8,8 @@ import { signBookingPayload } from '@/lib/security/booking-hmac'
 import { phoneSchema } from '@/lib/validation/phone'
 import { bookingWallClockToUtc } from '@/lib/utils/timezone'
 import { validatePickupStart } from '@/lib/trips/validation'
+import { customerLeadMinutes, leadSettingsOf } from '@/lib/trips/lead-time'
+import { getSiteSettings } from '@/lib/site-settings/server'
 import type { TablesInsert } from '@/lib/supabase/types'
 import { grantGuestAccess } from '@/lib/security/guest-access'
 import { signatureSubject } from '@/lib/security/guest-checkout'
@@ -341,7 +343,10 @@ export async function createBooking(formData: BookingFormData) {
   
   // Combine date and time for pickup datetime (interpreted as Dubai wall-clock)
   const pickupDateTime = bookingWallClockToUtc(validatedData.pickupDate, validatedData.pickupTime)
-  const pickupError = validatePickupStart(validatedData.pickupDate, validatedData.pickupTime)
+  const settings = await getSiteSettings()
+  const pickupError = validatePickupStart(validatedData.pickupDate, validatedData.pickupTime, {
+    leadMinutes: customerLeadMinutes('one_way', leadSettingsOf(settings)),
+  })
   if (pickupError) throw new Error(pickupError)
   
   // --- Server-side price verification ---

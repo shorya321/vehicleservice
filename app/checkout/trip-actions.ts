@@ -11,6 +11,7 @@ import { getHourlyPackage, quoteLegFare } from '@/lib/trips/pricing-server'
 import { getRouteDurationMinutes, resolveLocationsById } from '@/lib/trips/locations-server'
 import { quoteTrip, roundMoney } from '@/lib/trips/pricing'
 import { validateHourlyStart, validateLegTiming } from '@/lib/trips/validation'
+import { customerLeadMinutes, leadSettingsOf } from '@/lib/trips/lead-time'
 import {
   BookingInputError,
   amenityRows,
@@ -62,7 +63,7 @@ export async function createHourlyBooking(input: HourlyBookingInput): Promise<Tr
     }
 
     const timingError = validateHourlyStart(data.pickupDate, data.pickupTime, {
-      minNoticeHours: settings.trip_types.hourly_min_notice_hours,
+      minNoticeHours: customerLeadMinutes('hourly', leadSettingsOf(settings)) / 60,
     })
     if (timingError) return { success: false, error: timingError }
 
@@ -247,7 +248,12 @@ export async function createGroupBooking(input: GroupBookingInput): Promise<Trip
         time: leg.time,
         durationMinutes: durations[index],
       })),
-      { bufferMinutes: tripSettings.leg_buffer_minutes, maxLegs, roundTrip: isRoundTrip }
+      {
+        bufferMinutes: tripSettings.leg_buffer_minutes,
+        maxLegs,
+        roundTrip: isRoundTrip,
+        leadMinutes: customerLeadMinutes(data.tripType, leadSettingsOf(settings)),
+      }
     )
     if (timingError) return { success: false, error: timingError }
 

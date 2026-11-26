@@ -9,6 +9,7 @@ import { resolveVehicleTypeSlug } from '@/lib/utils/slug-resolver'
 import { buildMultiCitySearchUrl } from '@/lib/utils/url-builder'
 import { getRouteDurationMinutes, resolveLocationsBySlug } from '@/lib/trips/locations-server'
 import { quoteLegFare } from '@/lib/trips/pricing-server'
+import { customerLeadMinutes, leadSettingsOf } from '@/lib/trips/lead-time'
 import { parseTripSearchParams } from '@/lib/trips/search-params'
 import type { CheckoutTrip } from '@/lib/trips/checkout-trip'
 import type { RouteDetails } from '../../actions'
@@ -91,6 +92,7 @@ export default async function MultiCityCheckoutPage({ params, searchParams }: Mu
 
   const checkoutTrip: CheckoutTrip = {
     kind: 'multi_city',
+    leadMinutes: customerLeadMinutes('multi_city', leadSettingsOf(settings)),
     discountPercent: 0,
     bufferMinutes: settings.trip_types.leg_buffer_minutes,
     maxLegs: settings.trip_types.multi_city_max_legs,

@@ -17,6 +17,8 @@ export const DEFAULT_CANCELLATION_WINDOW_MINUTES = 30
  */
 export const DEFAULT_BUSINESS_MIN_LEAD_HOURS = 2
 export const MAX_BUSINESS_MIN_LEAD_HOURS = 72
+export const DEFAULT_CUSTOMER_MIN_LEAD_HOURS = 2
+export const MAX_CUSTOMER_MIN_LEAD_HOURS = 72
 
 export interface SocialLinks {
   instagram: string
@@ -78,6 +80,12 @@ export interface SiteSettingsConfig {
    * its own notice. 0 means any future time.
    */
   business_min_lead_hours: number
+  /**
+   * How far ahead a customer pickup must be, in hours, for one way, round trip
+   * (outbound) and multi-city (first leg). Hourly hire uses the larger of this
+   * and `trip_types.hourly_min_notice_hours`. 0 means any future time.
+   */
+  customer_min_lead_hours: number
   /** Round trip, multi-city and hourly switches and rules. See `lib/trips/settings.ts`. */
   trip_types: TripSettings
 }
@@ -116,6 +124,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsConfig = {
   timezone: DEFAULT_BOOKING_TIMEZONE,
   business_cancellation_window_minutes: DEFAULT_CANCELLATION_WINDOW_MINUTES,
   business_min_lead_hours: DEFAULT_BUSINESS_MIN_LEAD_HOURS,
+  customer_min_lead_hours: DEFAULT_CUSTOMER_MIN_LEAD_HOURS,
   trip_types: DEFAULT_TRIP_SETTINGS,
 }
 
@@ -194,6 +203,17 @@ export function parseSiteSettings(raw: unknown): SiteSettingsConfig {
       obj.business_min_lead_hours <= MAX_BUSINESS_MIN_LEAD_HOURS
         ? obj.business_min_lead_hours
         : DEFAULT_BUSINESS_MIN_LEAD_HOURS,
+    customer_min_lead_hours: parseCustomerMinLeadHours(obj.customer_min_lead_hours),
     trip_types: parseTripSettings(obj.trip_types),
   }
+}
+
+/** Whole hours in range, or the default, so a bad stored value can never block every booking. */
+export function parseCustomerMinLeadHours(raw: unknown): number {
+  return typeof raw === 'number' &&
+    Number.isInteger(raw) &&
+    raw >= 0 &&
+    raw <= MAX_CUSTOMER_MIN_LEAD_HOURS
+    ? raw
+    : DEFAULT_CUSTOMER_MIN_LEAD_HOURS
 }

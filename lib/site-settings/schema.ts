@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { isValidTimezone } from '@/lib/utils/timezone'
 import { tripSettingsSchema } from '@/lib/trips/settings'
-import { MAX_BUSINESS_MIN_LEAD_HOURS } from './types'
+import { MAX_BUSINESS_MIN_LEAD_HOURS, MAX_CUSTOMER_MIN_LEAD_HOURS } from './types'
 
 export const siteSettingsSchema = z.object({
   brand_name: z.string().min(1, 'Brand name is required').max(100),
@@ -53,6 +53,12 @@ export const siteSettingsSchema = z.object({
     .int('Enter a whole number of hours')
     .min(0, 'Cannot be negative')
     .max(MAX_BUSINESS_MIN_LEAD_HOURS, `Cannot exceed ${MAX_BUSINESS_MIN_LEAD_HOURS} hours`),
+  // Customer twin of the above, same bounds and the same cleared-field handling.
+  customer_min_lead_hours: z.coerce
+    .number({ invalid_type_error: 'Enter a number of hours' })
+    .int('Enter a whole number of hours')
+    .min(0, 'Cannot be negative')
+    .max(MAX_CUSTOMER_MIN_LEAD_HOURS, `Cannot exceed ${MAX_CUSTOMER_MIN_LEAD_HOURS} hours`),
   trip_types: tripSettingsSchema,
 })
 

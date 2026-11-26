@@ -1,5 +1,6 @@
 'use client'
 
+import type { ChangeEvent } from 'react'
 import type { Control } from 'react-hook-form'
 import { Route } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import type { SiteSettingsFormValues } from '@/lib/site-settings/schema'
+import { MAX_CUSTOMER_MIN_LEAD_HOURS } from '@/lib/site-settings/types'
 
 interface TripTypesSettingsCardProps {
   control: Control<SiteSettingsFormValues>
@@ -18,6 +20,7 @@ type ToggleName =
   | 'trip_types.hourly_enabled'
 
 type NumberName =
+  | 'customer_min_lead_hours'
   | 'trip_types.round_trip_discount_percent'
   | 'trip_types.multi_city_max_legs'
   | 'trip_types.hourly_min_notice_hours'
@@ -41,7 +44,27 @@ const TOGGLES: { name: ToggleName; label: string; help: string }[] = [
   },
 ]
 
-const NUMBERS: { name: NumberName; label: string; min: number; max: number; step: string; help: string }[] = [
+interface NumberSetting {
+  name: NumberName
+  label: string
+  min: number
+  max: number
+  step: string
+  help: string
+  /** Number('') is 0, so a cleared box would save as 0. NaN fails validation and asks for a number. */
+  blankIsInvalid?: boolean
+}
+
+const NUMBERS: NumberSetting[] = [
+  {
+    name: 'customer_min_lead_hours',
+    label: 'Minimum lead time (hours)',
+    min: 0,
+    max: MAX_CUSTOMER_MIN_LEAD_HOURS,
+    step: '1',
+    help: 'How soon a customer pickup may be. Applies to one way, the outbound of a round trip and the first multi-city leg. Hourly hire uses this or its own notice, whichever is longer. 0 allows any time not yet passed.',
+    blankIsInvalid: true,
+  },
   {
     name: 'trip_types.round_trip_discount_percent',
     label: 'Round trip discount (%)',
@@ -135,6 +158,13 @@ export function TripTypesSettingsCard({ control }: TripTypesSettingsCardProps) {
                       step={number.step}
                       aria-label={number.label}
                       {...field}
+                      {...(number.blankIsInvalid
+                        ? {
+                            value: Number.isNaN(field.value) ? '' : field.value,
+                            onChange: (e: ChangeEvent<HTMLInputElement>) =>
+                              field.onChange(e.target.value === '' ? Number.NaN : e.target.value),
+                          }
+                        : {})}
                     />
                   </FormControl>
                   <p className="text-sm text-muted-foreground">{number.help}</p>
