@@ -15,7 +15,7 @@ export default async function ZonePricingPage() {
   // to PAGE_SIZE (10), which silently truncated this grid to the first 10
   // zones, and there is no pagination control here to reach the rest.
   const [zonesData, pricing] = await Promise.all([
-    getZones({ status: 'active', limit: 500 }),
+    getZones({ status: 'active', limit: 500, includeLocationCounts: false }),
     getZonePricing()
   ])
 

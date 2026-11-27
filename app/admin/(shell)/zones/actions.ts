@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { requireAdminAction } from '@/lib/auth/admin-action'
 import type { Database } from '@/lib/supabase/types'
@@ -35,6 +36,8 @@ export interface ZoneFilters {
   status?: string
   page?: number
   limit?: number
+  /** Count assigned locations per zone. The pricing matrix never reads them. */
+  includeLocationCounts?: boolean
 }
 
 export interface PaginatedZones {
@@ -77,51 +80,102 @@ async function adminDenial(): Promise<string | null> {
   return 'error' in auth ? auth.error : null
 }
 
+/**
+ * A PostgREST `ilike` value for a substring search, quoted so zone names with
+ * commas and parentheses ("JLT (Jumeirah Lake Towers)") neither break the
+ * `.or()` logic tree nor lose characters. LIKE wildcards match literally.
+ */
+function ilikeContains(term: string): string {
+  const like = term.replace(/[\\%_]/g, '\\$&')
+  return `"${`%${like}%`.replace(/[\\"]/g, '\\$&')}"`
+}
+
+/**
+ * Location count per zone, for the given zones only. Uses the admin client so
+ * each count is an index-only scan on locations.zone_id: under the admin's
+ * JWT the locations RLS filter runs per row, and the old `locations(count)`
+ * embed counted all ~111k rows on every page load, past the 8s statement
+ * timeout on a cold database. An admin sees every location either way, so
+ * the numbers are the same. Callers must have passed adminDenial().
+ */
+async function countLocationsByZone(zoneIds: string[]): Promise<Map<string, number>> {
+  const admin = createAdminClient()
+  const entries = await Promise.all(
+    zoneIds.map(async (id): Promise<[string, number]> => {
+      const { count, error } = await admin
+        .from('locations')
+        .select('id', { count: 'exact', head: true })
+        .eq('zone_id', id)
+      if (error) {
+        console.error('Error counting zone locations:', { zoneId: id, code: error.code, message: error.message })
+        return [id, 0]
+      }
+      return [id, count ?? 0]
+    })
+  )
+  return new Map(entries)
+}
+
 export async function getZones(filters: ZoneFilters = {}): Promise<PaginatedZones> {
+  const requestedPage = Math.max(1, filters.page || 1)
+  const limit = filters.limit || PAGE_SIZE
+  const empty = (page: number): PaginatedZones => ({ zones: [], total: 0, page, limit, totalPages: 0 })
+
   const denied = await adminDenial()
-  if (denied) return { zones: [], total: 0, page: filters.page || 1, limit: filters.limit || PAGE_SIZE, totalPages: 0 }
+  if (denied) return empty(requestedPage)
 
   const supabase = await createClient()
-  const page = filters.page || 1
-  const limit = filters.limit || PAGE_SIZE
-  const offset = (page - 1) * limit
+  const search = filters.search?.trim()
 
-  let query = supabase
-    .from('zones')
-    .select(`
-      *,
-      locations(count)
-    `, { count: 'exact' })
-
-  if (filters.search) {
-    query = query.or(`name.ilike.%${filters.search}%,slug.ilike.%${filters.search}%`)
+  // One place for the filters, so the page query and the clamp count agree.
+  const zonesQuery = (columns: string, head = false) => {
+    let query = supabase.from('zones').select(columns, { count: 'exact', head })
+    if (search) {
+      const pattern = ilikeContains(search)
+      query = query.or(`name.ilike.${pattern},slug.ilike.${pattern}`)
+    }
+    if (filters.status === 'active') query = query.eq('is_active', true)
+    else if (filters.status === 'inactive') query = query.eq('is_active', false)
+    return query
   }
 
-  if (filters.status === 'active') {
-    query = query.eq('is_active', true)
-  } else if (filters.status === 'inactive') {
-    query = query.eq('is_active', false)
+  const fetchPage = (page: number) => {
+    const offset = (page - 1) * limit
+    return zonesQuery('*')
+      .order('sort_order')
+      .order('name')
+      .range(offset, offset + limit - 1)
+      .overrideTypes<ZoneRow[], { merge: false }>()
   }
 
-  query = query
-    .order('sort_order')
-    .order('name')
-    .range(offset, offset + limit - 1)
+  let page = requestedPage
+  let result = await fetchPage(page)
 
-  const { data: zones, error, count } = await query
+  // A page past the end (stale link, or the last zones on it were deleted) is
+  // a 416 from PostgREST. Show the last real page instead of an empty table.
+  if (result.error?.code === 'PGRST103') {
+    const { count: available } = await zonesQuery('id', true)
+    page = Math.max(1, Math.ceil((available ?? 0) / limit))
+    result = await fetchPage(page)
+  }
 
+  const { data: rows, error, count } = result
   if (error) {
-    console.error('Error fetching zones:', error)
-    return { zones: [], total: 0, page, limit, totalPages: 0 }
+    console.error('Error fetching zones:', { code: error.code, message: error.message, details: error.details })
+    return empty(page)
   }
 
+  const zones = (rows ?? []).map(toZone)
+  const includeCounts = filters.includeLocationCounts ?? true
+  const locationCounts = includeCounts && zones.length > 0
+    ? await countLocationsByZone(zones.map((zone) => zone.id))
+    : null
   const total = count || 0
 
   return {
-    zones: (zones || []).map(({ locations, ...zone }) => ({
-      ...toZone(zone),
-      location_count: locations?.[0]?.count || 0,
-    })),
+    zones: locationCounts
+      ? zones.map((zone) => ({ ...zone, location_count: locationCounts.get(zone.id) ?? 0 }))
+      : zones,
     total,
     page,
     limit,
